@@ -267,7 +267,7 @@ function SilhouettePicker({ current, onSelect, onClose, lang }: SilhouettePicker
   useEffect(() => {
     document.body.style.overflow = "hidden";
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && current) onClose();
     };
     document.addEventListener("keydown", handleKey);
     return () => {
@@ -284,7 +284,7 @@ function SilhouettePicker({ current, onSelect, onClose, lang }: SilhouettePicker
       aria-modal="true"
       aria-label={lang === "TR" ? "Siluet Seçin" : "Choose Silhouette"}
       onClick={(e) => {
-        if (e.target === overlayRef.current) onClose();
+        if (e.target === overlayRef.current && current) onClose();
       }}
     >
       {/* Backdrop */}
@@ -305,13 +305,15 @@ function SilhouettePicker({ current, onSelect, onClose, lang }: SilhouettePicker
               {lang === "TR" ? "Siluet Seçin" : "Choose Silhouette"}
             </h2>
           </div>
-          <button
-            onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center text-[#1C1C1E]/40 hover:text-[#1C1C1E] transition-colors border border-[#1C1C1E]/15 hover:border-[#1C1C1E]/40"
-            aria-label="Kapat"
-          >
-            <X size={17} />
-          </button>
+          {current && (
+            <button
+              onClick={onClose}
+              className="w-9 h-9 flex items-center justify-center text-[#1C1C1E]/40 hover:text-[#1C1C1E] transition-colors border border-[#1C1C1E]/15 hover:border-[#1C1C1E]/40"
+              aria-label="Kapat"
+            >
+              <X size={17} />
+            </button>
+          )}
         </div>
 
         {/* Grid */}

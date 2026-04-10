@@ -9,7 +9,7 @@ const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJ
 const getNavLinks = (lang: "TR" | "EN" | "AR") => {
   const baseLinks = {
     TR: [
-      { href: "/koleksiyonlar", label: "Koleksiyonlar" },
+      { href: "/olustur", label: "Silüet Oluştur" },
       { href: "/hakkimizda", label: "Hakkımızda" },
       { href: "/hikayemiz", label: "Hikayemiz" },
       { href: "/surdurulebilirlik", label: "Sürdürülebilirlik" },
@@ -17,7 +17,7 @@ const getNavLinks = (lang: "TR" | "EN" | "AR") => {
       { href: "/iletisim", label: "İletişim" },
     ],
     EN: [
-      { href: "/en/collections", label: "Collections" },
+      { href: "/en/builder", label: "Silhouette Builder" },
       { href: "/en/about", label: "About" },
       { href: "/en/story", label: "Our Story" },
       { href: "/en/sustainability", label: "Sustainability" },
@@ -25,7 +25,7 @@ const getNavLinks = (lang: "TR" | "EN" | "AR") => {
       { href: "/en/contact", label: "Contact" },
     ],
     AR: [
-      { href: "/ar/collections", label: "المجموعات" },
+      { href: "/ar/builder", label: "منشئ الصورة الظلية" },
       { href: "/ar/about", label: "من نحن" },
       { href: "/ar/story", label: "قصتنا" },
       { href: "/ar/sustainability", label: "الاستدامة" },

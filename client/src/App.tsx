@@ -10,6 +10,7 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import { CartProvider } from "./contexts/CartContext";
 import Home from "./pages/Home";
 import Collections from "./pages/Collections";
+import SilhouetteBuilder from "./pages/SilhouetteBuilder";
 import About from "./pages/About";
 import Sustainability from "./pages/Sustainability";
 import Contact from "./pages/Contact";
@@ -41,6 +42,7 @@ function Router() {
       {/* Turkish Routes */}
       <Route path="/" component={Home} />
       <Route path="/koleksiyonlar" component={Collections} />
+      <Route path="/olustur" component={SilhouetteBuilder} />
       <Route path="/hakkimizda" component={About} />
       <Route path="/hikayemiz" component={Story} />
       <Route path="/surdurulebilirlik" component={Sustainability} />
@@ -53,6 +55,7 @@ function Router() {
       {/* English Routes */}
       <Route path="/en" component={Home} />
       <Route path="/en/collections" component={Collections} />
+      <Route path="/en/builder" component={SilhouetteBuilder} />
       <Route path="/en/about" component={About} />
       <Route path="/en/story" component={Story} />
       <Route path="/en/sustainability" component={Sustainability} />
@@ -65,6 +68,7 @@ function Router() {
       {/* Arabic Routes */}
       <Route path="/ar" component={Home} />
       <Route path="/ar/collections" component={Collections} />
+      <Route path="/ar/builder" component={SilhouetteBuilder} />
       <Route path="/ar/about" component={About} />
       <Route path="/ar/story" component={Story} />
       <Route path="/ar/sustainability" component={Sustainability} />

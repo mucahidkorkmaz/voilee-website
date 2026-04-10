@@ -1,0 +1,324 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* 
+ * VOILÉE Design System — "Quiet Luxury Editorial"
+ * Philosophy: Fransız Haute Couture estetik + Türk kalitesi
+ * Colors: Ivory/Cream + Champagne Gold + Deep Charcoal
+ * Typography: Cormorant Garamond (display) + DM Sans (body)
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  
+  /* VOILÉE Custom Colors */
+  --color-voilee-ivory: oklch(0.975 0.008 85);
+  --color-voilee-cream: oklch(0.955 0.012 80);
+  --color-voilee-champagne: oklch(0.78 0.055 75);
+  --color-voilee-gold: oklch(0.72 0.08 72);
+  --color-voilee-taupe: oklch(0.58 0.035 70);
+  --color-voilee-charcoal: oklch(0.18 0.008 285);
+  --color-voilee-dark: oklch(0.12 0.005 285);
+}
+
+:root {
+  --radius: 0.25rem;
+  
+  /* VOILÉE Brand Colors */
+  --primary: oklch(0.18 0.008 285);          /* Deep Charcoal */
+  --primary-foreground: oklch(0.975 0.008 85); /* Ivory */
+  --secondary: oklch(0.955 0.012 80);         /* Cream */
+  --secondary-foreground: oklch(0.25 0.01 285);
+  --accent: oklch(0.78 0.055 75);             /* Champagne Gold */
+  --accent-foreground: oklch(0.18 0.008 285);
+  --muted: oklch(0.965 0.006 80);
+  --muted-foreground: oklch(0.52 0.02 70);
+  
+  /* Base */
+  --background: oklch(0.975 0.008 85);        /* Warm Ivory */
+  --foreground: oklch(0.18 0.008 285);        /* Deep Charcoal */
+  --card: oklch(0.985 0.005 80);
+  --card-foreground: oklch(0.18 0.008 285);
+  --popover: oklch(0.985 0.005 80);
+  --popover-foreground: oklch(0.18 0.008 285);
+  
+  /* UI */
+  --border: oklch(0.88 0.015 75);
+  --input: oklch(0.88 0.015 75);
+  --ring: oklch(0.78 0.055 75);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  
+  /* Charts */
+  --chart-1: oklch(0.78 0.055 75);
+  --chart-2: oklch(0.58 0.035 70);
+  --chart-3: oklch(0.72 0.08 72);
+  --chart-4: oklch(0.88 0.025 75);
+  --chart-5: oklch(0.45 0.025 70);
+  
+  /* Sidebar */
+  --sidebar: oklch(0.985 0.005 80);
+  --sidebar-foreground: oklch(0.18 0.008 285);
+  --sidebar-primary: oklch(0.18 0.008 285);
+  --sidebar-primary-foreground: oklch(0.975 0.008 85);
+  --sidebar-accent: oklch(0.955 0.012 80);
+  --sidebar-accent-foreground: oklch(0.18 0.008 285);
+  --sidebar-border: oklch(0.88 0.015 75);
+  --sidebar-ring: oklch(0.78 0.055 75);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+}
+
+@layer components {
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+      max-width: 1400px;
+    }
+  }
+  
+  /* VOILÉE Typography Classes */
+  .font-display {
+    font-family: 'Cormorant Garamond', serif;
+  }
+  
+  .font-heading {
+    font-family: 'Playfair Display', serif;
+  }
+  
+  .font-body {
+    font-family: 'DM Sans', sans-serif;
+  }
+  
+  /* Gold accent line */
+  .gold-line {
+    display: block;
+    width: 60px;
+    height: 1px;
+    background: oklch(0.78 0.055 75);
+  }
+  
+  /* Luxury button */
+  .btn-luxury {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 2rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: 1px solid oklch(0.18 0.008 285);
+    color: oklch(0.18 0.008 285);
+    background: transparent;
+    transition: all 0.4s ease;
+    cursor: pointer;
+  }
+  
+  .btn-luxury:hover {
+    background: oklch(0.18 0.008 285);
+    color: oklch(0.975 0.008 85);
+  }
+  
+  .btn-luxury-filled {
+    background: oklch(0.18 0.008 285);
+    color: oklch(0.975 0.008 85);
+  }
+  
+  .btn-luxury-filled:hover {
+    background: oklch(0.78 0.055 75);
+    border-color: oklch(0.78 0.055 75);
+    color: oklch(0.18 0.008 285);
+  }
+  
+  /* Fade in animation */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  
+  .fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Overlay on image hover */
+  .img-overlay {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .img-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: oklch(0.18 0.008 285 / 0);
+    transition: background 0.4s ease;
+  }
+  
+  .img-overlay:hover::after {
+    background: oklch(0.18 0.008 285 / 0.15);
+  }
+  
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: oklch(0.975 0.008 85);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.78 0.055 75);
+  }
+}
+
+/* Scroll animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeInUp 0.8s ease forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 1s ease forwards;
+}
+
+.animate-slide-left {
+  animation: slideInLeft 0.8s ease forwards;
+}
+
+.animate-slide-right {
+  animation: slideInRight 0.8s ease forwards;
+}

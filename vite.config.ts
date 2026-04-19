@@ -23,6 +23,11 @@ export default defineConfig({
   },
   server: {
     host: true,
+    proxy: {
+      "/api/v1": "http://localhost:3000",
+      "/api/auth": "http://localhost:3000",
+      "/api/trpc": "http://localhost:3000",
+    },
     fs: {
       strict: true,
       deny: ["**/.*"],

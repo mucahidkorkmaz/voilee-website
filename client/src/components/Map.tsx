@@ -7,7 +7,7 @@
  * const mapRef = useRef<google.maps.Map | null>(null);
  *
  * <MapView
- *   initialCenter={{ lat: 40.7128, lng: -74.0060 }}
+ *   initialCenter={{ lat: 41.0082, lng: 28.9784 }}
  *   initialZoom={15}
  *   onMapReady={(map) => {
  *     mapRef.current = map; // Store to control map from parent anytime, google map itself is in charge of the re-rendering, not react state.
@@ -20,8 +20,8 @@
  * - Attaches to map using { map, position }
  * new google.maps.marker.AdvancedMarkerElement({
  *   map,
- *   position: { lat: 37.7749, lng: -122.4194 },
- *   title: "San Francisco",
+ *   position: { lat: 41.0082, lng: 28.9784 },
+ *   title: "İstanbul",
  * });
  *
  * -------------------------------
@@ -36,7 +36,7 @@
  * 🧭 GEOCODER (from `geocoding` library)
  * - Standalone service; manually apply results to map.
  * const geocoder = new google.maps.Geocoder();
- * geocoder.geocode({ address: "New York" }, (results, status) => {
+ * geocoder.geocode({ address: "İstanbul" }, (results, status) => {
  *   if (status === "OK" && results[0]) {
  *     map.setCenter(results[0].geometry.location);
  *     new google.maps.marker.AdvancedMarkerElement({
@@ -118,7 +118,7 @@ interface MapViewProps {
 
 export function MapView({
   className,
-  initialCenter = { lat: 37.7749, lng: -122.4194 },
+  initialCenter = { lat: 41.0082, lng: 28.9784 },
   initialZoom = 12,
   onMapReady,
 }: MapViewProps) {
@@ -138,7 +138,7 @@ export function MapView({
       fullscreenControl: true,
       zoomControl: true,
       streetViewControl: true,
-      mapId: "DEMO_MAP_ID",
+      mapId: import.meta.env.VITE_GOOGLE_MAP_ID ?? undefined,
     });
     if (onMapReady) {
       onMapReady(map.current);

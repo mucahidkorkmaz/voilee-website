@@ -25,9 +25,12 @@ export const orderStatusEnum = pgEnum("order_status", [
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
+  openId: varchar("openId", { length: 320 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
+  phone: varchar("phone", { length: 32 }),
+  passwordHash: varchar("passwordHash", { length: 255 }),
+  emailVerified: boolean("emailVerified").default(false).notNull(),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: roleEnum("role").default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -37,6 +40,42 @@ export const users = pgTable("users", {
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
+
+// ─── Silhouettes ──────────────────────────────────────────────────────────────
+
+export const silhouettes = pgTable("silhouettes", {
+  id: serial("id").primaryKey(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  nameTR: varchar("nameTR", { length: 255 }).notNull(),
+  nameEN: varchar("nameEN", { length: 255 }).notNull(),
+  nameAR: varchar("nameAR", { length: 255 }).notNull(),
+  imageUrl: varchar("imageUrl", { length: 500 }),
+  sortOrder: integer("sortOrder").default(0),
+  isActive: boolean("isActive").default(true),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Silhouette = typeof silhouettes.$inferSelect;
+export type InsertSilhouette = typeof silhouettes.$inferInsert;
+
+// ─── Categories ───────────────────────────────────────────────────────────────
+
+export const categories = pgTable("categories", {
+  id: serial("id").primaryKey(),
+  nameTR: varchar("nameTR", { length: 255 }).notNull(),
+  nameEN: varchar("nameEN", { length: 255 }).notNull(),
+  nameAR: varchar("nameAR", { length: 255 }).notNull(),
+  silhouetteId: integer("silhouetteId"),
+  imageUrl: varchar("imageUrl", { length: 500 }),
+  sortOrder: integer("sortOrder").default(0),
+  isActive: boolean("isActive").default(true),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Category = typeof categories.$inferSelect;
+export type InsertCategory = typeof categories.$inferInsert;
 
 // ─── Products ─────────────────────────────────────────────────────────────────
 
@@ -49,7 +88,9 @@ export const products = pgTable("products", {
   descriptionEN: text("descriptionEN"),
   descriptionAR: text("descriptionAR"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  collection: varchar("collection", { length: 100 }).notNull(),
+  collection: varchar("collection", { length: 100 }),
+  silhouetteId: integer("silhouetteId"),
+  categoryId: integer("categoryId"),
   imageUrl: varchar("imageUrl", { length: 500 }),
   stock: integer("stock").default(0),
   isActive: boolean("isActive").default(true),
@@ -116,3 +157,141 @@ export const newsletterSubscriptions = pgTable("newsletterSubscriptions", {
 
 export type NewsletterSubscription = typeof newsletterSubscriptions.$inferSelect;
 export type InsertNewsletterSubscription = typeof newsletterSubscriptions.$inferInsert;
+
+// ─── Collections ─────────────────────────────────────────────────────────────
+
+export const collections = pgTable("collections", {
+  id: serial("id").primaryKey(),
+  slug: varchar("slug", { length: 200 }).notNull().unique(),
+  nameTR: varchar("nameTR", { length: 255 }).notNull(),
+  nameEN: varchar("nameEN", { length: 255 }).notNull(),
+  nameAR: varchar("nameAR", { length: 255 }).notNull(),
+  descriptionTR: text("descriptionTR"),
+  descriptionEN: text("descriptionEN"),
+  descriptionAR: text("descriptionAR"),
+  imageUrl: varchar("imageUrl", { length: 500 }),
+  isActive: boolean("isActive").default(true),
+  sortOrder: integer("sortOrder").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Collection = typeof collections.$inferSelect;
+export type InsertCollection = typeof collections.$inferInsert;
+
+// ─── Media ────────────────────────────────────────────────────────────────────
+
+export const mediaItems = pgTable("mediaItems", {
+  id: serial("id").primaryKey(),
+  url: varchar("url", { length: 1000 }).notNull(),
+  filename: varchar("filename", { length: 255 }),
+  mimeType: varchar("mimeType", { length: 100 }),
+  sizeBytes: integer("sizeBytes"),
+  alt: varchar("alt", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MediaItem = typeof mediaItems.$inferSelect;
+export type InsertMediaItem = typeof mediaItems.$inferInsert;
+
+// ─── Discounts ────────────────────────────────────────────────────────────────
+
+export const discountTypeEnum = pgEnum("discount_type", ["percentage", "fixed"]);
+
+export const discounts = pgTable("discounts", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 100 }).notNull().unique(),
+  type: discountTypeEnum("type").notNull().default("percentage"),
+  value: decimal("value", { precision: 10, scale: 2 }).notNull(),
+  minOrderAmount: decimal("minOrderAmount", { precision: 10, scale: 2 }),
+  maxUses: integer("maxUses"),
+  usedCount: integer("usedCount").default(0),
+  isActive: boolean("isActive").default(true),
+  expiresAt: timestamp("expiresAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Discount = typeof discounts.$inferSelect;
+export type InsertDiscount = typeof discounts.$inferInsert;
+
+// ─── Webhooks ─────────────────────────────────────────────────────────────────
+
+export const webhookEventEnum = pgEnum("webhook_event", [
+  "order.created",
+  "order.updated",
+  "order.shipped",
+  "order.delivered",
+  "order.cancelled",
+  "product.created",
+  "product.updated",
+  "product.deleted",
+  "user.registered",
+]);
+
+export const webhooks = pgTable("webhooks", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  url: varchar("url", { length: 1000 }).notNull(),
+  event: webhookEventEnum("event").notNull(),
+  secret: varchar("secret", { length: 255 }),
+  isActive: boolean("isActive").default(true),
+  lastTriggeredAt: timestamp("lastTriggeredAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Webhook = typeof webhooks.$inferSelect;
+export type InsertWebhook = typeof webhooks.$inferInsert;
+
+// ─── CMS Pages ────────────────────────────────────────────────────────────────
+
+export const cmsPages = pgTable("cmsPages", {
+  id: serial("id").primaryKey(),
+  slug: varchar("slug", { length: 200 }).notNull().unique(),
+  titleTR: varchar("titleTR", { length: 255 }).notNull(),
+  titleEN: varchar("titleEN", { length: 255 }).notNull(),
+  titleAR: varchar("titleAR", { length: 255 }).notNull(),
+  contentTR: text("contentTR"),
+  contentEN: text("contentEN"),
+  contentAR: text("contentAR"),
+  isPublished: boolean("isPublished").default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type CmsPage = typeof cmsPages.$inferSelect;
+export type InsertCmsPage = typeof cmsPages.$inferInsert;
+
+// ─── Email Templates ──────────────────────────────────────────────────────────
+
+export const emailTemplates = pgTable("emailTemplates", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 100 }).notNull().unique(),
+  subject: varchar("subject", { length: 500 }),
+  body: text("body"),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type EmailTemplate = typeof emailTemplates.$inferSelect;
+export type InsertEmailTemplate = typeof emailTemplates.$inferInsert;
+
+// ─── Store Settings ────────────────────────────────────────────────────────────
+
+export const storeSettings = pgTable("storeSettings", {
+  id: serial("id").primaryKey(),
+  storeName: varchar("storeName", { length: 255 }).default("VOILÉE"),
+  storeEmail: varchar("storeEmail", { length: 320 }),
+  storePhone: varchar("storePhone", { length: 32 }),
+  storeAddress: text("storeAddress"),
+  instagramUrl: varchar("instagramUrl", { length: 500 }),
+  facebookUrl: varchar("facebookUrl", { length: 500 }),
+  twitterUrl: varchar("twitterUrl", { length: 500 }),
+  freeShippingThreshold: decimal("freeShippingThreshold", { precision: 10, scale: 2 }).default("500"),
+  shippingCostDomestic: decimal("shippingCostDomestic", { precision: 10, scale: 2 }).default("49.99"),
+  shippingCostInternational: decimal("shippingCostInternational", { precision: 10, scale: 2 }).default("199.99"),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type StoreSettings = typeof storeSettings.$inferSelect;
+export type InsertStoreSettings = typeof storeSettings.$inferInsert;

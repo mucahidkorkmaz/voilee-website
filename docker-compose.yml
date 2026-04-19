@@ -13,9 +13,12 @@ services:
       - voilee_pg_data:/var/lib/postgresql/data
     networks:
       - backend_net
-    # Postgres dış dünyaya kapalı — sadece backend_net üzerinden erişilir
+      - dev_access
     expose:
       - "5432"
+    # Lokal geliştirme için host'a port aç (dev_access üzerinden)
+    ports:
+      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-voilee}"]
       interval: 10s
@@ -69,6 +72,9 @@ networks:
     internal: true
   # Frontend ağ: nginx ↔ node
   frontend_net:
+    driver: bridge
+  # Lokal geliştirme: host'tan postgres'e erişim için
+  dev_access:
     driver: bridge
 
 volumes:

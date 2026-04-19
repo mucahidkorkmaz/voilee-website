@@ -328,7 +328,7 @@ export default function Checkout() {
               {tx.backHome}
             </Link>
             <Link
-              href={lang === "TR" ? "/siparislerim" : lang === "EN" ? "/en/orders" : "/ar/orders"}
+              href={lang === "TR" ? "/hesap/siparisler" : lang === "EN" ? "/en/hesap/siparisler" : "/ar/hesap/siparisler"}
               className="font-body text-xs tracking-[0.2em] uppercase border border-[#1C1C1E] text-[#1C1C1E] px-8 py-3 hover:bg-[#1C1C1E] hover:text-white transition-colors duration-300"
             >
               {lang === "TR" ? "Siparişlerim" : lang === "EN" ? "My Orders" : "طلباتي"}

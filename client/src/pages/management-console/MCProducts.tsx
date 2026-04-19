@@ -33,6 +33,8 @@ type ProductFormData = {
   descriptionEN: string;
   descriptionAR: string;
   price: string;
+  silhouetteId: number | null;
+  categoryId: number | null;
   collection: string;
   imageUrl: string;
   stock: number;
@@ -47,6 +49,8 @@ const emptyForm: ProductFormData = {
   descriptionEN: "",
   descriptionAR: "",
   price: "",
+  silhouetteId: null,
+  categoryId: null,
   collection: "",
   imageUrl: "",
   stock: 0,
@@ -56,6 +60,8 @@ const emptyForm: ProductFormData = {
 export default function MCProducts() {
   const utils = trpc.useUtils();
   const { data: products, isLoading, error } = trpc.admin.products.list.useQuery(undefined, { retry: false });
+  const { data: silhouettes } = trpc.admin.silhouettes.list.useQuery(undefined, { retry: false });
+  const { data: categories } = trpc.admin.categories.list.useQuery(undefined, { retry: false });
   const createMutation = trpc.admin.products.create.useMutation({
     onSuccess: () => {
       utils.admin.products.list.invalidate();
@@ -105,7 +111,9 @@ export default function MCProducts() {
       descriptionEN: product.descriptionEN ?? "",
       descriptionAR: product.descriptionAR ?? "",
       price: product.price,
-      collection: product.collection,
+      silhouetteId: product.silhouetteId ?? null,
+      categoryId: product.categoryId ?? null,
+      collection: product.collection ?? "",
       imageUrl: product.imageUrl ?? "",
       stock: product.stock ?? 0,
       isActive: product.isActive ?? true,
@@ -114,14 +122,22 @@ export default function MCProducts() {
   };
 
   const handleSubmit = () => {
-    if (!form.nameTR || !form.nameEN || !form.nameAR || !form.price || !form.collection) {
-      toast.error("Lütfen zorunlu alanları doldurun.");
+    if (!form.nameTR || !form.nameEN || !form.nameAR || !form.price) {
+      toast.error("Lütfen isim ve fiyat alanlarını doldurun.");
+      return;
+    }
+    if (!form.silhouetteId) {
+      toast.error("Lütfen bir silüet seçin.");
+      return;
+    }
+    if (!form.categoryId) {
+      toast.error("Lütfen bir kategori seçin.");
       return;
     }
     if (editingId !== null) {
       updateMutation.mutate({ id: editingId, ...form });
     } else {
-      createMutation.mutate(form);
+      createMutation.mutate({ ...form, collection: form.collection || "" });
     }
   };
 
@@ -176,7 +192,7 @@ export default function MCProducts() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border/40 bg-muted/20">
-                  {["İsim (TR)", "Koleksiyon", "Fiyat", "Stok", "Durum", ""].map(h => (
+                  {["İsim (TR)", "Silüet", "Kategori", "Fiyat", "Stok", "Durum", ""].map(h => (
                     <th
                       key={h}
                       className="text-left px-5 py-3 text-xs tracking-wider uppercase text-muted-foreground font-normal"
@@ -193,7 +209,12 @@ export default function MCProducts() {
                     className="border-b border-border/20 last:border-0 hover:bg-muted/20 transition-colors"
                   >
                     <td className="px-5 py-3.5 font-medium">{p.nameTR}</td>
-                    <td className="px-5 py-3.5 text-muted-foreground">{p.collection}</td>
+                    <td className="px-5 py-3.5 text-muted-foreground">
+                      {silhouettes?.find(s => s.id === p.silhouetteId)?.nameTR ?? "—"}
+                    </td>
+                    <td className="px-5 py-3.5 text-muted-foreground">
+                      {categories?.find(c => c.id === p.categoryId)?.nameTR ?? "—"}
+                    </td>
                     <td className="px-5 py-3.5">₺{Number(p.price).toFixed(2)}</td>
                     <td className="px-5 py-3.5">{p.stock}</td>
                     <td className="px-5 py-3.5">
@@ -269,12 +290,53 @@ export default function MCProducts() {
 
             <div className="space-y-1.5">
               <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
-                Koleksiyon *
+                Silüet *
+              </Label>
+              <select
+                value={form.silhouetteId ?? ""}
+                onChange={e => setForm(f => ({
+                  ...f,
+                  silhouetteId: e.target.value ? Number(e.target.value) : null,
+                  categoryId: null,
+                }))}
+                className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">Silüet seçin</option>
+                {silhouettes?.filter(s => s.isActive).map(s => (
+                  <option key={s.id} value={s.id}>{s.nameTR}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
+                Kategori *
+              </Label>
+              <select
+                value={form.categoryId ?? ""}
+                onChange={e => setForm(f => ({ ...f, categoryId: e.target.value ? Number(e.target.value) : null }))}
+                className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                disabled={!form.silhouetteId}
+              >
+                <option value="">
+                  {form.silhouetteId ? "Kategori seçin" : "Önce silüet seçin"}
+                </option>
+                {categories
+                  ?.filter(c => c.isActive)
+                  .map(c => (
+                    <option key={c.id} value={c.id}>{c.nameTR}</option>
+                  ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
+                Koleksiyon
               </Label>
               <Input
                 value={form.collection}
                 onChange={e => setForm(f => ({ ...f, collection: e.target.value }))}
-                placeholder="örn. Sonbahar 2025"
+                placeholder="örn. Sonbahar 2025 (opsiyonel)"
               />
             </div>
 

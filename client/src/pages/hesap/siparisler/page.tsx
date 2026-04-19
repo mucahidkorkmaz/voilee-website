@@ -1,11 +1,16 @@
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "wouter";
-import { Package, ChevronLeft, ShoppingBag, ChevronDown } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import { Link } from "wouter";
+import {
+  Package,
+  ShoppingBag,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
+import AccountLayout, { hesapUrls } from "../layout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOrders, type OrderHistoryEntry } from "@/contexts/OrdersContext";
+
+// ─── Translations ───────────────────────────────────────────────────────────────
 
 const t = {
   TR: {
@@ -13,9 +18,9 @@ const t = {
     title: "Sipariş Geçmişim",
     subtitle: "Geçmiş siparişlerinizi inceleyin ve durumlarını takip edin.",
     empty: "Henüz bir sipariş vermediniz.",
-    emptyDesc: "İlk siparişinizi vermek için koleksiyonlarımıza göz atabilirsiniz.",
+    emptyDesc:
+      "İlk siparişinizi vermek için koleksiyonlarımıza göz atabilirsiniz.",
     explore: "Alışverişe Başla",
-    backAccount: "Hesabıma Dön",
     orderNo: "Sipariş No",
     date: "Tarih",
     total: "Toplam",
@@ -23,11 +28,11 @@ const t = {
     status: "Durum",
     showMore: "Detayları Gör",
     showLess: "Detayları Gizle",
+    detail: "Sipariş Detayı",
     qty: "Adet",
     shippingTo: "Teslimat",
     countOne: "sipariş",
     countMany: "sipariş",
-    loginRequired: "Bu sayfayı görüntülemek için giriş yapmanız gerekir.",
     statuses: {
       pending: "Beklemede",
       confirmed: "Onaylandı",
@@ -44,7 +49,6 @@ const t = {
     empty: "You haven't placed any orders yet.",
     emptyDesc: "Browse our collections to place your first order.",
     explore: "Start Shopping",
-    backAccount: "Back to Account",
     orderNo: "Order No",
     date: "Date",
     total: "Total",
@@ -52,11 +56,11 @@ const t = {
     status: "Status",
     showMore: "Show Details",
     showLess: "Hide Details",
+    detail: "Order Detail",
     qty: "Qty",
     shippingTo: "Shipping",
     countOne: "order",
     countMany: "orders",
-    loginRequired: "Please sign in to view this page.",
     statuses: {
       pending: "Pending",
       confirmed: "Confirmed",
@@ -73,7 +77,6 @@ const t = {
     empty: "لم تقم بأي طلب بعد.",
     emptyDesc: "تصفح مجموعاتنا لإجراء طلبك الأول.",
     explore: "ابدأ التسوق",
-    backAccount: "العودة إلى الحساب",
     orderNo: "رقم الطلب",
     date: "التاريخ",
     total: "الإجمالي",
@@ -81,11 +84,11 @@ const t = {
     status: "الحالة",
     showMore: "عرض التفاصيل",
     showLess: "إخفاء التفاصيل",
+    detail: "تفاصيل الطلب",
     qty: "الكمية",
     shippingTo: "الشحن",
     countOne: "طلب",
     countMany: "طلبات",
-    loginRequired: "يرجى تسجيل الدخول لعرض هذه الصفحة.",
     statuses: {
       pending: "قيد الانتظار",
       confirmed: "مؤكّد",
@@ -96,11 +99,6 @@ const t = {
     },
   },
 };
-
-const accountLinks = { TR: "/hesabim", EN: "/en/account", AR: "/ar/account" };
-const collectionsLinks = { TR: "/koleksiyonlar", EN: "/en/collections", AR: "/ar/collections" };
-const loginLinks = { TR: "/giris", EN: "/en/login", AR: "/ar/login" };
-const ordersLinks = { TR: "/siparislerim", EN: "/en/orders", AR: "/ar/orders" };
 
 const localeMap = { TR: "tr-TR", EN: "en-US", AR: "ar-EG" } as const;
 
@@ -132,108 +130,82 @@ function statusTone(status: string) {
   }
 }
 
-export default function Orders() {
+// ─── Page ───────────────────────────────────────────────────────────────────────
+
+export default function SiparislerPage() {
   const { lang, isRTL } = useLanguage();
-  const { isAuthenticated, isLoading } = useAuth();
   const { orders } = useOrders();
-  const [, setLocation] = useLocation();
   const [expanded, setExpanded] = useState<string | null>(null);
   const tx = t[lang];
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      const redirect = encodeURIComponent(ordersLinks[lang]);
-      setLocation(`${loginLinks[lang]}?redirect=${redirect}`);
-    }
-  }, [isLoading, isAuthenticated, lang, setLocation]);
-
-  if (isLoading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-[#F7F3EC] flex flex-col" dir={isRTL ? "rtl" : "ltr"}>
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center px-4 pt-24">
-          <p className="font-body text-xs text-[#1C1C1E]/40 tracking-[0.2em] uppercase animate-pulse">
-            {isLoading ? "..." : tx.loginRequired}
-          </p>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
+  const u = hesapUrls[lang];
 
   return (
-    <div className="min-h-screen bg-[#F7F3EC] flex flex-col" dir={isRTL ? "rtl" : "ltr"}>
-      <Navbar />
-
-      <main className="flex-1 pt-28 pb-20">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link
-            href={accountLinks[lang]}
-            className="inline-flex items-center gap-2 font-body text-[11px] tracking-[0.2em] uppercase text-[#1C1C1E]/50 hover:text-[#C9A96E] transition-colors mb-8"
-          >
-            <ChevronLeft size={14} className={isRTL ? "rotate-180" : ""} />
-            {tx.backAccount}
-          </Link>
-
-          <div className="mb-10 lg:mb-14 flex items-end justify-between gap-6 flex-wrap">
-            <div>
-              <p className="font-body text-[11px] tracking-[0.3em] uppercase text-[#C9A96E] mb-3">
-                {tx.overline}
-              </p>
-              <h1 className="font-display text-3xl lg:text-4xl text-[#1C1C1E] leading-tight">
-                {tx.title}
-              </h1>
-              <p className="font-body text-sm text-[#1C1C1E]/60 mt-3 max-w-xl">
-                {tx.subtitle}
-              </p>
-            </div>
-            {orders.length > 0 && (
-              <span className="font-body text-xs tracking-[0.15em] uppercase text-[#1C1C1E]/40">
-                {orders.length} {orders.length === 1 ? tx.countOne : tx.countMany}
-              </span>
-            )}
-          </div>
-
-          {orders.length === 0 ? (
-            <div className="bg-white border border-[#C9A96E]/15 py-20 px-6 flex flex-col items-center text-center">
-              <div className="w-16 h-16 rounded-full bg-[#F7F3EC] border border-[#C9A96E]/20 flex items-center justify-center text-[#C9A96E] mb-6">
-                <Package size={22} strokeWidth={1.5} />
-              </div>
-              <h2 className="font-display text-2xl text-[#1C1C1E] mb-3">{tx.empty}</h2>
-              <p className="font-body text-sm text-[#1C1C1E]/55 max-w-md mb-8">{tx.emptyDesc}</p>
-              <Link
-                href={collectionsLinks[lang]}
-                className="font-body text-[11px] tracking-[0.25em] uppercase bg-[#1C1C1E] text-[#F7F3EC] px-8 py-3.5 hover:bg-[#C9A96E] transition-colors duration-300"
-              >
-                {tx.explore}
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {orders.map((order) => (
-                <OrderCard
-                  key={order.orderNumber}
-                  order={order}
-                  lang={lang}
-                  isRTL={isRTL}
-                  isExpanded={expanded === order.orderNumber}
-                  onToggle={() =>
-                    setExpanded((cur) =>
-                      cur === order.orderNumber ? null : order.orderNumber
-                    )
-                  }
-                  tx={tx}
-                />
-              ))}
-            </div>
-          )}
+    <AccountLayout>
+      {/* Header */}
+      <div className="mb-8 lg:mb-10 flex items-end justify-between gap-6 flex-wrap">
+        <div>
+          <p className="font-body text-[11px] tracking-[0.3em] uppercase text-[#C9A96E] mb-3">
+            {tx.overline}
+          </p>
+          <h1 className="font-display text-3xl lg:text-4xl text-[#1C1C1E] leading-tight">
+            {tx.title}
+          </h1>
+          <p className="font-body text-sm text-[#1C1C1E]/60 mt-3 max-w-xl">
+            {tx.subtitle}
+          </p>
         </div>
-      </main>
+        {orders.length > 0 && (
+          <span className="font-body text-xs tracking-[0.15em] uppercase text-[#1C1C1E]/40">
+            {orders.length}{" "}
+            {orders.length === 1 ? tx.countOne : tx.countMany}
+          </span>
+        )}
+      </div>
 
-      <Footer />
-    </div>
+      {/* Empty state */}
+      {orders.length === 0 ? (
+        <div className="bg-white border border-[#C9A96E]/15 py-20 px-6 flex flex-col items-center text-center">
+          <div className="w-16 h-16 rounded-full bg-[#F7F3EC] border border-[#C9A96E]/20 flex items-center justify-center text-[#C9A96E] mb-6">
+            <Package size={22} strokeWidth={1.5} />
+          </div>
+          <h2 className="font-display text-2xl text-[#1C1C1E] mb-3">
+            {tx.empty}
+          </h2>
+          <p className="font-body text-sm text-[#1C1C1E]/55 max-w-md mb-8">
+            {tx.emptyDesc}
+          </p>
+          <Link
+            href={u.koleksiyonlar}
+            className="font-body text-[11px] tracking-[0.25em] uppercase bg-[#1C1C1E] text-[#F7F3EC] px-8 py-3.5 hover:bg-[#C9A96E] transition-colors duration-300"
+          >
+            {tx.explore}
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {orders.map((order) => (
+            <OrderCard
+              key={order.orderNumber}
+              order={order}
+              lang={lang}
+              isRTL={isRTL}
+              isExpanded={expanded === order.orderNumber}
+              onToggle={() =>
+                setExpanded((cur) =>
+                  cur === order.orderNumber ? null : order.orderNumber
+                )
+              }
+              detailHref={u.siparis(order.orderNumber)}
+              tx={tx}
+            />
+          ))}
+        </div>
+      )}
+    </AccountLayout>
   );
 }
+
+// ─── Order Card ─────────────────────────────────────────────────────────────────
 
 function OrderCard({
   order,
@@ -241,6 +213,7 @@ function OrderCard({
   isRTL,
   isExpanded,
   onToggle,
+  detailHref,
   tx,
 }: {
   order: OrderHistoryEntry;
@@ -248,6 +221,7 @@ function OrderCard({
   isRTL: boolean;
   isExpanded: boolean;
   onToggle: () => void;
+  detailHref: string;
   tx: (typeof t)[keyof typeof t];
 }) {
   const statusKey = order.status as keyof typeof tx.statuses;
@@ -255,8 +229,12 @@ function OrderCard({
   const itemCount = order.items.reduce((sum, i) => sum + i.quantity, 0);
 
   return (
-    <div className="bg-white border border-[#C9A96E]/15">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 px-6 py-5 items-center border-b border-[#C9A96E]/10">
+    <div
+      className="bg-white border border-[#C9A96E]/15"
+      dir={isRTL ? "rtl" : "ltr"}
+    >
+      {/* Summary row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 px-5 py-4 items-center border-b border-[#C9A96E]/10">
         <Meta label={tx.orderNo} value={order.orderNumber} mono />
         <Meta label={tx.date} value={formatDate(order.createdAt, lang)} />
         <Meta
@@ -281,32 +259,47 @@ function OrderCard({
         </div>
       </div>
 
-      <div className="px-6 py-4 flex items-center justify-between gap-4">
-        <p className="font-body text-xs text-[#1C1C1E]/60">
+      {/* Actions row */}
+      <div className="px-5 py-3.5 flex items-center justify-between gap-4">
+        <p className="font-body text-xs text-[#1C1C1E]/55">
           {itemCount} {tx.items.toLowerCase()}
         </p>
-        <button
-          type="button"
-          onClick={onToggle}
-          className="inline-flex items-center gap-2 font-body text-[11px] tracking-[0.2em] uppercase text-[#1C1C1E]/70 hover:text-[#C9A96E] transition-colors"
-        >
-          {isExpanded ? tx.showLess : tx.showMore}
-          <ChevronDown
-            size={14}
-            className={`transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`}
-          />
-        </button>
+        <div className="flex items-center gap-4">
+          <Link
+            href={detailHref}
+            className="inline-flex items-center gap-1.5 font-body text-[11px] tracking-[0.2em] uppercase text-[#C9A96E] hover:text-[#1C1C1E] transition-colors"
+          >
+            {tx.detail}
+            <ChevronRight size={12} />
+          </Link>
+          <button
+            type="button"
+            onClick={onToggle}
+            className="inline-flex items-center gap-2 font-body text-[11px] tracking-[0.2em] uppercase text-[#1C1C1E]/55 hover:text-[#C9A96E] transition-colors"
+          >
+            {isExpanded ? tx.showLess : tx.showMore}
+            <ChevronDown
+              size={13}
+              className={`transition-transform duration-300 ${
+                isExpanded ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
+      {/* Expanded items */}
       {isExpanded && (
-        <div className="px-6 pb-6 border-t border-[#C9A96E]/10 pt-5 space-y-5">
+        <div className="px-5 pb-5 border-t border-[#C9A96E]/10 pt-4 space-y-4">
           <ul className="space-y-3">
             {order.items.map((item, idx) => (
               <li
                 key={`${item.productId ?? "x"}-${idx}`}
-                className={`flex items-center gap-4 ${isRTL ? "flex-row-reverse text-right" : ""}`}
+                className={`flex items-center gap-3 ${
+                  isRTL ? "flex-row-reverse text-right" : ""
+                }`}
               >
-                <div className="w-12 h-14 bg-[#E8E0D5] flex-shrink-0 overflow-hidden">
+                <div className="w-11 h-13 bg-[#E8E0D5] flex-shrink-0 overflow-hidden">
                   {item.imageUrl ? (
                     <img
                       src={item.imageUrl}
@@ -315,7 +308,7 @@ function OrderCard({
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-[#C9A96E]/40">
-                      <ShoppingBag size={14} />
+                      <ShoppingBag size={13} />
                     </div>
                   )}
                 </div>
@@ -328,7 +321,8 @@ function OrderCard({
                   </p>
                 </div>
                 <p className="font-body text-sm text-[#1C1C1E] font-medium flex-shrink-0">
-                  ₺{(item.price * item.quantity).toLocaleString("tr-TR", {
+                  ₺
+                  {(item.price * item.quantity).toLocaleString("tr-TR", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
@@ -336,14 +330,15 @@ function OrderCard({
               </li>
             ))}
           </ul>
-
           {(order.shippingAddress || order.shippingCity) && (
-            <div className="pt-4 border-t border-[#C9A96E]/10">
+            <div className="pt-3 border-t border-[#C9A96E]/10">
               <p className="font-body text-[10px] tracking-[0.2em] uppercase text-[#1C1C1E]/40 mb-1.5">
                 {tx.shippingTo}
               </p>
               <p className="font-body text-sm text-[#1C1C1E]/75">
-                {[order.shippingAddress, order.shippingCity].filter(Boolean).join(", ")}
+                {[order.shippingAddress, order.shippingCity]
+                  .filter(Boolean)
+                  .join(", ")}
               </p>
             </div>
           )}

@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
-import { X, Check, ArrowRight, ShoppingBag, RotateCcw, ChevronDown } from "lucide-react";
+import { X, Check, ArrowRight, ShoppingBag, RotateCcw, ChevronDown, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { api, type Silhouette as APISilhouette } from "@/lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -31,196 +32,16 @@ interface Silhouette {
   completedImages: string[];
 }
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const PLACEHOLDER = "https://placehold.co/400x560/E8E0D5/8B7D6B?text=VOIL%C3%89E";
-const PLACEHOLDER_COMBO = "https://placehold.co/600x800/E8E0D5/8B7D6B?text=Look";
-
-const silhouettes: Silhouette[] = [
-  {
-    id: "origine",
-    name: "Origine",
-    tagline: "Köklere dönüş",
-    coverImage:
-      "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_cdn_origine_57e73407.webp",
-    categories: [
-      {
-        id: "abaya",
-        labelTR: "Abaya",
-        labelEN: "Abaya",
-        products: [
-          { id: "or-a1", nameTR: "Origine Classic Abaya", nameEN: "Origine Classic Abaya", price: 2490, image: PLACEHOLDER },
-          { id: "or-a2", nameTR: "Origine Saten Abaya", nameEN: "Origine Satin Abaya", price: 2890, image: PLACEHOLDER },
-          { id: "or-a3", nameTR: "Origine İpek Abaya", nameEN: "Origine Silk Abaya", price: 3290, image: PLACEHOLDER },
-        ],
-      },
-      {
-        id: "esarp",
-        labelTR: "Eşarp",
-        labelEN: "Scarf",
-        products: [
-          { id: "or-s1", nameTR: "Origine İpek Eşarp", nameEN: "Origine Silk Scarf", price: 890, image: PLACEHOLDER },
-          { id: "or-s2", nameTR: "Origine Pamuklu Eşarp", nameEN: "Origine Cotton Scarf", price: 590, image: PLACEHOLDER },
-        ],
-      },
-      {
-        id: "ferace",
-        labelTR: "Ferace",
-        labelEN: "Ferace",
-        products: [
-          { id: "or-f1", nameTR: "Origine Krep Ferace", nameEN: "Origine Crepe Ferace", price: 1890, image: PLACEHOLDER },
-          { id: "or-f2", nameTR: "Origine Saten Ferace", nameEN: "Origine Satin Ferace", price: 2190, image: PLACEHOLDER },
-        ],
-      },
-      {
-        id: "aksesuar",
-        labelTR: "Aksesuar",
-        labelEN: "Accessory",
-        products: [
-          { id: "or-ak1", nameTR: "Origine Broş", nameEN: "Origine Brooch", price: 490, image: PLACEHOLDER },
-          { id: "or-ak2", nameTR: "Origine Kemer", nameEN: "Origine Belt", price: 690, image: PLACEHOLDER },
-        ],
-      },
-    ],
-    completedImages: [PLACEHOLDER_COMBO, PLACEHOLDER_COMBO],
-  },
-  {
-    id: "epure",
-    name: "Épure",
-    tagline: "Saf zarafet",
-    coverImage:
-      "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_cdn_epure_2d5aaf15.webp",
-    categories: [
-      {
-        id: "abaya",
-        labelTR: "Abaya",
-        labelEN: "Abaya",
-        products: [
-          { id: "ep-a1", nameTR: "Épure Minimal Abaya", nameEN: "Épure Minimal Abaya", price: 2990, image: PLACEHOLDER },
-          { id: "ep-a2", nameTR: "Épure Asimetrik Abaya", nameEN: "Épure Asymmetric Abaya", price: 3490, image: PLACEHOLDER },
-        ],
-      },
-      {
-        id: "esarp",
-        labelTR: "Eşarp",
-        labelEN: "Scarf",
-        products: [
-          { id: "ep-s1", nameTR: "Épure Modal Eşarp", nameEN: "Épure Modal Scarf", price: 750, image: PLACEHOLDER },
-          { id: "ep-s2", nameTR: "Épure Şifon Eşarp", nameEN: "Épure Chiffon Scarf", price: 650, image: PLACEHOLDER },
-        ],
-      },
-      {
-        id: "ferace",
-        labelTR: "Ferace",
-        labelEN: "Ferace",
-        products: [
-          { id: "ep-f1", nameTR: "Épure Geometrik Ferace", nameEN: "Épure Geometric Ferace", price: 2290, image: PLACEHOLDER },
-        ],
-      },
-      {
-        id: "aksesuar",
-        labelTR: "Aksesuar",
-        labelEN: "Accessory",
-        products: [
-          { id: "ep-ak1", nameTR: "Épure Minimal Broş", nameEN: "Épure Minimal Brooch", price: 390, image: PLACEHOLDER },
-        ],
-      },
-    ],
-    completedImages: [PLACEHOLDER_COMBO, PLACEHOLDER_COMBO],
-  },
-  {
-    id: "elegance",
-    name: "Élégance",
-    tagline: "Zamansız incelik",
-    coverImage:
-      "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_cdn_heritage_1a6b4b02.webp",
-    categories: [
-      {
-        id: "abaya",
-        labelTR: "Abaya",
-        labelEN: "Abaya",
-        products: [
-          { id: "el-a1", nameTR: "Élégance Kadife Abaya", nameEN: "Élégance Velvet Abaya", price: 4290, image: PLACEHOLDER },
-          { id: "el-a2", nameTR: "Élégance Dantel Abaya", nameEN: "Élégance Lace Abaya", price: 3890, image: PLACEHOLDER },
-          { id: "el-a3", nameTR: "Élégance Organze Abaya", nameEN: "Élégance Organza Abaya", price: 4690, image: PLACEHOLDER },
-        ],
-      },
-      {
-        id: "esarp",
-        labelTR: "Eşarp",
-        labelEN: "Scarf",
-        products: [
-          { id: "el-s1", nameTR: "Élégance Kadife Eşarp", nameEN: "Élégance Velvet Scarf", price: 1190, image: PLACEHOLDER },
-          { id: "el-s2", nameTR: "Élégance İpek Eşarp", nameEN: "Élégance Silk Scarf", price: 990, image: PLACEHOLDER },
-        ],
-      },
-      {
-        id: "ferace",
-        labelTR: "Ferace",
-        labelEN: "Ferace",
-        products: [
-          { id: "el-f1", nameTR: "Élégance Organze Ferace", nameEN: "Élégance Organza Ferace", price: 2890, image: PLACEHOLDER },
-          { id: "el-f2", nameTR: "Élégance Kadife Ferace", nameEN: "Élégance Velvet Ferace", price: 3190, image: PLACEHOLDER },
-        ],
-      },
-      {
-        id: "aksesuar",
-        labelTR: "Aksesuar",
-        labelEN: "Accessory",
-        products: [
-          { id: "el-ak1", nameTR: "Élégance Mücevher Broş", nameEN: "Élégance Jewel Brooch", price: 890, image: PLACEHOLDER },
-          { id: "el-ak2", nameTR: "Élégance Altın Kemer", nameEN: "Élégance Gold Belt", price: 990, image: PLACEHOLDER },
-        ],
-      },
-    ],
-    completedImages: [PLACEHOLDER_COMBO, PLACEHOLDER_COMBO],
-  },
-  {
-    id: "lumiere",
-    name: "Lumière",
-    tagline: "Işığın dansı",
-    coverImage:
-      "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_cdn_mouvement_7b7c4f3e.webp",
-    categories: [
-      {
-        id: "abaya",
-        labelTR: "Abaya",
-        labelEN: "Abaya",
-        products: [
-          { id: "lu-a1", nameTR: "Lumière Şifon Abaya", nameEN: "Lumière Chiffon Abaya", price: 3190, image: PLACEHOLDER },
-          { id: "lu-a2", nameTR: "Lumière Işıltılı Abaya", nameEN: "Lumière Shimmer Abaya", price: 3690, image: PLACEHOLDER },
-        ],
-      },
-      {
-        id: "esarp",
-        labelTR: "Eşarp",
-        labelEN: "Scarf",
-        products: [
-          { id: "lu-s1", nameTR: "Lumière Kristal Eşarp", nameEN: "Lumière Crystal Scarf", price: 1390, image: PLACEHOLDER },
-          { id: "lu-s2", nameTR: "Lumière Şifon Eşarp", nameEN: "Lumière Chiffon Scarf", price: 890, image: PLACEHOLDER },
-        ],
-      },
-      {
-        id: "ferace",
-        labelTR: "Ferace",
-        labelEN: "Ferace",
-        products: [
-          { id: "lu-f1", nameTR: "Lumière Şifon Ferace", nameEN: "Lumière Chiffon Ferace", price: 2490, image: PLACEHOLDER },
-        ],
-      },
-      {
-        id: "aksesuar",
-        labelTR: "Aksesuar",
-        labelEN: "Accessory",
-        products: [
-          { id: "lu-ak1", nameTR: "Lumière Kristal Toka", nameEN: "Lumière Crystal Clasp", price: 590, image: PLACEHOLDER },
-          { id: "lu-ak2", nameTR: "Lumière İnci Broş", nameEN: "Lumière Pearl Brooch", price: 790, image: PLACEHOLDER },
-        ],
-      },
-    ],
-    completedImages: [PLACEHOLDER_COMBO, PLACEHOLDER_COMBO],
-  },
-];
+function apiSilhouetteToLocal(s: APISilhouette): Silhouette {
+  return {
+    id: String(s.id),
+    name: s.name,
+    tagline: s.slug,
+    coverImage: s.imageUrl ?? "",
+    categories: [],
+    completedImages: [],
+  };
+}
 
 // ─── Mannequin SVG ─────────────────────────────────────────────────────────────
 
@@ -259,9 +80,11 @@ interface SilhouettePickerProps {
   onSelect: (s: Silhouette) => void;
   onClose: () => void;
   lang: string;
+  silhouettes: Silhouette[];
+  loading?: boolean;
 }
 
-function SilhouettePicker({ current, onSelect, onClose, lang }: SilhouettePickerProps) {
+function SilhouettePicker({ current, onSelect, onClose, lang, silhouettes, loading }: SilhouettePickerProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -318,50 +141,78 @@ function SilhouettePicker({ current, onSelect, onClose, lang }: SilhouettePicker
 
         {/* Grid */}
         <div className="overflow-y-auto p-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {silhouettes.map((s) => {
-              const isActive = current?.id === s.id;
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => onSelect(s)}
-                  className={`group relative overflow-hidden border-2 transition-all duration-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A96E] ${
-                    isActive ? "border-[#C9A96E]" : "border-transparent hover:border-[#C9A96E]/40"
-                  }`}
-                  aria-pressed={isActive}
-                  aria-label={`${s.name} — ${s.tagline}`}
-                >
-                  {/* Image */}
-                  <div className="aspect-[3/4] overflow-hidden">
-                    <img
-                      src={s.coverImage}
-                      alt={s.name}
-                      className="w-full h-full object-cover transition-transform duration-600 group-hover:scale-105"
-                    />
-                  </div>
-                  {/* Overlay */}
-                  <div
-                    className={`absolute inset-0 flex flex-col justify-end p-4 transition-all duration-300 ${
-                      isActive
-                        ? "bg-gradient-to-t from-[#1C1C1E]/85 via-[#1C1C1E]/20 to-transparent"
-                        : "bg-gradient-to-t from-[#1C1C1E]/60 via-transparent to-transparent"
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 size={28} className="animate-spin text-[#C9A96E]" />
+            </div>
+          ) : silhouettes.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="font-body text-sm text-[#1C1C1E]/40 tracking-widest">
+                {lang === "TR" ? "Henüz silüet bulunmuyor." : "No silhouettes found."}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {silhouettes.map((s) => {
+                const isActive = current?.id === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => onSelect(s)}
+                    className={`group relative overflow-hidden border-2 transition-all duration-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A96E] ${
+                      isActive ? "border-[#C9A96E]" : "border-transparent hover:border-[#C9A96E]/40"
                     }`}
+                    aria-pressed={isActive}
+                    aria-label={`${s.name} — ${s.tagline}`}
                   >
-                    <p className="font-display text-white text-xl leading-tight">{s.name}</p>
-                    <p className="font-body text-white/60 text-[9px] tracking-[0.12em] uppercase mt-0.5">
-                      {s.tagline}
-                    </p>
-                  </div>
-                  {/* Active check */}
-                  {isActive && (
-                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-[#C9A96E] flex items-center justify-center">
-                      <Check size={12} className="text-white" />
+                    {/* Image */}
+                    <div className="aspect-[3/4] overflow-hidden bg-[#E8E0D5]">
+                      {s.coverImage ? (
+                        <img
+                          src={s.coverImage}
+                          alt={s.name}
+                          className="w-full h-full object-cover transition-transform duration-600 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[#C9A96E]/30">
+                          <svg viewBox="0 0 80 120" className="w-16 h-16" fill="currentColor">
+                            <ellipse cx="40" cy="14" rx="10" ry="11" opacity="0.7" />
+                            <rect x="36" y="23" width="8" height="8" rx="2" opacity="0.5" />
+                            <path d="M18 38 Q40 30 62 38" stroke="currentColor" strokeWidth="1" fill="none" opacity="0.6" />
+                            <path d="M22 38 L18 78 Q40 84 62 78 L58 38 Q40 44 22 38Z" opacity="0.25" />
+                            <path d="M22 38 L18 78 Q40 84 62 78 L58 38 Q40 44 22 38Z" stroke="currentColor" strokeWidth="0.8" fill="none" opacity="0.6" />
+                            <path d="M22 39 Q12 55 14 78" stroke="currentColor" strokeWidth="6" strokeLinecap="round" opacity="0.25" />
+                            <path d="M58 39 Q68 55 66 78" stroke="currentColor" strokeWidth="6" strokeLinecap="round" opacity="0.25" />
+                            <path d="M26 80 Q20 110 18 118 Q40 122 62 118 Q60 110 54 80 Q40 86 26 80Z" opacity="0.2" />
+                            <path d="M26 80 Q20 110 18 118 Q40 122 62 118 Q60 110 54 80 Q40 86 26 80Z" stroke="currentColor" strokeWidth="0.8" fill="none" opacity="0.5" />
+                          </svg>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                    {/* Overlay */}
+                    <div
+                      className={`absolute inset-0 flex flex-col justify-end p-4 transition-all duration-300 ${
+                        isActive
+                          ? "bg-gradient-to-t from-[#1C1C1E]/85 via-[#1C1C1E]/20 to-transparent"
+                          : "bg-gradient-to-t from-[#1C1C1E]/60 via-transparent to-transparent"
+                      }`}
+                    >
+                      <p className="font-display text-white text-xl leading-tight">{s.name}</p>
+                      <p className="font-body text-white/60 text-[9px] tracking-[0.12em] uppercase mt-0.5">
+                        {s.tagline}
+                      </p>
+                    </div>
+                    {/* Active check */}
+                    {isActive && (
+                      <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-[#C9A96E] flex items-center justify-center">
+                        <Check size={12} className="text-white" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -516,11 +367,34 @@ export default function SilhouetteBuilder() {
   const { lang } = useLanguage();
   const { addToCart, openCart } = useCart();
 
+  const [silhouettes, setSilhouettes] = useState<Silhouette[]>([]);
+  const [silhouettesLoading, setSilhouettesLoading] = useState(true);
   const [selectedSilhouette, setSelectedSilhouette] = useState<Silhouette | null>(null);
-  const [showSilhouettePicker, setShowSilhouettePicker] = useState(true);
+  const [showSilhouettePicker, setShowSilhouettePicker] = useState(false);
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
   const [selections, setSelections] = useState<Record<string, Product>>({});
   const [phase, setPhase] = useState<"builder" | "result">("builder");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const silhouetteParam = params.get("silhouette");
+
+    setSilhouettesLoading(true);
+    api.getSilhouettes()
+      .then((res) => {
+        const mapped = res.data.map(apiSilhouetteToLocal);
+        setSilhouettes(mapped);
+        if (silhouetteParam) {
+          const match = mapped.find((s) => s.id === silhouetteParam);
+          if (match) {
+            setSelectedSilhouette(match);
+            return;
+          }
+        }
+      })
+      .catch(console.error)
+      .finally(() => setSilhouettesLoading(false));
+  }, []);
 
   const hasSelections = Object.keys(selections).length > 0;
   const canComplete = hasSelections;
@@ -805,6 +679,8 @@ export default function SilhouetteBuilder() {
           onSelect={handleSelectSilhouette}
           onClose={() => setShowSilhouettePicker(false)}
           lang={lang}
+          silhouettes={silhouettes}
+          loading={silhouettesLoading}
         />
       )}
 

@@ -6,7 +6,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertCircle } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { AlertCircle, Eye } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
@@ -29,9 +36,104 @@ const statusColors: Record<OrderStatus, string> = {
   cancelled: "bg-red-100 text-red-700",
 };
 
+function OrderDetailDialog({ orderId, open, onClose }: { orderId: number | null; open: boolean; onClose: () => void }) {
+  const { data: order, isLoading } = trpc.admin.orders.detail.useQuery(
+    { id: orderId! },
+    { enabled: !!orderId && open, retry: false },
+  );
+
+  return (
+    <Dialog open={open} onOpenChange={v => !v && onClose()}>
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="font-['Cormorant_Garamond'] text-2xl font-light">
+            Sipariş Detayı
+          </DialogTitle>
+        </DialogHeader>
+
+        {isLoading ? (
+          <div className="space-y-3 py-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-10 bg-muted animate-pulse rounded" />
+            ))}
+          </div>
+        ) : !order ? (
+          <p className="text-sm text-muted-foreground py-4">Sipariş bulunamadı.</p>
+        ) : (
+          <div className="space-y-5 py-2">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-xs tracking-wider uppercase text-muted-foreground font-light mb-1">Sipariş No</p>
+                <p className="font-mono text-xs">{order.orderNumber}</p>
+              </div>
+              <div>
+                <p className="text-xs tracking-wider uppercase text-muted-foreground font-light mb-1">Toplam</p>
+                <p className="font-medium">₺{Number(order.totalPrice).toFixed(2)}</p>
+              </div>
+              <div>
+                <p className="text-xs tracking-wider uppercase text-muted-foreground font-light mb-1">Durum</p>
+                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusColors[order.status as OrderStatus ?? "pending"]}`}>
+                  {statusLabels[order.status as OrderStatus ?? "pending"]}
+                </span>
+              </div>
+              <div>
+                <p className="text-xs tracking-wider uppercase text-muted-foreground font-light mb-1">Tarih</p>
+                <p className="text-muted-foreground">{new Date(order.createdAt).toLocaleDateString("tr-TR")}</p>
+              </div>
+              {order.shippingAddress && (
+                <div className="col-span-2">
+                  <p className="text-xs tracking-wider uppercase text-muted-foreground font-light mb-1">Teslimat Adresi</p>
+                  <p className="text-sm text-muted-foreground whitespace-pre-line">{order.shippingAddress}</p>
+                </div>
+              )}
+              {order.trackingNumber && (
+                <div className="col-span-2">
+                  <p className="text-xs tracking-wider uppercase text-muted-foreground font-light mb-1">Takip No</p>
+                  <p className="font-mono text-xs">{order.trackingNumber}</p>
+                </div>
+              )}
+            </div>
+
+            {order.items?.length > 0 && (
+              <div>
+                <p className="text-xs tracking-wider uppercase text-muted-foreground font-light mb-3">Ürünler</p>
+                <div className="space-y-2">
+                  {order.items.map(item => (
+                    <div key={item.id} className="flex items-center gap-3 py-2 border-b border-border/30 last:border-0">
+                      {item.productImageUrl ? (
+                        <img
+                          src={item.productImageUrl}
+                          alt={item.productNameTR ?? ""}
+                          className="h-12 w-10 object-cover rounded border border-border/30 shrink-0"
+                        />
+                      ) : (
+                        <div className="h-12 w-10 bg-muted rounded border border-border/30 shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{item.productNameTR ?? "—"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {item.quantity} adet × ₺{Number(item.price).toFixed(2)}
+                        </p>
+                      </div>
+                      <p className="text-sm font-medium shrink-0">
+                        ₺{(Number(item.price) * item.quantity).toFixed(2)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function MCOrders() {
   const utils = trpc.useUtils();
   const { data: orders, isLoading, error } = trpc.admin.orders.list.useQuery(undefined, { retry: false });
+  const [detailId, setDetailId] = useState<number | null>(null);
   const updateStatus = trpc.admin.orders.updateStatus.useMutation({
     onSuccess: () => {
       utils.admin.orders.list.invalidate();
@@ -43,6 +145,12 @@ export default function MCOrders() {
 
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-6xl">
+      <OrderDetailDialog
+        orderId={detailId}
+        open={detailId !== null}
+        onClose={() => setDetailId(null)}
+      />
+
       <div>
         <p className="text-xs tracking-[0.25em] uppercase text-muted-foreground font-light">
           Sipariş Yönetimi
@@ -84,7 +192,7 @@ export default function MCOrders() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border/40 bg-muted/20">
-                  {["Sipariş No", "Toplam", "Ülke", "Takip No", "Durum", "Tarih"].map(h => (
+                  {["Sipariş No", "Toplam", "Ülke", "Takip No", "Durum", "Tarih", ""].map(h => (
                     <th
                       key={h}
                       className="text-left px-5 py-3 text-xs tracking-wider uppercase text-muted-foreground font-normal whitespace-nowrap"
@@ -142,6 +250,15 @@ export default function MCOrders() {
                     </td>
                     <td className="px-5 py-3.5 text-muted-foreground whitespace-nowrap">
                       {new Date(order.createdAt).toLocaleDateString("tr-TR")}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <button
+                        onClick={() => setDetailId(order.id)}
+                        className="p-1.5 hover:bg-muted rounded transition-colors text-muted-foreground hover:text-foreground"
+                        title="Detayları görüntüle"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </button>
                     </td>
                   </tr>
                 ))}

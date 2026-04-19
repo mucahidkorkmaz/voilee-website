@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, MessageCircle, Clock, MapPin, Send } from "lucide-react";
+import { Mail, Clock, MapPin, Send } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -60,20 +60,7 @@ export default function Contact() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-[#C9A96E]/10 flex items-center justify-center shrink-0">
-                    <MessageCircle size={18} className="text-[#C9A96E]" />
-                  </div>
-                  <div>
-                    <p className="font-body text-xs tracking-[0.15em] uppercase text-[#1C1C1E]/40 mb-1">WhatsApp</p>
-                    <a href="https://wa.me/905000000000" target="_blank" rel="noopener noreferrer" className="font-body text-sm text-[#1C1C1E] hover:text-[#C9A96E] transition-colors">
-                      +90 500 000 00 00
-                    </a>
-                    <p className="font-body text-xs text-[#1C1C1E]/40 mt-1">
-                      {getText("Hızlı yanıt için tercih edin", "Preferred for quick response", "Preferred for quick response")}
-                    </p>
-                  </div>
-                </div>
+                {/* WhatsApp numarası buraya eklenecek */}
 
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 bg-[#C9A96E]/10 flex items-center justify-center shrink-0">

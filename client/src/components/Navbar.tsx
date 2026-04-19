@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, X, ShoppingBag, Search, Heart, User as UserIcon, LogOut, Package } from "lucide-react";
+import { Menu, X, ShoppingBag, Heart, User as UserIcon, LogOut, Package, ChevronDown, Globe } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,26 +11,20 @@ const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJ
 const getNavLinks = (lang: "TR" | "EN" | "AR") => {
   const baseLinks = {
     TR: [
-      { href: "/olustur", label: "Silüet Oluştur" },
-      { href: "/hakkimizda", label: "Hakkımızda" },
-      { href: "/hikayemiz", label: "Hikayemiz" },
-      { href: "/surdurulebilirlik", label: "Sürdürülebilirlik" },
+      { href: "/koleksiyonlar", label: "Silüet" },
+      { href: "/lookbook", label: "Lookbook" },
       { href: "/journal", label: "Journal" },
       { href: "/iletisim", label: "İletişim" },
     ],
     EN: [
-      { href: "/en/builder", label: "Silhouette Builder" },
-      { href: "/en/about", label: "About" },
-      { href: "/en/story", label: "Our Story" },
-      { href: "/en/sustainability", label: "Sustainability" },
+      { href: "/koleksiyonlar", label: "Silhouette" },
+      { href: "/en/lookbook", label: "Lookbook" },
       { href: "/en/journal", label: "Journal" },
       { href: "/en/contact", label: "Contact" },
     ],
     AR: [
-      { href: "/ar/builder", label: "منشئ الصورة الظلية" },
-      { href: "/ar/about", label: "من نحن" },
-      { href: "/ar/story", label: "قصتنا" },
-      { href: "/ar/sustainability", label: "الاستدامة" },
+      { href: "/koleksiyonlar", label: "الصورة الظلية" },
+      { href: "/ar/lookbook", label: "Lookbook" },
       { href: "/ar/journal", label: "مجلة" },
       { href: "/ar/contact", label: "اتصل بنا" },
     ],
@@ -42,6 +36,8 @@ export default function Navbar() {
   const { lang, setLang, isRTL } = useLanguage();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const langDropdownRef = useRef<HTMLDivElement>(null);
   const [location] = useLocation();
   const isHome = location === "/" || location === "/en" || location === "/ar";
 
@@ -54,16 +50,44 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (langDropdownRef.current && !langDropdownRef.current.contains(e.target as Node)) {
+        setLangDropdownOpen(false);
+      }
+    };
+    if (langDropdownOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [langDropdownOpen]);
+
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
+
+  useEffect(() => {
+    if (isLangSwitch.current) {
+      isLangSwitch.current = false;
+      return;
+    }
     setMobileOpen(false);
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, [location]);
 
   const isTransparent = isHome && !isScrolled && !mobileOpen;
   const navLinks = getNavLinks(lang);
 
+  const [, setLocationNav] = useLocation();
+  const isLangSwitch = useRef(false);
+
   const handleLanguageChange = (newLang: "TR" | "EN" | "AR") => {
+    isLangSwitch.current = true;
     setLang(newLang);
-    const pathPrefix = newLang === "TR" ? "" : `/${newLang.toLowerCase()}`;
-    window.location.href = pathPrefix + "/";
+    const dest = newLang === "TR" ? "/" : `/${newLang.toLowerCase()}`;
+    setLocationNav(dest);
   };
 
   return (
@@ -77,10 +101,10 @@ export default function Navbar() {
         dir={isRTL ? "rtl" : "ltr"}
       >
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-20">
+          <div className="flex items-center h-16 lg:h-20">
             {/* Left: Nav Links (Desktop) */}
-            <div className={`hidden lg:flex items-center ${isRTL ? "flex-row-reverse" : ""} gap-8`}>
-              {navLinks.slice(0, 3).map((link) => (
+            <div className="hidden lg:flex items-center gap-8 flex-1">
+              {navLinks.slice(0, Math.ceil(navLinks.length / 2)).map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
@@ -95,8 +119,8 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* Center: Logo */}
-            <div className="flex-1 lg:flex-none flex justify-center lg:justify-center">
+            {/* Center: Logo (desktop only — mobile has its own) */}
+            <div className="hidden lg:flex justify-center lg:flex-none">
               <Link href={lang === "TR" ? "/" : `/${lang.toLowerCase()}`}>
                 <img
                   src={LOGO_URL}
@@ -109,8 +133,8 @@ export default function Navbar() {
             </div>
 
             {/* Right: Nav Links + Icons (Desktop) */}
-            <div className={`hidden lg:flex items-center ${isRTL ? "flex-row-reverse" : ""} gap-8`}>
-              {navLinks.slice(3).map((link) => (
+            <div className="hidden lg:flex items-center justify-end gap-8 flex-1">
+              {navLinks.slice(Math.ceil(navLinks.length / 2)).map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
@@ -123,64 +147,69 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
-              <div className={`flex items-center ${isRTL ? "flex-row-reverse" : ""} gap-4 ml-4 pl-4 border-l border-current/20`}>
-                <div className="flex items-center gap-2">
-                  {["TR", "EN", "AR"].map((l) => (
-                    <button
-                      key={l}
-                      onClick={() => handleLanguageChange(l as "TR" | "EN" | "AR")}
-                      className={`font-body text-xs tracking-[0.1em] uppercase transition-colors duration-300 ${
-                        lang === l
-                          ? isTransparent
-                            ? "text-white font-semibold"
-                            : "text-[#C9A96E] font-semibold"
-                          : isTransparent
-                          ? "text-white/60 hover:text-white"
-                          : "text-[#1C1C1E]/40 hover:text-[#1C1C1E]/60"
-                      }`}
-                    >
-                      {l}
-                    </button>
-                  ))}
+              <div className="flex items-center gap-4 ms-4 ps-4 border-s border-current/20">
+                {/* Language Dropdown */}
+                <div ref={langDropdownRef} className="relative">
+                  <button
+                    onClick={() => setLangDropdownOpen((v) => !v)}
+                    className={`flex items-center gap-1 font-body text-xs tracking-[0.1em] uppercase transition-colors duration-300 ${
+                      isTransparent
+                        ? "text-white/90 hover:text-white"
+                        : "text-[#1C1C1E]/70 hover:text-[#1C1C1E]"
+                    }`}
+                  >
+                    {lang}
+                    <ChevronDown
+                      size={12}
+                      className={`transition-transform duration-200 ${langDropdownOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  {langDropdownOpen && (
+                    <div className={`absolute z-50 mt-2 py-1 min-w-[60px] bg-[#F7F3EC] border border-[#C9A96E]/20 shadow-lg ${isRTL ? "left-0" : "right-0"}`}>
+                      {(["TR", "EN", "AR"] as const).filter((l) => l !== lang).map((l) => (
+                        <button
+                          key={l}
+                          onClick={() => {
+                            setLangDropdownOpen(false);
+                            handleLanguageChange(l);
+                          }}
+                          className="w-full text-left px-3 py-2 font-body text-xs tracking-[0.1em] uppercase text-[#1C1C1E]/60 hover:text-[#1C1C1E] hover:bg-[#E8E0D5]/40 transition-colors"
+                        >
+                          {l}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <button className={`transition-colors duration-300 ${isTransparent ? "text-white/80 hover:text-white" : "text-[#1C1C1E]/60 hover:text-[#1C1C1E]"}`}>
-                  <Search size={16} />
-                </button>
-                <FavoritesIcon isTransparent={isTransparent} />
                 <UserMenu isTransparent={isTransparent} />
                 <CartBadge isTransparent={isTransparent} />
               </div>
             </div>
 
-            {/* Mobile: Icons + Hamburger */}
-            <div className={`flex lg:hidden items-center ${isRTL ? "flex-row-reverse" : ""} gap-3`}>
-              <div className="flex items-center gap-1">
-                {["TR", "EN", "AR"].map((l) => (
-                  <button
-                    key={l}
-                    onClick={() => handleLanguageChange(l as "TR" | "EN" | "AR")}
-                    className={`font-body text-xs tracking-[0.1em] uppercase px-2 py-1 transition-colors duration-300 ${
-                      lang === l
-                        ? isTransparent
-                          ? "text-white font-semibold"
-                          : "text-[#C9A96E] font-semibold"
-                        : isTransparent
-                        ? "text-white/60"
-                        : "text-[#1C1C1E]/40"
-                    }`}
-                  >
-                    {l}
-                  </button>
-                ))}
-              </div>
-              <UserMenu isTransparent={isTransparent} mobile />
-              <CartBadge isTransparent={isTransparent} mobile />
+            {/* Mobile: Hamburger | Logo | Cart */}
+            <div className="flex lg:hidden items-center justify-between w-full">
+              {/* Left: Hamburger */}
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
                 className={`p-1 ${isTransparent ? "text-white" : "text-[#1C1C1E]"}`}
+                aria-label="Menü"
               >
                 {mobileOpen ? <X size={22} /> : <Menu size={22} />}
               </button>
+
+              {/* Center: Logo */}
+              <Link href={lang === "TR" ? "/" : `/${lang.toLowerCase()}`}>
+                <img
+                  src={LOGO_URL}
+                  alt="VOILÉE"
+                  className={`h-7 w-auto object-contain transition-all duration-300 ${
+                    isTransparent ? "brightness-0 invert" : ""
+                  }`}
+                />
+              </Link>
+
+              {/* Right: Cart */}
+              <CartBadge isTransparent={isTransparent} mobile />
             </div>
           </div>
         </div>
@@ -194,7 +223,8 @@ export default function Navbar() {
         dir={isRTL ? "rtl" : "ltr"}
       >
         <div className={`flex flex-col h-full pt-20 pb-8 px-8 ${isRTL ? "text-right" : ""}`}>
-          <nav className="flex flex-col gap-1 flex-1">
+          {/* Nav links */}
+          <nav className="flex flex-col gap-1">
             {navLinks.map((link, i) => (
               <Link
                 key={link.href}
@@ -206,13 +236,11 @@ export default function Navbar() {
               </Link>
             ))}
           </nav>
-          <div className="mt-auto">
-            <p className="font-body text-xs text-[#1C1C1E]/40 tracking-[0.15em] uppercase mb-4">
-              {lang === "TR" ? "Bize Ulaşın" : lang === "EN" ? "Get in Touch" : "اتصل بنا"}
-            </p>
-            <a href="mailto:info@voilee.com.tr" className="font-body text-sm text-[#1C1C1E]/70">
-              info@voilee.com.tr
-            </a>
+
+          {/* Bottom: Account (left) + Language (right) */}
+          <div className="mt-auto flex items-end justify-between gap-4">
+            <MobileAccountRow lang={lang} onClose={() => setMobileOpen(false)} />
+            <MobileLangRow lang={lang} onSelect={handleLanguageChange} />
           </div>
         </div>
       </div>
@@ -237,10 +265,63 @@ function CartBadge({ isTransparent, mobile = false }: { isTransparent: boolean; 
   );
 }
 
+function MobileAccountRow({ lang, onClose }: { lang: "TR" | "EN" | "AR"; onClose: () => void }) {
+  const { user, isAuthenticated } = useAuth();
+  const loginHref = lang === "TR" ? "/giris" : lang === "EN" ? "/en/login" : "/ar/login";
+  const accountHref = lang === "TR" ? "/hesap" : lang === "EN" ? "/en/hesap" : "/ar/hesap";
+  const label = lang === "TR" ? "Hesabım" : lang === "EN" ? "My Account" : "حسابي";
+  const loginLabel = lang === "TR" ? "Giriş Yap" : lang === "EN" ? "Sign In" : "دخول";
+  const href = isAuthenticated ? accountHref : loginHref;
+
+  const handleClick = () => {
+    onClose();
+    document.body.style.overflow = "";
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    window.scrollTo({ top: 0, behavior: "instant" });
+    window.location.href = href;
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className="font-display text-2xl text-[#1C1C1E]/60 pb-2 border-t border-[#C9A96E]/20 pt-4 hover:text-[#C9A96E] transition-colors duration-300 text-left"
+    >
+      {isAuthenticated ? (user?.name || label) : loginLabel}
+    </button>
+  );
+}
+
+function MobileLangRow({ lang, onSelect }: { lang: "TR" | "EN" | "AR"; onSelect: (l: "TR" | "EN" | "AR") => void }) {
+  return (
+    <div className="border-t border-[#C9A96E]/20 pt-4 pb-2 flex items-center gap-2 justify-end">
+      <Globe size={16} className="text-[#C9A96E]" />
+      <div className="inline-flex items-center bg-[#F0E9DD] rounded-full p-1">
+        {(["TR", "EN", "AR"] as const).map((l) => {
+          const active = lang === l;
+          return (
+            <button
+              key={l}
+              onClick={() => { if (!active) onSelect(l); }}
+              className={`font-body text-xs tracking-[0.1em] uppercase px-3 py-1.5 rounded-full transition-all duration-300 ${
+                active
+                  ? "bg-[#1C1C1E] text-[#F7F3EC] shadow-sm"
+                  : "text-[#1C1C1E]/50 hover:text-[#1C1C1E]"
+              }`}
+              aria-pressed={active}
+            >
+              {l}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function FavoritesIcon({ isTransparent, mobile = false }: { isTransparent: boolean; mobile?: boolean }) {
   const { lang } = useLanguage();
   const { favoritesCount } = useFavorites();
-  const href = lang === "TR" ? "/favorilerim" : lang === "EN" ? "/en/favorites" : "/ar/favorites";
+  const href = lang === "TR" ? "/hesap/liste" : lang === "EN" ? "/en/hesap/liste" : "/ar/hesap/liste";
   const label = lang === "TR" ? "Favorilerim" : lang === "EN" ? "My Favorites" : "مفضلاتي";
 
   return (
@@ -278,9 +359,9 @@ function UserMenu({ isTransparent, mobile = false }: { isTransparent: boolean; m
   }, [open]);
 
   const loginHref = lang === "TR" ? "/giris" : lang === "EN" ? "/en/login" : "/ar/login";
-  const accountHref = lang === "TR" ? "/hesabim" : lang === "EN" ? "/en/account" : "/ar/account";
-  const favoritesHref = lang === "TR" ? "/favorilerim" : lang === "EN" ? "/en/favorites" : "/ar/favorites";
-  const ordersHref = lang === "TR" ? "/siparislerim" : lang === "EN" ? "/en/orders" : "/ar/orders";
+  const accountHref = lang === "TR" ? "/hesap" : lang === "EN" ? "/en/hesap" : "/ar/hesap";
+  const favoritesHref = lang === "TR" ? "/hesap/liste" : lang === "EN" ? "/en/hesap/liste" : "/ar/hesap/liste";
+  const ordersHref = lang === "TR" ? "/hesap/siparisler" : lang === "EN" ? "/en/hesap/siparisler" : "/ar/hesap/siparisler";
 
   const labels = {
     TR: {

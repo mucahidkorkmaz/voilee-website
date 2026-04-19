@@ -6,6 +6,8 @@ import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerLocalAuthRoutes } from "../localAuth";
+import { registerUserAuthRoutes } from "../userAuth";
+import { registerStorefrontRoutes } from "../storefrontRoutes";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { ENV } from "./env";
@@ -68,6 +70,10 @@ async function startServer() {
   registerOAuthRoutes(app);
   // Local admin password login (for dev / self-hosted)
   registerLocalAuthRoutes(app);
+  // Storefront user auth (email + password) — register/login/logout/me
+  registerUserAuthRoutes(app);
+  // Storefront public API — /api/v1/products, /api/v1/collections, /api/v1/orders
+  registerStorefrontRoutes(app);
   // tRPC API
   app.use(
     "/api/trpc",

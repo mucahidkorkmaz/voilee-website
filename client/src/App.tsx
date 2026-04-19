@@ -8,6 +8,10 @@ import CartDrawer from "./components/CartDrawer";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { CartProvider } from "./contexts/CartContext";
+import { AuthProvider } from "./contexts/AuthContext";
+import { FavoritesProvider } from "./contexts/FavoritesContext";
+import { OrdersProvider } from "./contexts/OrdersContext";
+import { AddressProvider } from "./contexts/AddressContext";
 import Home from "./pages/Home";
 import Collections from "./pages/Collections";
 import SilhouetteBuilder from "./pages/SilhouetteBuilder";
@@ -19,6 +23,12 @@ import ShippingReturns from "./pages/ShippingReturns";
 import SizeGuide from "./pages/SizeGuide";
 import Story from "./pages/Story";
 import Checkout from "./pages/Checkout";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ProductDetail from "./pages/ProductDetail";
+import Account from "./pages/Account";
+import Favorites from "./pages/Favorites";
+import Orders from "./pages/Orders";
 import ManagementConsolePage from "./pages/management-console";
 
 function ScrollToTop() {
@@ -42,6 +52,7 @@ function Router() {
       {/* Turkish Routes */}
       <Route path="/" component={Home} />
       <Route path="/koleksiyonlar" component={Collections} />
+      <Route path="/urun/:slug" component={ProductDetail} />
       <Route path="/olustur" component={SilhouetteBuilder} />
       <Route path="/hakkimizda" component={About} />
       <Route path="/hikayemiz" component={Story} />
@@ -51,10 +62,16 @@ function Router() {
       <Route path="/kargo-iade" component={ShippingReturns} />
       <Route path="/beden-rehberi" component={SizeGuide} />
       <Route path="/odeme" component={Checkout} />
-      
+      <Route path="/giris" component={Login} />
+      <Route path="/uye-ol" component={Register} />
+      <Route path="/hesabim" component={Account} />
+      <Route path="/favorilerim" component={Favorites} />
+      <Route path="/siparislerim" component={Orders} />
+
       {/* English Routes */}
       <Route path="/en" component={Home} />
       <Route path="/en/collections" component={Collections} />
+      <Route path="/en/product/:slug" component={ProductDetail} />
       <Route path="/en/builder" component={SilhouetteBuilder} />
       <Route path="/en/about" component={About} />
       <Route path="/en/story" component={Story} />
@@ -64,10 +81,16 @@ function Router() {
       <Route path="/en/shipping-returns" component={ShippingReturns} />
       <Route path="/en/size-guide" component={SizeGuide} />
       <Route path="/en/checkout" component={Checkout} />
-      
+      <Route path="/en/login" component={Login} />
+      <Route path="/en/register" component={Register} />
+      <Route path="/en/account" component={Account} />
+      <Route path="/en/favorites" component={Favorites} />
+      <Route path="/en/orders" component={Orders} />
+
       {/* Arabic Routes */}
       <Route path="/ar" component={Home} />
       <Route path="/ar/collections" component={Collections} />
+      <Route path="/ar/product/:slug" component={ProductDetail} />
       <Route path="/ar/builder" component={SilhouetteBuilder} />
       <Route path="/ar/about" component={About} />
       <Route path="/ar/story" component={Story} />
@@ -77,7 +100,12 @@ function Router() {
       <Route path="/ar/shipping-returns" component={ShippingReturns} />
       <Route path="/ar/size-guide" component={SizeGuide} />
       <Route path="/ar/checkout" component={Checkout} />
-      
+      <Route path="/ar/login" component={Login} />
+      <Route path="/ar/register" component={Register} />
+      <Route path="/ar/account" component={Account} />
+      <Route path="/ar/favorites" component={Favorites} />
+      <Route path="/ar/orders" component={Orders} />
+
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
@@ -88,17 +116,25 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
-      <CartProvider>
-        <LanguageProvider>
-          <ThemeProvider defaultTheme="light">
-            <TooltipProvider>
-              <Toaster />
-              <CartDrawer />
-              <Router />
-            </TooltipProvider>
-          </ThemeProvider>
-        </LanguageProvider>
-      </CartProvider>
+      <AuthProvider>
+        <CartProvider>
+          <FavoritesProvider>
+            <AddressProvider>
+              <OrdersProvider>
+              <LanguageProvider>
+                <ThemeProvider defaultTheme="light">
+                  <TooltipProvider>
+                    <Toaster />
+                    <CartDrawer />
+                    <Router />
+                  </TooltipProvider>
+                </ThemeProvider>
+              </LanguageProvider>
+              </OrdersProvider>
+            </AddressProvider>
+          </FavoritesProvider>
+        </CartProvider>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }

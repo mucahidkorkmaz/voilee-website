@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useOrders } from "@/contexts/OrdersContext";
 import { ChevronLeft, ShoppingBag, CreditCard, Building2, CheckCircle2, Lock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { api } from "@/lib/api";
 
 const t = {
   TR: {
@@ -31,8 +33,8 @@ const t = {
     expiry: "Son Kullanma",
     cvv: "CVV",
     bankInfo: "Aşağıdaki hesaba havale yapabilirsiniz:",
-    bankName: "Banka: Garanti BBVA",
-    iban: "IBAN: TR00 0000 0000 0000 0000 0000 00",
+    bankName: "Banka: —",
+    iban: "IBAN: —",
     bankDesc: "Havale açıklamasına adınızı ve soyadınızı yazınız. Ödeme onaylandıktan sonra siparişiniz hazırlanacaktır.",
     orderSummary: "Sipariş Özeti",
     subtotal: "Ara Toplam",
@@ -74,8 +76,8 @@ const t = {
     expiry: "Expiry Date",
     cvv: "CVV",
     bankInfo: "You can transfer to the account below:",
-    bankName: "Bank: Garanti BBVA",
-    iban: "IBAN: TR00 0000 0000 0000 0000 0000 00",
+    bankName: "Bank: —",
+    iban: "IBAN: —",
     bankDesc: "Please include your full name in the transfer description. Your order will be prepared after payment is confirmed.",
     orderSummary: "Order Summary",
     subtotal: "Subtotal",
@@ -117,8 +119,8 @@ const t = {
     expiry: "تاريخ الانتهاء",
     cvv: "CVV",
     bankInfo: "يمكنك التحويل إلى الحساب أدناه:",
-    bankName: "البنك: Garanti BBVA",
-    iban: "IBAN: TR00 0000 0000 0000 0000 0000 00",
+    bankName: "البنك: —",
+    iban: "IBAN: —",
     bankDesc: "يرجى تضمين اسمك الكامل في وصف التحويل. سيتم تجهيز طلبك بعد تأكيد الدفع.",
     orderSummary: "ملخص الطلب",
     subtotal: "المجموع الفرعي",
@@ -174,11 +176,15 @@ function formatExpiry(value: string) {
 export default function Checkout() {
   const { cartItems, cartTotal, clearCart } = useCart();
   const { lang, isRTL } = useLanguage();
+  const { addOrder } = useOrders();
   const [, setLocation] = useLocation();
   const tx = t[lang];
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [form, setForm] = useState<FormData>({
     firstName: "",
@@ -217,12 +223,60 @@ export default function Checkout() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    setIsSuccess(true);
-    clearCart();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const result = await api.createOrder({
+        customerEmail: form.email,
+        customerName: `${form.firstName} ${form.lastName}`.trim(),
+        customerPhone: form.phone,
+        shippingAddress: form.address,
+        shippingCity: form.city,
+        shippingCountry: "TR",
+        notes: paymentMethod === "bank" ? "Havale/EFT ile ödeme" : undefined,
+        items: cartItems.map((item) => ({
+          productId: item.id,
+          productName: item.nameTR,
+          quantity: item.quantity,
+          price: String(item.price),
+        })),
+      });
+
+      addOrder({
+        orderNumber: result.data.orderNumber,
+        status: result.data.status || "pending",
+        total: grandTotal,
+        subtotal: cartTotal,
+        shippingCost,
+        createdAt: Date.now(),
+        customerName: `${form.firstName} ${form.lastName}`.trim(),
+        customerEmail: form.email,
+        shippingAddress: form.address,
+        shippingCity: form.city,
+        paymentMethod,
+        items: cartItems.map((item) => ({
+          productId: item.id,
+          productName: lang === "TR" ? item.nameTR : lang === "EN" ? item.nameEN : item.nameAR,
+          quantity: item.quantity,
+          price: item.price,
+          imageUrl: item.imageUrl,
+        })),
+      });
+
+      setOrderNumber(result.data.orderNumber);
+      setIsSuccess(true);
+      clearCart();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Sipariş oluşturulamadı. Lütfen tekrar deneyin.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (cartItems.length === 0 && !isSuccess) {
@@ -260,13 +314,26 @@ export default function Checkout() {
           <div>
             <h2 className="font-display text-3xl text-[#1C1C1E] mb-3">{tx.successTitle}</h2>
             <p className="font-body text-sm text-[#1C1C1E]/60 max-w-md">{tx.successDesc}</p>
+            {orderNumber && (
+              <p className="font-body text-xs text-[#C9A96E] mt-3 tracking-wider">
+                Sipariş No: <span className="font-semibold">{orderNumber}</span>
+              </p>
+            )}
           </div>
-          <Link
-            href={homeLinks[lang]}
-            className="font-body text-xs tracking-[0.2em] uppercase bg-[#1C1C1E] text-white px-8 py-3 hover:bg-[#C9A96E] transition-colors duration-300"
-          >
-            {tx.backHome}
-          </Link>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href={homeLinks[lang]}
+              className="font-body text-xs tracking-[0.2em] uppercase bg-[#1C1C1E] text-white px-8 py-3 hover:bg-[#C9A96E] transition-colors duration-300"
+            >
+              {tx.backHome}
+            </Link>
+            <Link
+              href={lang === "TR" ? "/siparislerim" : lang === "EN" ? "/en/orders" : "/ar/orders"}
+              className="font-body text-xs tracking-[0.2em] uppercase border border-[#1C1C1E] text-[#1C1C1E] px-8 py-3 hover:bg-[#1C1C1E] hover:text-white transition-colors duration-300"
+            >
+              {lang === "TR" ? "Siparişlerim" : lang === "EN" ? "My Orders" : "طلباتي"}
+            </Link>
+          </div>
         </div>
         <Footer />
       </div>
@@ -537,11 +604,16 @@ export default function Checkout() {
                     </div>
                   </div>
 
+                  {submitError && (
+                    <p className="mt-4 font-body text-xs text-red-500 text-center">{submitError}</p>
+                  )}
+
                   <button
                     type="submit"
-                    className="w-full mt-6 bg-[#1C1C1E] text-white font-body text-xs tracking-[0.2em] uppercase py-4 hover:bg-[#C9A96E] transition-colors duration-300"
+                    disabled={isSubmitting}
+                    className="w-full mt-6 bg-[#1C1C1E] text-white font-body text-xs tracking-[0.2em] uppercase py-4 hover:bg-[#C9A96E] transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    {tx.placeOrder}
+                    {isSubmitting ? "İşleniyor..." : tx.placeOrder}
                   </button>
 
                   <div className="flex items-center justify-center gap-2 mt-4 text-[#1C1C1E]/40">

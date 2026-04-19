@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, X, ShoppingBag, Search, Globe, Heart } from "lucide-react";
+import { Menu, X, ShoppingBag, Search, Heart, User as UserIcon, LogOut, Package } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useFavorites } from "@/contexts/FavoritesContext";
 
 const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_logo_2e68b438.webp";
 
@@ -144,9 +146,8 @@ export default function Navbar() {
                 <button className={`transition-colors duration-300 ${isTransparent ? "text-white/80 hover:text-white" : "text-[#1C1C1E]/60 hover:text-[#1C1C1E]"}`}>
                   <Search size={16} />
                 </button>
-                <button className={`transition-colors duration-300 ${isTransparent ? "text-white/80 hover:text-white" : "text-[#1C1C1E]/60 hover:text-[#1C1C1E]"}`}>
-                  <Heart size={16} />
-                </button>
+                <FavoritesIcon isTransparent={isTransparent} />
+                <UserMenu isTransparent={isTransparent} />
                 <CartBadge isTransparent={isTransparent} />
               </div>
             </div>
@@ -172,6 +173,7 @@ export default function Navbar() {
                   </button>
                 ))}
               </div>
+              <UserMenu isTransparent={isTransparent} mobile />
               <CartBadge isTransparent={isTransparent} mobile />
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
@@ -232,5 +234,156 @@ function CartBadge({ isTransparent, mobile = false }: { isTransparent: boolean; 
         </span>
       )}
     </button>
+  );
+}
+
+function FavoritesIcon({ isTransparent, mobile = false }: { isTransparent: boolean; mobile?: boolean }) {
+  const { lang } = useLanguage();
+  const { favoritesCount } = useFavorites();
+  const href = lang === "TR" ? "/favorilerim" : lang === "EN" ? "/en/favorites" : "/ar/favorites";
+  const label = lang === "TR" ? "Favorilerim" : lang === "EN" ? "My Favorites" : "مفضلاتي";
+
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      className={`relative transition-colors duration-300 ${
+        isTransparent
+          ? "text-white/80 hover:text-white"
+          : "text-[#1C1C1E]/60 hover:text-[#1C1C1E]"
+      }`}
+    >
+      <Heart size={mobile ? 18 : 16} />
+      {favoritesCount > 0 && (
+        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#C9A96E] rounded-full text-[9px] flex items-center justify-center text-white font-medium">
+          {favoritesCount > 9 ? "9+" : favoritesCount}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+function UserMenu({ isTransparent, mobile = false }: { isTransparent: boolean; mobile?: boolean }) {
+  const { lang, isRTL } = useLanguage();
+  const { user, isAuthenticated, logout } = useAuth();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    if (open) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
+  const loginHref = lang === "TR" ? "/giris" : lang === "EN" ? "/en/login" : "/ar/login";
+  const accountHref = lang === "TR" ? "/hesabim" : lang === "EN" ? "/en/account" : "/ar/account";
+  const favoritesHref = lang === "TR" ? "/favorilerim" : lang === "EN" ? "/en/favorites" : "/ar/favorites";
+  const ordersHref = lang === "TR" ? "/siparislerim" : lang === "EN" ? "/en/orders" : "/ar/orders";
+
+  const labels = {
+    TR: {
+      greeting: "Merhaba",
+      account: "Hesabım",
+      favorites: "Favorilerim",
+      orders: "Siparişlerim",
+      logout: "Çıkış Yap",
+      signIn: "Giriş",
+    },
+    EN: {
+      greeting: "Hi",
+      account: "My Account",
+      favorites: "My Favorites",
+      orders: "My Orders",
+      logout: "Sign Out",
+      signIn: "Sign In",
+    },
+    AR: {
+      greeting: "مرحباً",
+      account: "حسابي",
+      favorites: "مفضلاتي",
+      orders: "طلباتي",
+      logout: "تسجيل الخروج",
+      signIn: "دخول",
+    },
+  }[lang];
+
+  if (!isAuthenticated) {
+    return (
+      <Link
+        href={loginHref}
+        className={`transition-colors duration-300 ${
+          isTransparent
+            ? "text-white/80 hover:text-white"
+            : "text-[#1C1C1E]/60 hover:text-[#1C1C1E]"
+        }`}
+        aria-label={labels.signIn}
+      >
+        <UserIcon size={mobile ? 18 : 16} />
+      </Link>
+    );
+  }
+
+  const shortcuts = [
+    { href: accountHref, label: labels.account, Icon: UserIcon },
+    { href: favoritesHref, label: labels.favorites, Icon: Heart },
+    { href: ordersHref, label: labels.orders, Icon: Package },
+  ];
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={`relative transition-colors duration-300 ${
+          isTransparent
+            ? "text-white/80 hover:text-white"
+            : "text-[#1C1C1E]/60 hover:text-[#1C1C1E]"
+        }`}
+        aria-label="account menu"
+      >
+        <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#C9A96E] rounded-full" />
+        <UserIcon size={mobile ? 18 : 16} />
+      </button>
+
+      {open && (
+        <div
+          className={`absolute z-50 mt-3 w-60 bg-[#F7F3EC] border border-[#C9A96E]/20 shadow-lg ${
+            isRTL ? "left-0" : "right-0"
+          }`}
+        >
+          <div className="px-4 py-3 border-b border-[#C9A96E]/20">
+            <p className="font-body text-[10px] tracking-[0.2em] uppercase text-[#C9A96E]">
+              {labels.greeting}
+            </p>
+            <p className="font-display text-base text-[#1C1C1E] mt-0.5 truncate">
+              {user?.name || user?.email}
+            </p>
+          </div>
+          {shortcuts.map(({ href, label, Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setOpen(false)}
+              className="w-full flex items-center gap-3 px-4 py-3 font-body text-xs tracking-[0.1em] uppercase text-[#1C1C1E]/70 hover:text-[#1C1C1E] hover:bg-[#E8E0D5]/40 transition-colors"
+            >
+              <Icon size={14} />
+              {label}
+            </Link>
+          ))}
+          <button
+            type="button"
+            onClick={async () => {
+              setOpen(false);
+              await logout();
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 font-body text-xs tracking-[0.1em] uppercase text-[#1C1C1E]/70 hover:text-[#1C1C1E] hover:bg-[#E8E0D5]/40 transition-colors border-t border-[#C9A96E]/15"
+          >
+            <LogOut size={14} />
+            {labels.logout}
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

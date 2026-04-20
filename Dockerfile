@@ -10,17 +10,24 @@ COPY package.json pnpm-lock.yaml ./
 COPY patches ./patches
 RUN pnpm install --frozen-lockfile
 
-# ── Frontend build ─────────────────────────────────────────────────────────────
-FROM base AS frontend-builder
+# ── Frontend + Backend build ────────────────────────────────────────────────────
+# COPY . . her zaman tüm kaynak kodu kopyalar; cache sorununu önlemek için
+# --no-cache ile build alın ya da aşağıdaki ARG CACHE_BUST tekniğini kullanın.
+FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-RUN pnpm run build
+# Kaynak dosyaları ayrı katmanlarda kopyala — sadece değişen katman yeniden build edilir
+COPY package.json pnpm-lock.yaml tsconfig*.json vite.config.* ./
+COPY patches ./patches
+COPY drizzle ./drizzle
+COPY shared ./shared
+COPY client ./client
+COPY server ./server
+# Cache'i kırmak için build zamanı argümanı — docker compose build node ile otomatik değişir
+ARG BUILD_DATE
+RUN echo "Build date: ${BUILD_DATE}" && pnpm run build
 
-# ── Backend build ──────────────────────────────────────────────────────────────
-# (vite build zaten pnpm run build içinde, esbuild da aynı komutta çalışır)
-
-# ── Production image ───────────────────────────────────────────────────────────
+# ── Production image ────────────────────────────────────────────────────────────
 FROM node:22-alpine AS runner
 WORKDIR /app
 
@@ -29,11 +36,16 @@ COPY package.json pnpm-lock.yaml ./
 COPY patches ./patches
 RUN corepack enable && pnpm install --frozen-lockfile --prod
 
-# Backend build çıktıları (index.js + esbuild dynamic import chunk'ları)
-# Not: dist/public/ nginx tarafından sunulur, buraya kopyalanmaz
-COPY --from=frontend-builder /app/dist/*.js ./dist/
+# Backend JS dosyaları (esbuild çıktısı)
+COPY --from=builder /app/dist/*.js ./dist/
 
-# Kullanıcı yetkilerini sınırla — root olarak çalıştırma
+# Frontend static dosyaları (vite build çıktısı) — nginx /dist/public'i sunar
+COPY --from=builder /app/dist/public ./dist/public
+
+# Drizzle schema (runtime'da gerekirse)
+COPY --from=builder /app/drizzle ./drizzle
+
+# Yetki kısıtla
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 

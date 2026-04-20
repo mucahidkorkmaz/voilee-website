@@ -27,31 +27,50 @@ services:
 
   # ── Tier 2: Application ───────────────────────────────────────────────────────
   node:
-    # Push: docker compose build node && docker push mucahidkorkmaz/voilee-website:v2.2
     image: mucahidkorkmaz/voilee-website:v2.3
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # Her build'de cache kırılır — eski katmanlar yeniden kullanılmaz
+        BUILD_DATE: ${BUILD_DATE:-}
     container_name: voilee-api
     restart: unless-stopped
     env_file: .env
     environment:
       NODE_ENV: production
-      # 3 katmanlı mimaride statik dosya servisi Nginx'e bırakılır
       SERVE_STATIC: "false"
       DATABASE_URL: postgresql://${POSTGRES_USER:-voilee}:${POSTGRES_PASSWORD:-voilee_secret}@postgres:5432/${POSTGRES_DB:-voilee}
       UPLOADS_DIR: /app/uploads
     volumes:
       - voilee_uploads:/app/uploads
+      # Image içindeki build edilmiş frontend dosyalarını named volume'a kopyala
+      - voilee_frontend:/app/dist/public
     networks:
       - backend_net
       - frontend_net
-    # Node dış dünyaya kapalı — sadece Nginx üzerinden erişilir
     expose:
       - "3000"
     depends_on:
       postgres:
         condition: service_healthy
+
+  # ── Frontend dosya kopyalayıcı (one-shot) ─────────────────────────────────────
+  # Her deploy'da image içindeki dist/public'i nginx'in okuyacağı volume'a kopyalar
+  frontend-sync:
+    image: mucahidkorkmaz/voilee-website:v2.3
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_DATE: ${BUILD_DATE:-}
+    container_name: voilee-frontend-sync
+    restart: "no"
+    entrypoint: ["sh", "-c", "cp -r /app/dist/public/. /frontend/ && echo 'Frontend sync done'"]
+    volumes:
+      - voilee_frontend:/frontend
+    networks:
+      - frontend_net
 
   # ── Tier 1: Presentation ──────────────────────────────────────────────────────
   nginx:
@@ -63,14 +82,14 @@ services:
       # HTTPS için: "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      # Build edilmiş frontend dosyaları buraya mount edilir
-      - ./dist/public:/usr/share/nginx/html:ro
-      # Kullanıcı tarafından yüklenen görseller (Node ile paylaşılan volume)
+      # Image'dan sync edilen frontend dosyaları (host'a bağımlı değil)
+      - voilee_frontend:/usr/share/nginx/html:ro
       - voilee_uploads:/usr/share/nginx/uploads:ro
     networks:
       - frontend_net
     depends_on:
       - node
+      - frontend-sync
 
 networks:
   # Backend iç ağ: postgres ↔ node (dış erişim yok)
@@ -87,3 +106,4 @@ networks:
 volumes:
   voilee_pg_data:
   voilee_uploads:
+  voilee_frontend:

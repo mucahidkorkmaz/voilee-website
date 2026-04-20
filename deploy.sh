@@ -11,7 +11,7 @@ set -e
 export BUILD_DATE=$(date -u +"%Y%m%dT%H%M%SZ")
 
 echo ""
-echo "▶ Build tarihi: $BUILD_DATE"
+echo "▶ [1/4] Build başlıyor — $BUILD_DATE"
 echo ""
 
 # Cache kullanmadan yeniden build al
@@ -27,19 +27,21 @@ if [ "$1" = "--build" ]; then
 fi
 
 echo ""
-echo "▶ Frontend volume sıfırlanıyor..."
-docker volume rm voilee_com_tr_voilee_frontend 2>/dev/null || true
-docker volume rm voilee-frontend 2>/dev/null || true
-docker volume rm voilee_frontend 2>/dev/null || true
+echo "▶ [2/4] Stack durduruluyor..."
+docker compose down --remove-orphans
 
 echo ""
-echo "▶ Servisler yeniden başlatılıyor..."
-docker compose up -d --force-recreate node frontend-sync nginx
+echo "▶ [3/4] Frontend volume sıfırlanıyor..."
+docker volume rm voileecomtr_voilee_frontend 2>/dev/null || true
 
 echo ""
-echo "▶ Frontend dosyaları kopyalanıyor (sync bekleniyor)..."
-sleep 3
-docker compose logs frontend-sync
+echo "▶ [4/4] Servisler başlatılıyor..."
+docker compose up -d postgres
+echo "   Postgres bekleniyor..."
+sleep 8
+
+docker compose run --rm frontend-sync
+docker compose up -d node nginx
 
 echo ""
 echo "✓ Deploy tamamlandı — http://localhost"

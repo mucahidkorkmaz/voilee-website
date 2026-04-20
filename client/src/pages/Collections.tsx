@@ -7,8 +7,7 @@ import { useFavorites } from "@/contexts/FavoritesContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { api, type Product, type Silhouette } from "@/lib/api";
-
-const productPathPrefix = { TR: "/urun", EN: "/en/product", AR: "/ar/product" };
+import { productPath, sitePaths } from "@/lib/sitePaths";
 
 const heroMain = "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_hero_main-Z5A8u2f2u9H3JoSTeyVYih.webp";
 
@@ -199,7 +198,7 @@ export default function Collections() {
             {filtered.map((product) => {
               const img = product.imageUrls?.[0];
               const price = parseFloat(product.price);
-              const detailHref = `${productPathPrefix[lang]}/${product.slug}`;
+              const detailHref = productPath(lang, product.slug);
               return (
                 <div key={product.id} className="group">
                   <div className="relative overflow-hidden mb-4">
@@ -285,7 +284,7 @@ export default function Collections() {
         {!loading && (
           <div className="mt-16 sm:mt-20 flex justify-center">
             <Link
-              href={`/olustur${activeSilhouetteId ? `?silhouette=${activeSilhouetteId}` : ""}`}
+              href={`${sitePaths.builder[lang]}${activeSilhouetteId ? `?silhouette=${activeSilhouetteId}` : ""}`}
               className="group inline-flex flex-col items-center"
             >
               <div className="w-12 h-px bg-[#1C1C1E]/20 mb-5 group-hover:bg-[#C9A96E] group-hover:w-16 transition-all duration-500" />

@@ -16,6 +16,7 @@ import { useCart } from "@/contexts/CartContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { api, type Product } from "@/lib/api";
+import { sitePaths, productPath } from "@/lib/sitePaths";
 
 const t = {
   TR: {
@@ -95,11 +96,6 @@ const t = {
   },
 };
 
-const homeLinks = { TR: "/", EN: "/en", AR: "/ar" };
-const collectionsLinks = { TR: "/koleksiyonlar", EN: "/en/collections", AR: "/ar/collections" };
-const sizeGuideLinks = { TR: "/beden-rehberi", EN: "/en/size-guide", AR: "/ar/size-guide" };
-const productPathPrefix = { TR: "/urun", EN: "/en/product", AR: "/ar/product" };
-
 const DEFAULT_SIZES = ["XS", "S", "M", "L", "XL"];
 const DEFAULT_COLORS = [
   { id: "champagne", label: { TR: "Şampanya", EN: "Champagne", AR: "شمبانيا" }, hex: "#C9A96E" },
@@ -115,7 +111,7 @@ export default function ProductDetail() {
   const { lang, isRTL } = useLanguage();
   const { addToCart } = useCart();
 
-  const [, paramsTR] = useRoute("/urun/:slug");
+  const [, paramsTR] = useRoute("/tr/product/:slug");
   const [, paramsEN] = useRoute("/en/product/:slug");
   const [, paramsAR] = useRoute("/ar/product/:slug");
   const slug = paramsTR?.slug || paramsEN?.slug || paramsAR?.slug || "";
@@ -216,7 +212,7 @@ export default function ProductDetail() {
         <div className="flex-1 flex flex-col items-center justify-center text-center px-6 gap-6 pt-24">
           <h2 className="font-display text-3xl text-[#1C1C1E]">{tx.notFound}</h2>
           <Link
-            href={collectionsLinks[lang]}
+            href={sitePaths.collections[lang]}
             className="font-body text-xs tracking-[0.2em] uppercase bg-[#1C1C1E] text-white px-8 py-3 hover:bg-[#C9A96E] transition-colors duration-300"
           >
             {tx.backToCollections}
@@ -240,11 +236,11 @@ export default function ProductDetail() {
         {/* Breadcrumb */}
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <nav className="flex items-center gap-2 font-body text-[10px] tracking-[0.15em] uppercase text-[#1C1C1E]/40">
-            <Link href={homeLinks[lang]} className="hover:text-[#C9A96E] transition-colors">
+            <Link href={sitePaths.home[lang]} className="hover:text-[#C9A96E] transition-colors">
               {tx.home}
             </Link>
             <ChevronRight size={11} className={isRTL ? "rotate-180" : ""} />
-            <Link href={collectionsLinks[lang]} className="hover:text-[#C9A96E] transition-colors">
+            <Link href={sitePaths.collections[lang]} className="hover:text-[#C9A96E] transition-colors">
               {tx.collections}
             </Link>
             <ChevronRight size={11} className={isRTL ? "rotate-180" : ""} />
@@ -392,7 +388,7 @@ export default function ProductDetail() {
                     {tx.size}
                   </p>
                   <Link
-                    href={sizeGuideLinks[lang]}
+                    href={sitePaths.sizeGuide[lang]}
                     className="font-body text-xs text-[#1C1C1E]/60 hover:text-[#C9A96E] transition-colors underline-offset-4 hover:underline"
                   >
                     {tx.sizeGuide} →
@@ -519,7 +515,7 @@ export default function ProductDetail() {
                   return (
                     <Link
                       key={p.id}
-                      href={`${productPathPrefix[lang]}/${p.slug}`}
+                      href={productPath(lang, p.slug)}
                       className="group block"
                     >
                       <div className="aspect-[3/4] bg-[#E8E0D5] overflow-hidden mb-3">

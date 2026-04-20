@@ -5,28 +5,33 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFavorites } from "@/contexts/FavoritesContext";
+import { sitePaths } from "@/lib/sitePaths";
 
 const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_logo_2e68b438.webp";
 
 const getNavLinks = (lang: "TR" | "EN" | "AR") => {
+  const c = sitePaths.collections[lang];
+  const lb = sitePaths.lookbook[lang];
+  const j = sitePaths.journal[lang];
+  const ct = sitePaths.contact[lang];
   const baseLinks = {
     TR: [
-      { href: "/koleksiyonlar", label: "Silüet" },
-      { href: "/lookbook", label: "Lookbook" },
-      { href: "/journal", label: "Journal" },
-      { href: "/iletisim", label: "İletişim" },
+      { href: c, label: "Silüet" },
+      { href: lb, label: "Lookbook" },
+      { href: j, label: "Journal" },
+      { href: ct, label: "İletişim" },
     ],
     EN: [
-      { href: "/koleksiyonlar", label: "Silhouette" },
-      { href: "/en/lookbook", label: "Lookbook" },
-      { href: "/en/journal", label: "Journal" },
-      { href: "/en/contact", label: "Contact" },
+      { href: c, label: "Silhouette" },
+      { href: lb, label: "Lookbook" },
+      { href: j, label: "Journal" },
+      { href: ct, label: "Contact" },
     ],
     AR: [
-      { href: "/koleksiyonlar", label: "الصورة الظلية" },
-      { href: "/ar/lookbook", label: "Lookbook" },
-      { href: "/ar/journal", label: "مجلة" },
-      { href: "/ar/contact", label: "اتصل بنا" },
+      { href: c, label: "الصورة الظلية" },
+      { href: lb, label: "Lookbook" },
+      { href: j, label: "مجلة" },
+      { href: ct, label: "اتصل بنا" },
     ],
   };
   return baseLinks[lang];
@@ -43,7 +48,8 @@ export default function Navbar() {
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const langDropdownRef = useRef<HTMLDivElement>(null);
   const [location] = useLocation();
-  const isHome = location === "/" || location === "/en" || location === "/ar";
+  const isHome =
+    location === "/tr" || location === "/en" || location === "/ar";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -90,7 +96,7 @@ export default function Navbar() {
   const handleLanguageChange = (newLang: "TR" | "EN" | "AR") => {
     isLangSwitch.current = true;
     setLang(newLang);
-    const dest = newLang === "TR" ? "/" : `/${newLang.toLowerCase()}`;
+    const dest = sitePaths.home[newLang];
     setLocationNav(dest);
   };
 
@@ -126,7 +132,7 @@ export default function Navbar() {
 
             {/* Col 2: Logo (auto width, centered by grid) */}
             <div className="flex justify-center">
-              <Link href={lang === "TR" ? "/" : `/${lang.toLowerCase()}`}>
+              <Link href={sitePaths.home[lang]}>
                 <img
                   src={LOGO_URL}
                   alt="VOILÉE"
@@ -202,7 +208,7 @@ export default function Navbar() {
               {mobileOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
 
-            <Link href={lang === "TR" ? "/" : `/${lang.toLowerCase()}`}>
+            <Link href={sitePaths.home[lang]}>
               <img
                 src={LOGO_URL}
                 alt="VOILÉE"
@@ -288,8 +294,8 @@ function CartBadge({ isTransparent, mobile = false }: { isTransparent: boolean; 
 
 function MobileAccountRow({ lang, onClose }: { lang: "TR" | "EN" | "AR"; onClose: () => void }) {
   const { user, isAuthenticated } = useAuth();
-  const loginHref = lang === "TR" ? "/giris" : lang === "EN" ? "/en/login" : "/ar/login";
-  const accountHref = lang === "TR" ? "/hesap" : lang === "EN" ? "/en/hesap" : "/ar/hesap";
+  const loginHref = sitePaths.login[lang];
+  const accountHref = sitePaths.account[lang];
   const label = lang === "TR" ? "Hesabım" : lang === "EN" ? "My Account" : "حسابي";
   const loginLabel = lang === "TR" ? "Giriş Yap" : lang === "EN" ? "Sign In" : "دخول";
   const href = isAuthenticated ? accountHref : loginHref;
@@ -342,7 +348,7 @@ function MobileLangRow({ lang, onSelect }: { lang: "TR" | "EN" | "AR"; onSelect:
 function FavoritesIcon({ isTransparent, mobile = false }: { isTransparent: boolean; mobile?: boolean }) {
   const { lang } = useLanguage();
   const { favoritesCount } = useFavorites();
-  const href = lang === "TR" ? "/hesap/liste" : lang === "EN" ? "/en/hesap/liste" : "/ar/hesap/liste";
+  const href = sitePaths.accountWishlist[lang];
   const label = lang === "TR" ? "Favorilerim" : lang === "EN" ? "My Favorites" : "مفضلاتي";
 
   return (
@@ -379,10 +385,10 @@ function UserMenu({ isTransparent, mobile = false }: { isTransparent: boolean; m
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open]);
 
-  const loginHref = lang === "TR" ? "/giris" : lang === "EN" ? "/en/login" : "/ar/login";
-  const accountHref = lang === "TR" ? "/hesap" : lang === "EN" ? "/en/hesap" : "/ar/hesap";
-  const favoritesHref = lang === "TR" ? "/hesap/liste" : lang === "EN" ? "/en/hesap/liste" : "/ar/hesap/liste";
-  const ordersHref = lang === "TR" ? "/hesap/siparisler" : lang === "EN" ? "/en/hesap/siparisler" : "/ar/hesap/siparisler";
+  const loginHref = sitePaths.login[lang];
+  const accountHref = sitePaths.account[lang];
+  const favoritesHref = sitePaths.accountWishlist[lang];
+  const ordersHref = sitePaths.accountOrders[lang];
 
   const labels = {
     TR: {

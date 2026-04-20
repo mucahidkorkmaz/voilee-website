@@ -287,7 +287,7 @@ export function registerPasswordResetRoutes(app: Express) {
 
       const { ENV } = await import("./_core/env");
       const baseUrl = ENV.corsOrigin?.split(",")[0]?.trim() ?? "";
-      const resetUrl = `${baseUrl}/sifremi-sifirla?token=${token}`;
+      const resetUrl = `${baseUrl}/tr/reset-password?token=${token}`;
 
       await sendEmail({
         to: email,

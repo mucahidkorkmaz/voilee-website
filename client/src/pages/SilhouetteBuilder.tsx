@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { sitePaths, type SiteLang } from "@/lib/sitePaths";
 import { api, type Silhouette as APISilhouette } from "@/lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -79,7 +80,7 @@ interface SilhouettePickerProps {
   current: Silhouette | null;
   onSelect: (s: Silhouette) => void;
   onClose: () => void;
-  lang: string;
+  lang: SiteLang;
   silhouettes: Silhouette[];
   loading?: boolean;
 }
@@ -223,7 +224,7 @@ function SilhouettePicker({ current, onSelect, onClose, lang, silhouettes, loadi
               : "Select a silhouette to build your look"}
           </p>
           <Link
-            href={lang === "TR" ? "/koleksiyonlar" : lang === "EN" ? "/en/collections" : "/ar/collections"}
+            href={sitePaths.collections[lang]}
             className="flex-shrink-0 flex items-center gap-1.5 font-body text-[10px] tracking-[0.15em] uppercase text-[#1C1C1E]/50 hover:text-[#C9A96E] transition-colors duration-300 group"
           >
             {lang === "TR" ? "Tüm Koleksiyonu Görüntüle" : "View Full Collection"}
@@ -243,7 +244,7 @@ interface ProductModalProps {
   selected: string | undefined;
   onSelect: (product: Product) => void;
   onClose: () => void;
-  lang: string;
+  lang: SiteLang;
 }
 
 function ProductModal({ silhouette, categoryId, selected, onSelect, onClose, lang }: ProductModalProps) {
@@ -657,7 +658,7 @@ export default function SilhouetteBuilder() {
         {/* View All Products Banner */}
         <div className="mt-16 sm:mt-20 flex justify-center">
           <Link
-            href="/koleksiyonlar"
+            href={sitePaths.collections[lang]}
             className="group inline-flex flex-col items-center"
           >
             <div className="w-12 h-px bg-[#1C1C1E]/20 mb-5 group-hover:bg-[#C9A96E] group-hover:w-16 transition-all duration-500" />

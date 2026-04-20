@@ -4,6 +4,7 @@ import { Eye, EyeOff, Loader2, ChevronLeft, Check } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { sitePaths } from "@/lib/sitePaths";
 
 const LOGO_URL =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_logo_2e68b438.webp";
@@ -79,8 +80,8 @@ const t = {
   },
 };
 
-const homeLinks = { TR: "/", EN: "/en", AR: "/ar" };
-const loginLinks = { TR: "/giris", EN: "/en/login", AR: "/ar/login" };
+const homeLinks = sitePaths.home;
+const loginLinks = sitePaths.login;
 
 export default function Register() {
   const { lang, isRTL } = useLanguage();

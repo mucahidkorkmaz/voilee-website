@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { sitePaths } from "@/lib/sitePaths";
 
 const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_logo_2e68b438.webp";
 const HERO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_hero_main-Z5A8u2f2u9H3JoSTeyVYih.webp";
 
-const homeLinks = { TR: "/", EN: "/en", AR: "/ar" } as const;
-const loginLinks = { TR: "/giris", EN: "/en/login", AR: "/ar/login" } as const;
+const homeLinks = sitePaths.home;
+const loginLinks = sitePaths.login;
 
 const t = {
   TR: {

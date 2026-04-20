@@ -95,7 +95,7 @@ const statusBadge: Record<VerificationForm["status"], string> = {
 };
 
 function verificationUrl(serial: string) {
-  return `${window.location.origin}/dogrulama/${serial}`;
+  return `${window.location.origin}/tr/verify/${serial}`;
 }
 
 async function renderQrDataUrl(text: string) {
@@ -319,7 +319,7 @@ export default function MCVerifications() {
   };
 
   const copyLink = (serial: string) => {
-    const url = `${window.location.origin}/dogrulama/${serial}`;
+    const url = `${window.location.origin}/tr/verify/${serial}`;
     navigator.clipboard.writeText(url).then(
       () => toast.success("Doğrulama bağlantısı panoya kopyalandı."),
       () => toast.error("Bağlantı kopyalanamadı."),
@@ -333,7 +333,7 @@ export default function MCVerifications() {
           <p className="text-xs tracking-[0.25em] uppercase text-muted-foreground font-light">Katalog</p>
           <h1 className="font-['Cormorant_Garamond'] text-3xl font-light tracking-wide mt-1">Doğrulama Kayıtları</h1>
           <p className="text-xs text-muted-foreground mt-1">
-            Seri numaralı parçalar için /dogrulama sayfasında gösterilecek kayıtları yönetin.
+            Seri numaralı parçalar için /tr/verify sayfasında gösterilecek kayıtları yönetin.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -455,7 +455,7 @@ export default function MCVerifications() {
                           <Copy className="h-3.5 w-3.5" />
                         </button>
                         <a
-                          href={`/dogrulama/${v.serialNumber}`}
+                          href={`/tr/verify/${v.serialNumber}`}
                           target="_blank"
                           rel="noreferrer"
                           title="Doğrulama sayfasını aç"
@@ -716,7 +716,7 @@ export default function MCVerifications() {
           <AlertDialogHeader>
             <AlertDialogTitle>Doğrulama Kaydını Sil</AlertDialogTitle>
             <AlertDialogDescription>
-              Bu doğrulama kaydını kalıcı olarak silmek istiyor musunuz? Kayıt silindikten sonra /dogrulama sayfasında artık görünmeyecek.
+              Bu doğrulama kaydını kalıcı olarak silmek istiyor musunuz? Kayıt silindikten sonra /tr/verify sayfasında artık görünmeyecek.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

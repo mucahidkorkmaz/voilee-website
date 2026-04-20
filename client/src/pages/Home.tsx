@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { ArrowRight, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { sitePaths } from "@/lib/sitePaths";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -201,13 +202,13 @@ export default function Home() {
                 className={`flex items-center gap-4 transition-all duration-700 ${heroTransition ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
                 style={{ transitionDelay: "400ms" }}
               >
-                <Link href="/koleksiyonlar">
+                <Link href={sitePaths.collections[lang]}>
                   <button className="btn-luxury btn-luxury-filled text-sm">
                     {getText("Koleksiyonu Keşfet", "Explore Collection", "استكشف المجموعة")}
                     <ArrowRight size={14} />
                   </button>
                 </Link>
-                <Link href="/hakkimizda">
+                <Link href={sitePaths.about[lang]}>
                   <button className="font-body text-xs tracking-[0.15em] uppercase text-white/80 hover:text-white border-b border-white/40 hover:border-white pb-0.5 transition-all duration-300">
                     {getText("Hikayemiz", "Our Story", "Our Story")}
                   </button>
@@ -258,7 +259,7 @@ export default function Home() {
                   {getText("Altı Siluet,\nBir Kadın", "Six Silhouettes,\nOne Woman", "Six Silhouettes,\nOne Woman")}
                 </h2>
               </div>
-              <Link href="/koleksiyonlar" className="hidden lg:flex items-center gap-2 font-body text-xs tracking-[0.15em] uppercase text-[#1C1C1E]/60 hover:text-[#1C1C1E] transition-colors border-b border-[#1C1C1E]/20 hover:border-[#1C1C1E] pb-0.5">
+              <Link href={sitePaths.collections[lang]} className="hidden lg:flex items-center gap-2 font-body text-xs tracking-[0.15em] uppercase text-[#1C1C1E]/60 hover:text-[#1C1C1E] transition-colors border-b border-[#1C1C1E]/20 hover:border-[#1C1C1E] pb-0.5">
                 {getText("Tümünü Gör", "View All", "عرض الكل")}
                 <ArrowRight size={12} />
               </Link>
@@ -268,7 +269,7 @@ export default function Home() {
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
             {collections.map((col, i) => (
               <AnimatedSection key={col.name} delay={i * 80}>
-                <Link href="/koleksiyonlar">
+                <Link href={sitePaths.collections[lang]}>
                   <div className="group relative overflow-hidden cursor-pointer">
                     <div className="aspect-[3/4] overflow-hidden">
                       <img
@@ -313,7 +314,7 @@ export default function Home() {
                   : "We design not for different women, but for the same woman in her different states throughout the day and time. When there is no excess, only posture remains."}
               </p>
               <div className="mt-10">
-                <Link href="/hakkimizda">
+                <Link href={sitePaths.about[lang]}>
                   <button className="btn-luxury text-white border-white/40 hover:bg-white hover:text-[#1C1C1E]">
                     {getText("Hakkımızda", "About Us", "من نحن")}
                     <ArrowRight size={14} />

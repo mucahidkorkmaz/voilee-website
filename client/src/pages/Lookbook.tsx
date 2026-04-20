@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { sitePaths } from "@/lib/sitePaths";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -22,7 +23,7 @@ const content = {
     divider: true,
     body: "Her koleksiyon, bir kadının farklı hâllerini anlatır. Sabahın sessizliğinden gecenin gücüne, her an için bir siluet.",
     cta: "Koleksiyonu Keşfet",
-    ctaHref: "/koleksiyonlar",
+    ctaHref: sitePaths.collections.TR,
     galleryTag: "Koleksiyonlar",
     galleryTitle: "2025 Sezonu",
     galleryBody: "VOILÉE'nin 2025 koleksiyonu; zarafetin, özgünlüğün ve zamansızlığın bir yansımasıdır. Her parça, kadının farklı hâllerini anlatan bir siluet sunuyor.",
@@ -33,7 +34,7 @@ const content = {
     divider: true,
     body: "Each collection tells the different states of a woman. From the silence of morning to the power of night, a silhouette for every moment.",
     cta: "Explore Collection",
-    ctaHref: "/en/collections",
+    ctaHref: sitePaths.collections.EN,
     galleryTag: "Collections",
     galleryTitle: "2025 Season",
     galleryBody: "VOILÉE's 2025 collection is a reflection of elegance, authenticity, and timelessness. Each piece offers a silhouette that captures the many states of a woman.",
@@ -44,7 +45,7 @@ const content = {
     divider: true,
     body: "كل مجموعة تروي الحالات المختلفة للمرأة. من هدوء الصباح إلى قوة الليل، صورة ظلية لكل لحظة.",
     cta: "استكشف المجموعة",
-    ctaHref: "/ar/collections",
+    ctaHref: sitePaths.collections.AR,
     galleryTag: "المجموعات",
     galleryTitle: "موسم 2025",
     galleryBody: "مجموعة VOILÉE لعام 2025 هي انعكاس للأناقة والأصالة وديمومة الزمن. كل قطعة تقدم صورة ظلية تجسّد الحالات المتعددة للمرأة.",

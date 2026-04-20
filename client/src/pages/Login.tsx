@@ -4,6 +4,7 @@ import { Eye, EyeOff, Loader2, ChevronLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { sitePaths } from "@/lib/sitePaths";
 
 const LOGO_URL =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_logo_2e68b438.webp";
@@ -64,9 +65,9 @@ const t = {
   },
 };
 
-const homeLinks = { TR: "/", EN: "/en", AR: "/ar" };
-const registerLinks = { TR: "/uye-ol", EN: "/en/register", AR: "/ar/register" };
-const forgotLinks = { TR: "/sifremi-unuttum", EN: "/en/forgot-password", AR: "/ar/forgot-password" };
+const homeLinks = sitePaths.home;
+const registerLinks = sitePaths.register;
+const forgotLinks = sitePaths.forgotPassword;
 
 function getRedirectAfterLogin(lang: "TR" | "EN" | "AR") {
   if (typeof window === "undefined") return homeLinks[lang];

@@ -20,6 +20,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useOrders } from "@/contexts/OrdersContext";
 import { api } from "@/lib/api";
 import { trpc } from "@/lib/trpc";
+import { sitePaths } from "@/lib/sitePaths";
 
 // ─── Translations ───────────────────────────────────────────────────────────────
 
@@ -441,6 +442,7 @@ function VerificationsSection({
   tx: (typeof t)[keyof typeof t];
   isRTL: boolean;
 }) {
+  const { lang } = useLanguage();
   const utils = trpc.useUtils();
   const { data: verifications = [], isLoading } =
     trpc.verification.byOrderNumber.useQuery({ orderNumber });
@@ -477,7 +479,7 @@ function VerificationsSection({
           const status: string = v.status ?? "unowned";
           const owned = status === "registered";
           const transferring = status === "transferring";
-          const certUrl = `/dogrulama?seri=${encodeURIComponent(v.serialNumber)}`;
+          const certUrl = `${sitePaths.verify[lang]}?seri=${encodeURIComponent(v.serialNumber)}`;
           return (
             <li
               key={v.id}

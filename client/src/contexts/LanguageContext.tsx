@@ -1,11 +1,20 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "wouter";
 
 type Language = "TR" | "EN" | "AR";
+
+function langFromPathSegment(firstSegment: string | undefined): Language {
+  const s = firstSegment?.toLowerCase();
+  if (s === "en") return "EN";
+  if (s === "ar") return "AR";
+  return "TR";
+}
 
 interface LanguageContextType {
   lang: Language;
   setLang: (lang: Language) => void;
   isRTL: boolean;
+  syncFromPath: (pathname: string) => void;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -15,15 +24,17 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [transitioning, setTransitioning] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const pathLang = window.location.pathname.split("/")[1];
-    if (pathLang === "en") setLangState("EN");
-    else if (pathLang === "ar") setLangState("AR");
-    else setLangState("TR");
-
-    document.documentElement.dir = pathLang === "ar" ? "rtl" : "ltr";
-    document.documentElement.lang = pathLang === "ar" ? "ar" : pathLang === "en" ? "en" : "tr";
+  const syncFromPath = useCallback((pathname: string) => {
+    const seg = pathname.split("/").filter(Boolean)[0];
+    const L = langFromPathSegment(seg);
+    setLangState(L);
+    document.documentElement.dir = L === "AR" ? "rtl" : "ltr";
+    document.documentElement.lang = L === "AR" ? "ar" : L === "EN" ? "en" : "tr";
   }, []);
+
+  useEffect(() => {
+    syncFromPath(window.location.pathname);
+  }, [syncFromPath]);
 
   const setLang = (newLang: Language) => {
     setTransitioning(true);
@@ -38,7 +49,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <LanguageContext.Provider value={{ lang, setLang, isRTL: lang === "AR" }}>
+    <LanguageContext.Provider value={{ lang, setLang, isRTL: lang === "AR", syncFromPath }}>
       {children}
       <div
         ref={overlayRef}
@@ -57,6 +68,16 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       />
     </LanguageContext.Provider>
   );
+}
+
+/** Keeps `lang` in sync with the URL prefix when using client-side navigation. */
+export function LangPathSync() {
+  const [loc] = useLocation();
+  const { syncFromPath } = useLanguage();
+  useEffect(() => {
+    syncFromPath(loc);
+  }, [loc, syncFromPath]);
+  return null;
 }
 
 export function useLanguage() {

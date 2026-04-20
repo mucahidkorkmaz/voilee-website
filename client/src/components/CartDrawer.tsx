@@ -3,6 +3,7 @@ import { X, ShoppingBag, Plus, Minus, Trash2, ArrowRight } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useLocation } from "wouter";
+import { sitePaths } from "@/lib/sitePaths";
 
 const t = {
   TR: {
@@ -49,7 +50,7 @@ const t = {
   },
 };
 
-const checkoutPath = { TR: "/odeme", EN: "/en/checkout", AR: "/ar/checkout" };
+const checkoutPath = sitePaths.checkout;
 
 export default function CartDrawer() {
   const { cartItems, removeFromCart, updateQuantity, cartTotal, isCartOpen, closeCart } = useCart();

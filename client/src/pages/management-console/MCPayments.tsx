@@ -413,7 +413,7 @@ export default function MCPayments() {
                 <span className="text-sm font-medium">Net Satış Geliri</span>
               </div>
               <span className="font-['Cormorant_Garamond'] text-lg font-light font-medium">
-                {formatCurrency(stats.netRevenue)}
+                {formatCurrency(stats.netRevenue ?? 0)}
               </span>
             </div>
             <div className="flex items-center justify-between px-6 py-3 bg-red-50/30">
@@ -443,11 +443,11 @@ export default function MCPayments() {
               </div>
               <span
                 className={`font-['Cormorant_Garamond'] text-2xl font-light ${
-                  stats.profit >= 0 ? "text-emerald-700" : "text-red-600"
+                  (stats.profit ?? 0) >= 0 ? "text-emerald-700" : "text-red-600"
                 }`}
               >
-                {stats.profit < 0 ? "−" : ""}
-                {formatCurrency(Math.abs(stats.profit))}
+                {(stats.profit ?? 0) < 0 ? "−" : ""}
+                {formatCurrency(Math.abs(stats.profit ?? 0))}
               </span>
             </div>
           </div>

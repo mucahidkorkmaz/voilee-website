@@ -15,6 +15,7 @@ import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { sitePaths, productPath, type SiteLang } from "@/lib/sitePaths";
 
 // ─── Translations ───────────────────────────────────────────────────────────────
 
@@ -83,49 +84,28 @@ const t = {
 
 // ─── URL Map ────────────────────────────────────────────────────────────────────
 
+function accountUrls(lang: SiteLang) {
+  const a = sitePaths.account[lang];
+  return {
+    giris: sitePaths.login[lang],
+    home: sitePaths.home[lang],
+    hesap: a,
+    siparisler: sitePaths.accountOrders[lang],
+    siparis: (id: string) => `${sitePaths.accountOrders[lang]}/${encodeURIComponent(id)}`,
+    iade: sitePaths.accountReturns[lang],
+    iadeDetay: (id: string) => `${sitePaths.accountReturns[lang]}/${encodeURIComponent(id)}`,
+    adresler: sitePaths.accountAddresses[lang],
+    liste: sitePaths.accountWishlist[lang],
+    bilgiler: sitePaths.accountProfile[lang],
+    koleksiyonlar: sitePaths.collections[lang],
+    urun: (slug: string) => productPath(lang, slug),
+  };
+}
+
 export const hesapUrls = {
-  TR: {
-    giris: "/giris",
-    home: "/",
-    hesap: "/hesap",
-    siparisler: "/hesap/siparisler",
-    siparis: (id: string) => `/hesap/siparisler/${id}`,
-    iade: "/hesap/iade",
-    iadeDetay: (id: string) => `/hesap/iade/${id}`,
-    adresler: "/hesap/adresler",
-    liste: "/hesap/liste",
-    bilgiler: "/hesap/bilgiler",
-    koleksiyonlar: "/koleksiyonlar",
-    urun: (slug: string) => `/urun/${slug}`,
-  },
-  EN: {
-    giris: "/en/login",
-    home: "/en",
-    hesap: "/en/hesap",
-    siparisler: "/en/hesap/siparisler",
-    siparis: (id: string) => `/en/hesap/siparisler/${id}`,
-    iade: "/en/hesap/iade",
-    iadeDetay: (id: string) => `/en/hesap/iade/${id}`,
-    adresler: "/en/hesap/adresler",
-    liste: "/en/hesap/liste",
-    bilgiler: "/en/hesap/bilgiler",
-    koleksiyonlar: "/en/collections",
-    urun: (slug: string) => `/en/product/${slug}`,
-  },
-  AR: {
-    giris: "/ar/login",
-    home: "/ar",
-    hesap: "/ar/hesap",
-    siparisler: "/ar/hesap/siparisler",
-    siparis: (id: string) => `/ar/hesap/siparisler/${id}`,
-    iade: "/ar/hesap/iade",
-    iadeDetay: (id: string) => `/ar/hesap/iade/${id}`,
-    adresler: "/ar/hesap/adresler",
-    liste: "/ar/hesap/liste",
-    bilgiler: "/ar/hesap/bilgiler",
-    koleksiyonlar: "/ar/collections",
-    urun: (slug: string) => `/ar/product/${slug}`,
-  },
+  TR: accountUrls("TR"),
+  EN: accountUrls("EN"),
+  AR: accountUrls("AR"),
 };
 
 // ─── Nav Items ──────────────────────────────────────────────────────────────────

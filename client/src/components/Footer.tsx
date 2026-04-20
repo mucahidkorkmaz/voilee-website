@@ -1,6 +1,7 @@
 import { Instagram, Twitter, Linkedin, Youtube, ArrowRight, ArrowLeft, MessageCircle, Send } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { sitePaths } from "@/lib/sitePaths";
 
 const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_logo_2e68b438.webp";
 
@@ -161,23 +162,23 @@ export default function Footer() {
           support: "Destek",
           legal: "Yasal",
           collectionLinks: [
-            { label: "ORIGINE", href: "/koleksiyonlar" },
-            { label: "MOUVEMENT", href: "/koleksiyonlar" },
-            { label: "ÉPURE", href: "/koleksiyonlar" },
-            { label: "NOIR", href: "/koleksiyonlar" },
-            { label: "HÉRITAGE", href: "/koleksiyonlar" },
-            { label: "ATELIER", href: "/koleksiyonlar" },
+            { label: "ORIGINE", href: sitePaths.collections.TR },
+            { label: "MOUVEMENT", href: sitePaths.collections.TR },
+            { label: "ÉPURE", href: sitePaths.collections.TR },
+            { label: "NOIR", href: sitePaths.collections.TR },
+            { label: "HÉRITAGE", href: sitePaths.collections.TR },
+            { label: "ATELIER", href: sitePaths.collections.TR },
           ],
           companyLinks: [
-            { label: "Hakkımızda", href: "/hakkimizda" },
-            { label: "Hikayemiz", href: "/hikayemiz" },
-            { label: "Sürdürülebilirlik", href: "/surdurulebilirlik" },
-            { label: "Journal", href: "/journal" },
+            { label: "Hakkımızda", href: sitePaths.about.TR },
+            { label: "Hikayemiz", href: sitePaths.story.TR },
+            { label: "Sürdürülebilirlik", href: sitePaths.sustainability.TR },
+            { label: "Journal", href: sitePaths.journal.TR },
           ],
           supportLinks: [
-            { label: "Beden Rehberi", href: "/beden-rehberi" },
-            { label: "Kargo & İade", href: "/kargo-iade" },
-            { label: "İletişim", href: "/iletisim" },
+            { label: "Beden Rehberi", href: sitePaths.sizeGuide.TR },
+            { label: "Kargo & İade", href: sitePaths.shippingReturns.TR },
+            { label: "İletişim", href: sitePaths.contact.TR },
             ...(social.whatsappUrl ? [{ label: "WhatsApp", href: social.whatsappUrl }] : []),
           ],
           legalLinks: [

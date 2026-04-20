@@ -4,6 +4,7 @@ import {
   createCmsPage,
   createCollection,
   createDiscount,
+  createExpense,
   createMediaItem,
   createProduct,
   createSilhouette,
@@ -12,6 +13,7 @@ import {
   deleteCollection,
   deleteCmsPage,
   deleteDiscount,
+  deleteExpense,
   deleteMediaItem,
   deleteProduct,
   deleteSilhouette,
@@ -22,9 +24,11 @@ import {
   getAllCollections,
   getAllDiscounts,
   getAllEmailTemplates,
+  getAllExpenses,
   getAllMediaItems,
   getAllOrders,
   getAllProducts,
+  getAllReturns,
   getAllSilhouettes,
   getAllUsers,
   getAllWebhooks,
@@ -37,8 +41,10 @@ import {
   updateCmsPage,
   updateCollection,
   updateDiscount,
+  updateExpense,
   updateOrderStatus,
   updateProduct,
+  updateReturnStatus,
   updateSilhouette,
   updateUserRole,
   updateWebhook,
@@ -306,6 +312,25 @@ export const adminRouter = router({
       }),
   }),
 
+  // ─── Returns ────────────────────────────────────────────────────────────────
+  returns: router({
+    list: adminProcedure.query(async () => {
+      return await getAllReturns();
+    }),
+    updateStatus: adminProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          status: z.enum(["requested", "accepted", "rejected", "processed"]),
+          adminNote: z.string().optional(),
+          refundAmount: z.string().optional(),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        return await updateReturnStatus(input.id, input.status, input.adminNote, input.refundAmount);
+      }),
+  }),
+
   // ─── Newsletter ─────────────────────────────────────────────────────────────
   newsletter: router({
     list: adminProcedure.query(async () => {
@@ -367,6 +392,60 @@ export const adminRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         return await deleteDiscount(input.id);
+      }),
+  }),
+
+  // ─── Expenses ──────────────────────────────────────────────────────────────
+  expenses: router({
+    list: adminProcedure.query(async () => {
+      return await getAllExpenses();
+    }),
+    create: adminProcedure
+      .input(
+        z.object({
+          category: z.enum([
+            "shipping", "advertising", "material", "salary",
+            "rent", "tax", "commission", "packaging", "software", "other",
+          ]),
+          description: z.string().min(1),
+          amount: z.string(),
+          date: z.string(),
+          isRecurring: z.boolean().default(false),
+          notes: z.string().optional(),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        return await createExpense({
+          ...input,
+          date: new Date(input.date),
+        });
+      }),
+    update: adminProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          category: z.enum([
+            "shipping", "advertising", "material", "salary",
+            "rent", "tax", "commission", "packaging", "software", "other",
+          ]).optional(),
+          description: z.string().min(1).optional(),
+          amount: z.string().optional(),
+          date: z.string().optional(),
+          isRecurring: z.boolean().optional(),
+          notes: z.string().optional(),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        const { id, date, ...rest } = input;
+        return await updateExpense(id, {
+          ...rest,
+          ...(date ? { date: new Date(date) } : {}),
+        });
+      }),
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        return await deleteExpense(input.id);
       }),
   }),
 

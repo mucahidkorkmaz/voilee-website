@@ -1,0 +1,1 @@
+ALTER TABLE "returns" ADD COLUMN "refundAmount" numeric(12, 2);

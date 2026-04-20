@@ -263,6 +263,47 @@ export const cmsPages = pgTable("cmsPages", {
 export type CmsPage = typeof cmsPages.$inferSelect;
 export type InsertCmsPage = typeof cmsPages.$inferInsert;
 
+// ─── Returns ──────────────────────────────────────────────────────────────────
+
+export const returnStatusEnum = pgEnum("return_status", [
+  "requested",
+  "accepted",
+  "rejected",
+  "processed",
+]);
+
+export const returns = pgTable("returns", {
+  id: serial("id").primaryKey(),
+  returnNumber: varchar("returnNumber", { length: 50 }).notNull().unique(),
+  orderNumber: varchar("orderNumber", { length: 50 }).notNull(),
+  userId: integer("userId"),
+  customerEmail: varchar("customerEmail", { length: 320 }),
+  customerName: varchar("customerName", { length: 255 }),
+  reason: varchar("reason", { length: 100 }).notNull(),
+  notes: text("notes"),
+  status: returnStatusEnum("status").default("requested").notNull(),
+  refundAmount: decimal("refundAmount", { precision: 12, scale: 2 }),
+  adminNote: text("adminNote"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Return = typeof returns.$inferSelect;
+export type InsertReturn = typeof returns.$inferInsert;
+
+export const returnItems = pgTable("returnItems", {
+  id: serial("id").primaryKey(),
+  returnId: integer("returnId").notNull(),
+  productId: integer("productId"),
+  productName: varchar("productName", { length: 255 }).notNull(),
+  quantity: integer("quantity").notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }),
+  imageUrl: varchar("imageUrl", { length: 500 }),
+});
+
+export type ReturnItem = typeof returnItems.$inferSelect;
+export type InsertReturnItem = typeof returnItems.$inferInsert;
+
 // ─── Email Templates ──────────────────────────────────────────────────────────
 
 export const emailTemplates = pgTable("emailTemplates", {
@@ -275,6 +316,36 @@ export const emailTemplates = pgTable("emailTemplates", {
 
 export type EmailTemplate = typeof emailTemplates.$inferSelect;
 export type InsertEmailTemplate = typeof emailTemplates.$inferInsert;
+
+// ─── Expenses ──────────────────────────────────────────────────────────────────
+
+export const expenseCategoryEnum = pgEnum("expense_category", [
+  "shipping",
+  "advertising",
+  "material",
+  "salary",
+  "rent",
+  "tax",
+  "commission",
+  "packaging",
+  "software",
+  "other",
+]);
+
+export const expenses = pgTable("expenses", {
+  id: serial("id").primaryKey(),
+  category: expenseCategoryEnum("category").notNull(),
+  description: varchar("description", { length: 500 }).notNull(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  date: timestamp("date").notNull(),
+  isRecurring: boolean("isRecurring").default(false),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Expense = typeof expenses.$inferSelect;
+export type InsertExpense = typeof expenses.$inferInsert;
 
 // ─── Store Settings ────────────────────────────────────────────────────────────
 

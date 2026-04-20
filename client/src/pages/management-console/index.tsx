@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useIsMobile } from "@/hooks/useMobile";
 import {
+  ArrowDownRight,
   Bell,
   CreditCard,
   FileText,
@@ -19,6 +20,7 @@ import {
   Mail,
   Package,
   PanelLeft,
+  RotateCcw,
   Settings,
   ShoppingBag,
   ShoppingCart,
@@ -54,6 +56,8 @@ import MCCMS from "./MCCMS";
 import MCNewsletter from "./MCNewsletter";
 import MCEmailTemplates from "./MCEmailTemplates";
 import MCSettings from "./MCSettings";
+import MCReturns from "./MCReturns";
+import MCExpenses from "./MCExpenses";
 
 const MC_BASE = "/management-console";
 
@@ -81,6 +85,7 @@ const menuSections: MenuSection[] = [
     title: "SATIŞ",
     items: [
       { icon: ShoppingBag, label: "Siparişler", path: `${MC_BASE}/orders` },
+      { icon: RotateCcw, label: "İade Talepleri", path: `${MC_BASE}/returns` },
       { icon: ShoppingCart, label: "Terk Sepetler", path: `${MC_BASE}/abandoned-carts` },
       { icon: Users, label: "Müşteriler", path: `${MC_BASE}/users` },
     ],
@@ -88,7 +93,8 @@ const menuSections: MenuSection[] = [
   {
     title: "FİNANS",
     items: [
-      { icon: CreditCard, label: "Ödemeler", path: `${MC_BASE}/payments` },
+      { icon: CreditCard, label: "Finansal Özet", path: `${MC_BASE}/payments` },
+      { icon: ArrowDownRight, label: "Giderler", path: `${MC_BASE}/expenses` },
       { icon: Tag, label: "İndirimler", path: `${MC_BASE}/discounts` },
       { icon: TrendingUp, label: "Raporlar", path: `${MC_BASE}/revenue` },
     ],
@@ -404,9 +410,11 @@ function MCLayout() {
             <Route path={`${MC_BASE}/collections`} component={MCCollections} />
             <Route path={`${MC_BASE}/media`} component={MCMedia} />
             <Route path={`${MC_BASE}/orders`} component={MCOrders} />
+            <Route path={`${MC_BASE}/returns`} component={MCReturns} />
             <Route path={`${MC_BASE}/abandoned-carts`} component={MCAbandonedCarts} />
             <Route path={`${MC_BASE}/users`} component={MCUsers} />
             <Route path={`${MC_BASE}/payments`} component={MCPayments} />
+            <Route path={`${MC_BASE}/expenses`} component={MCExpenses} />
             <Route path={`${MC_BASE}/discounts`} component={MCDiscounts} />
             <Route path={`${MC_BASE}/revenue`} component={MCRevenue} />
             <Route path={`${MC_BASE}/shipping`} component={MCShipping} />

@@ -33,6 +33,7 @@ import {
   Layers,
   Shapes,
   FolderOpen,
+  ShieldCheck,
 } from "lucide-react";
 import { CSSProperties, FormEvent, useEffect, useRef, useState } from "react";
 import { Route, Switch, useLocation } from "wouter";
@@ -58,6 +59,7 @@ import MCEmailTemplates from "./MCEmailTemplates";
 import MCSettings from "./MCSettings";
 import MCReturns from "./MCReturns";
 import MCExpenses from "./MCExpenses";
+import MCVerifications from "./MCVerifications";
 
 const MC_BASE = "/management-console";
 
@@ -79,6 +81,7 @@ const menuSections: MenuSection[] = [
       { icon: FolderOpen, label: "Kategoriler", path: `${MC_BASE}/categories` },
       { icon: Layers, label: "Koleksiyonlar", path: `${MC_BASE}/collections` },
       { icon: Image, label: "Medya", path: `${MC_BASE}/media` },
+      { icon: ShieldCheck, label: "Doğrulama", path: `${MC_BASE}/verifications` },
     ],
   },
   {
@@ -409,6 +412,7 @@ function MCLayout() {
             <Route path={`${MC_BASE}/categories`} component={MCCategories} />
             <Route path={`${MC_BASE}/collections`} component={MCCollections} />
             <Route path={`${MC_BASE}/media`} component={MCMedia} />
+            <Route path={`${MC_BASE}/verifications`} component={MCVerifications} />
             <Route path={`${MC_BASE}/orders`} component={MCOrders} />
             <Route path={`${MC_BASE}/returns`} component={MCReturns} />
             <Route path={`${MC_BASE}/abandoned-carts`} component={MCAbandonedCarts} />

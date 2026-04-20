@@ -5,7 +5,18 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { adminRouter } from "./adminRouter";
-import { createReturn, getReturn, getReturnsByUserId } from "./db";
+import {
+  cancelVerificationTransfer,
+  claimVerificationForUser,
+  createReturn,
+  getProductVerificationBySerial,
+  getReturn,
+  getReturnsByUserId,
+  getVerificationsByOrderNumber,
+  incrementVerificationScan,
+  initiateVerificationTransfer,
+  registerVerificationOwner,
+} from "./db";
 
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -59,6 +70,69 @@ export const appRouter = router({
     myReturns: protectedProcedure.query(async ({ ctx }) => {
       return await getReturnsByUserId(ctx.user.id);
     }),
+  }),
+  verification: router({
+    bySerial: publicProcedure
+      .input(z.object({ serialNumber: z.string().min(1), track: z.boolean().optional() }))
+      .query(async ({ input }) => {
+        const normalized = input.serialNumber.trim();
+        if (input.track) {
+          const tracked = await incrementVerificationScan(normalized);
+          if (tracked) return tracked;
+        }
+        return await getProductVerificationBySerial(normalized);
+      }),
+    register: publicProcedure
+      .input(
+        z.object({
+          serialNumber: z.string().min(1),
+          name: z.string().min(1),
+          email: z.string().email().optional(),
+        }),
+      )
+      .mutation(async ({ input, ctx }) => {
+        return await registerVerificationOwner(input.serialNumber.trim(), {
+          userId: ctx.user?.id ?? null,
+          name: input.name,
+          email: ctx.user?.email ?? input.email ?? null,
+        });
+      }),
+    transferStart: publicProcedure
+      .input(
+        z.object({
+          serialNumber: z.string().min(1),
+          name: z.string().min(1),
+          email: z.string().email(),
+          note: z.string().optional(),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        return await initiateVerificationTransfer(input.serialNumber.trim(), {
+          name: input.name,
+          email: input.email,
+          note: input.note ?? null,
+        });
+      }),
+    transferCancel: publicProcedure
+      .input(z.object({ serialNumber: z.string().min(1) }))
+      .mutation(async ({ input }) => {
+        return await cancelVerificationTransfer(input.serialNumber.trim());
+      }),
+    byOrderNumber: publicProcedure
+      .input(z.object({ orderNumber: z.string().min(1) }))
+      .query(async ({ input }) => {
+        return await getVerificationsByOrderNumber(input.orderNumber.trim());
+      }),
+    claimForOrder: protectedProcedure
+      .input(z.object({ serialNumber: z.string().min(1) }))
+      .mutation(async ({ input, ctx }) => {
+        return await claimVerificationForUser({
+          serialNumber: input.serialNumber.trim(),
+          userId: ctx.user.id,
+          userName: ctx.user.name ?? ctx.user.email ?? "Müşteri",
+          userEmail: ctx.user.email ?? null,
+        });
+      }),
   }),
   admin: adminRouter,
 });

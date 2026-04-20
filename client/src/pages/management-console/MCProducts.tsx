@@ -22,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, QrCode } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -90,11 +90,26 @@ export default function MCProducts() {
     },
     onError: e => toast.error(e.message),
   });
+  const generateSerialsMutation = trpc.admin.verifications.generateBatch.useMutation({
+    onSuccess: (data) => {
+      utils.admin.verifications.list.invalidate();
+      toast.success(`${data?.length ?? 0} adet seri numarası üretildi.`);
+      setSerialDialog(null);
+      setSerialCount(1);
+      setSerialBatch("");
+    },
+    onError: e => toast.error(e.message),
+  });
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [form, setForm] = useState<ProductFormData>(emptyForm);
+  const [serialDialog, setSerialDialog] = useState<{ id: number; name: string } | null>(null);
+  const [serialCount, setSerialCount] = useState(1);
+  const [serialBatch, setSerialBatch] = useState("");
+  const [serialMaterial, setSerialMaterial] = useState("");
+  const [serialProduction, setSerialProduction] = useState("");
 
   const openCreate = () => {
     setEditingId(null);
@@ -231,6 +246,19 @@ export default function MCProducts() {
                     </td>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-1 justify-end">
+                        <button
+                          onClick={() => {
+                            setSerialDialog({ id: p.id, name: p.nameTR });
+                            setSerialCount(Math.max(p.stock ?? 1, 1));
+                            setSerialBatch("");
+                            setSerialMaterial("");
+                            setSerialProduction("");
+                          }}
+                          className="p-1.5 hover:bg-[#C9A96E]/10 rounded transition-colors text-muted-foreground hover:text-[#C9A96E]"
+                          title="Seri No Üret"
+                        >
+                          <QrCode className="h-3.5 w-3.5" />
+                        </button>
                         <button
                           onClick={() => openEdit(p)}
                           className="p-1.5 hover:bg-muted rounded transition-colors text-muted-foreground hover:text-foreground"
@@ -394,6 +422,106 @@ export default function MCProducts() {
             </Button>
             <Button onClick={handleSubmit} disabled={isPending}>
               {isPending ? "Kaydediliyor…" : editingId !== null ? "Güncelle" : "Oluştur"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Serial Generate Dialog */}
+      <Dialog
+        open={serialDialog !== null}
+        onOpenChange={open => {
+          if (!open) setSerialDialog(null);
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-['Cormorant_Garamond'] text-2xl font-light">
+              Seri Numarası Üret
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="bg-[#C9A96E]/5 border border-[#C9A96E]/20 rounded px-4 py-3">
+              <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground mb-1">
+                Ürün
+              </p>
+              <p className="font-medium text-sm">{serialDialog?.name}</p>
+              <p className="text-xs text-muted-foreground mt-1.5 font-['Cormorant_Garamond'] italic">
+                Format: VL-{new Date().getFullYear()}-00001, 00002, …
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
+                Adet * (1–500)
+              </Label>
+              <Input
+                type="number"
+                min="1"
+                max="500"
+                value={serialCount}
+                onChange={e => setSerialCount(Math.max(1, Math.min(500, parseInt(e.target.value) || 1)))}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
+                Parti No
+              </Label>
+              <Input
+                value={serialBatch}
+                onChange={e => setSerialBatch(e.target.value)}
+                placeholder={`örn. VL-${new Date().getFullYear()}-003`}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
+                  Üretim
+                </Label>
+                <Input
+                  value={serialProduction}
+                  onChange={e => setSerialProduction(e.target.value)}
+                  placeholder="Şubat 2026"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
+                  Kumaş
+                </Label>
+                <Input
+                  value={serialMaterial}
+                  onChange={e => setSerialMaterial(e.target.value)}
+                  placeholder="%100 Yün"
+                />
+              </div>
+            </div>
+
+            <p className="text-[11px] text-muted-foreground font-['Cormorant_Garamond'] italic leading-relaxed">
+              Üretim sonrası seriler "Doğrulama" sayfasında görünür. QR kodları oradan indirilebilir.
+            </p>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setSerialDialog(null)}>
+              İptal
+            </Button>
+            <Button
+              onClick={() => {
+                if (!serialDialog) return;
+                generateSerialsMutation.mutate({
+                  productId: serialDialog.id,
+                  count: serialCount,
+                  batchNumber: serialBatch.trim() || undefined,
+                  productionDate: serialProduction.trim() || undefined,
+                  material: serialMaterial.trim() || undefined,
+                });
+              }}
+              disabled={generateSerialsMutation.isPending}
+            >
+              {generateSerialsMutation.isPending
+                ? "Üretiliyor…"
+                : `${serialCount} Adet Üret`}
             </Button>
           </DialogFooter>
         </DialogContent>

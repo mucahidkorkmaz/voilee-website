@@ -347,6 +347,49 @@ export const expenses = pgTable("expenses", {
 export type Expense = typeof expenses.$inferSelect;
 export type InsertExpense = typeof expenses.$inferInsert;
 
+// ─── Product Verifications (Doğrulama) ────────────────────────────────────────
+
+export const verificationStatusEnum = pgEnum("verification_status", [
+  "unowned",
+  "registered",
+  "transferring",
+]);
+
+export const productVerifications = pgTable("productVerifications", {
+  id: serial("id").primaryKey(),
+  serialNumber: varchar("serialNumber", { length: 50 }).notNull().unique(),
+  productId: integer("productId"),
+  productNameTR: varchar("productNameTR", { length: 255 }),
+  productNameEN: varchar("productNameEN", { length: 255 }),
+  productNameAR: varchar("productNameAR", { length: 255 }),
+  collection: varchar("collection", { length: 100 }),
+  collectionYear: varchar("collectionYear", { length: 20 }),
+  batchNumber: varchar("batchNumber", { length: 100 }),
+  productionDate: varchar("productionDate", { length: 100 }),
+  material: varchar("material", { length: 255 }),
+  imageUrl: varchar("imageUrl", { length: 500 }),
+  orderNumber: varchar("orderNumber", { length: 50 }),
+  orderItemId: integer("orderItemId"),
+  status: verificationStatusEnum("status").default("unowned").notNull(),
+  ownerUserId: integer("ownerUserId"),
+  ownerName: varchar("ownerName", { length: 255 }),
+  ownerEmail: varchar("ownerEmail", { length: 320 }),
+  registeredAt: timestamp("registeredAt"),
+  transferToName: varchar("transferToName", { length: 255 }),
+  transferToEmail: varchar("transferToEmail", { length: 320 }),
+  transferNote: text("transferNote"),
+  transferInitiatedAt: timestamp("transferInitiatedAt"),
+  scanCount: integer("scanCount").default(0).notNull(),
+  firstScannedAt: timestamp("firstScannedAt"),
+  lastScannedAt: timestamp("lastScannedAt"),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type ProductVerification = typeof productVerifications.$inferSelect;
+export type InsertProductVerification = typeof productVerifications.$inferInsert;
+
 // ─── Store Settings ────────────────────────────────────────────────────────────
 
 export const storeSettings = pgTable("storeSettings", {
@@ -369,8 +412,28 @@ export const storeSettings = pgTable("storeSettings", {
   freeShippingThreshold: decimal("freeShippingThreshold", { precision: 10, scale: 2 }).default("500"),
   shippingCostDomestic: decimal("shippingCostDomestic", { precision: 10, scale: 2 }).default("49.99"),
   shippingCostInternational: decimal("shippingCostInternational", { precision: 10, scale: 2 }).default("199.99"),
+  smtpHost: varchar("smtpHost", { length: 255 }),
+  smtpPort: varchar("smtpPort", { length: 10 }),
+  smtpSecure: boolean("smtpSecure").default(false),
+  smtpUser: varchar("smtpUser", { length: 320 }),
+  smtpPass: varchar("smtpPass", { length: 500 }),
+  smtpFrom: varchar("smtpFrom", { length: 320 }),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type StoreSettings = typeof storeSettings.$inferSelect;
 export type InsertStoreSettings = typeof storeSettings.$inferInsert;
+
+// ─── Password Reset Tokens ────────────────────────────────────────────────────
+
+export const passwordResetTokens = pgTable("passwordResetTokens", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  token: varchar("token", { length: 255 }).notNull().unique(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;

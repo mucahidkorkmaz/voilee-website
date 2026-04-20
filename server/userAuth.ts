@@ -257,3 +257,87 @@ export function registerUserAuthRoutes(app: Express) {
     }
   });
 }
+
+export function registerPasswordResetRoutes(app: Express) {
+  // 1. Token gönder
+  app.post("/api/auth/forgot-password", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body ?? {};
+      if (typeof email !== "string") return res.status(400).json({ error: "Email gerekli" });
+
+      const { getDb } = await import("./db");
+      const db = await getDb();
+      if (!db) return res.status(500).json({ error: "DB bağlantısı yok" });
+
+      const { users, passwordResetTokens } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const { randomBytes } = await import("crypto");
+      const { sendEmail } = await import("./_core/email");
+      const { getStoreSettings } = await import("./db");
+
+      const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      // Kullanıcı bulunamasa bile başarılı dön (güvenlik)
+      if (!user || !user.passwordHash) return res.json({ ok: true });
+
+      const token = randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 dakika
+
+      await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, user.id));
+      await db.insert(passwordResetTokens).values({ userId: user.id, token, expiresAt });
+
+      const { ENV } = await import("./_core/env");
+      const baseUrl = ENV.corsOrigin?.split(",")[0]?.trim() ?? "";
+      const resetUrl = `${baseUrl}/sifremi-sifirla?token=${token}`;
+
+      await sendEmail({
+        to: email,
+        subject: "Şifre Sıfırlama Talebi",
+        html: `<p>Merhaba,</p><p><a href="${resetUrl}">Şifremi Sıfırla</a></p><p>Bu bağlantı 30 dakika geçerlidir.</p>`,
+      });
+
+      return res.json({ ok: true });
+    } catch (err) {
+      console.error("[ForgotPassword]", err);
+      return res.status(500).json({ error: "Bir hata oluştu" });
+    }
+  });
+
+  // 2. Şifreyi sıfırla
+  app.post("/api/auth/reset-password", async (req: Request, res: Response) => {
+    try {
+      const { token, password } = req.body ?? {};
+      if (typeof token !== "string" || typeof password !== "string" || password.length < 8) {
+        return res.status(400).json({ error: "Geçersiz istek" });
+      }
+
+      const { getDb } = await import("./db");
+      const db = await getDb();
+      if (!db) return res.status(500).json({ error: "DB bağlantısı yok" });
+
+      const { users, passwordResetTokens } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const { scrypt, randomBytes } = await import("crypto");
+      const { promisify } = await import("util");
+
+      const scryptAsync = promisify(scrypt);
+
+      const [resetToken] = await db.select().from(passwordResetTokens).where(eq(passwordResetTokens.token, token)).limit(1);
+      if (!resetToken || resetToken.usedAt || resetToken.expiresAt < new Date()) {
+        return res.status(400).json({ error: "Bağlantı geçersiz veya süresi dolmuş" });
+      }
+
+      const salt = randomBytes(16).toString("hex");
+      const KEY_LEN = 32;
+      const derived = await scryptAsync(password, salt, KEY_LEN) as Buffer;
+      const passwordHash = `${salt}:${derived.toString("hex")}`;
+
+      await db.update(users).set({ passwordHash }).where(eq(users.id, resetToken.userId));
+      await db.update(passwordResetTokens).set({ usedAt: new Date() }).where(eq(passwordResetTokens.id, resetToken.id));
+
+      return res.json({ ok: true });
+    } catch (err) {
+      console.error("[ResetPassword]", err);
+      return res.status(500).json({ error: "Bir hata oluştu" });
+    }
+  });
+}

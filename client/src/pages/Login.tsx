@@ -66,6 +66,7 @@ const t = {
 
 const homeLinks = { TR: "/", EN: "/en", AR: "/ar" };
 const registerLinks = { TR: "/uye-ol", EN: "/en/register", AR: "/ar/register" };
+const forgotLinks = { TR: "/sifremi-unuttum", EN: "/en/forgot-password", AR: "/ar/forgot-password" };
 
 function getRedirectAfterLogin(lang: "TR" | "EN" | "AR") {
   if (typeof window === "undefined") return homeLinks[lang];
@@ -212,12 +213,11 @@ export default function Login() {
                 />
                 {tx.remember}
               </label>
-              <button
-                type="button"
+              <Link href={forgotLinks[lang]}
                 className="font-body text-xs text-[#1C1C1E]/60 hover:text-[#C9A96E] transition-colors"
               >
                 {tx.forgot}
-              </button>
+              </Link>
             </div>
 
             {error && (

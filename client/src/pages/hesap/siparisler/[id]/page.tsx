@@ -9,11 +9,17 @@ import {
   Clock,
   XCircle,
   RotateCcw,
+  ShieldCheck,
+  QrCode,
+  ExternalLink,
+  ArrowRight,
 } from "lucide-react";
+import { toast } from "sonner";
 import AccountLayout, { hesapUrls } from "../../layout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOrders } from "@/contexts/OrdersContext";
 import { api } from "@/lib/api";
+import { trpc } from "@/lib/trpc";
 
 // ─── Translations ───────────────────────────────────────────────────────────────
 
@@ -43,6 +49,16 @@ const t = {
       cancelled: "İptal Edildi",
     },
     initiateReturn: "İade Talebi Oluştur",
+    authenticity: "Orijinallik Sertifikaları",
+    authenticityDesc:
+      "Siparişinize ait parçaların benzersiz seri numaralarını buradan görüntüleyebilir, karekodunu tarayarak orijinalliğini doğrulayabilir ve sahipliği adınıza tescil edebilirsiniz.",
+    serialNumber: "Seri Numarası",
+    claimOwnership: "Sahipliği Üstlen",
+    viewCertificate: "Sertifikayı Görüntüle",
+    ownedByYou: "Adınıza Tescilli",
+    ownedByOther: "Başka Bir Sahibi Var",
+    transferring: "Devir Sürecinde",
+    claimSuccess: "Parça adınıza başarıyla tescil edildi.",
   },
   EN: {
     back: "Back to Orders",
@@ -69,6 +85,16 @@ const t = {
       cancelled: "Cancelled",
     },
     initiateReturn: "Initiate Return",
+    authenticity: "Authenticity Certificates",
+    authenticityDesc:
+      "View the unique serial numbers of pieces in your order, verify authenticity by scanning the QR code, and register ownership in your name.",
+    serialNumber: "Serial Number",
+    claimOwnership: "Claim Ownership",
+    viewCertificate: "View Certificate",
+    ownedByYou: "Registered to You",
+    ownedByOther: "Owned by Someone Else",
+    transferring: "Transfer in Progress",
+    claimSuccess: "Piece has been registered in your name.",
   },
   AR: {
     back: "العودة إلى الطلبات",
@@ -95,6 +121,16 @@ const t = {
       cancelled: "ملغى",
     },
     initiateReturn: "طلب إرجاع",
+    authenticity: "شهادات الأصالة",
+    authenticityDesc:
+      "اعرض الأرقام التسلسلية الفريدة للقطع في طلبك، وتحقق من الأصالة بمسح رمز QR، وسجّل الملكية باسمك.",
+    serialNumber: "الرقم التسلسلي",
+    claimOwnership: "تسجيل الملكية",
+    viewCertificate: "عرض الشهادة",
+    ownedByYou: "مسجّل باسمك",
+    ownedByOther: "مملوك لشخص آخر",
+    transferring: "جاري النقل",
+    claimSuccess: "تم تسجيل القطعة باسمك.",
   },
 };
 
@@ -377,9 +413,147 @@ export default function SiparisDetayPage() {
               )}
             </div>
           </div>
+
+          {/* Authenticity / verification section — only for delivered orders */}
+          {order.status === "delivered" && (
+            <div className="mt-4">
+              <VerificationsSection
+                orderNumber={order.orderNumber}
+                tx={tx}
+                isRTL={isRTL}
+              />
+            </div>
+          )}
         </div>
       )}
     </AccountLayout>
+  );
+}
+
+// ─── Verifications Section ──────────────────────────────────────────────────────
+
+function VerificationsSection({
+  orderNumber,
+  tx,
+  isRTL,
+}: {
+  orderNumber: string;
+  tx: (typeof t)[keyof typeof t];
+  isRTL: boolean;
+}) {
+  const utils = trpc.useUtils();
+  const { data: verifications = [], isLoading } =
+    trpc.verification.byOrderNumber.useQuery({ orderNumber });
+
+  const claimMutation = trpc.verification.claimForOrder.useMutation({
+    onSuccess: () => {
+      utils.verification.byOrderNumber.invalidate({ orderNumber });
+      toast.success(tx.claimSuccess);
+    },
+    onError: e => toast.error(e.message),
+  });
+
+  if (isLoading) return null;
+  if (!verifications.length) return null;
+
+  return (
+    <div className="bg-white border border-[#C9A96E]/15 p-5 lg:p-7">
+      <div
+        className={`flex items-center gap-2 mb-2 ${
+          isRTL ? "flex-row-reverse" : ""
+        }`}
+      >
+        <ShieldCheck size={16} className="text-[#C9A96E]" />
+        <h2 className="font-body text-[10px] tracking-[0.25em] uppercase text-[#1C1C1E]/55">
+          {tx.authenticity}
+        </h2>
+      </div>
+      <p className="font-display italic text-[13px] text-[#1C1C1E]/55 mb-5 max-w-2xl">
+        {tx.authenticityDesc}
+      </p>
+
+      <ul className="divide-y divide-[#C9A96E]/10">
+        {verifications.map((v: any) => {
+          const status: string = v.status ?? "unowned";
+          const owned = status === "registered";
+          const transferring = status === "transferring";
+          const certUrl = `/dogrulama?seri=${encodeURIComponent(v.serialNumber)}`;
+          return (
+            <li
+              key={v.id}
+              className={`py-4 flex flex-col sm:flex-row sm:items-center gap-3 ${
+                isRTL ? "sm:flex-row-reverse" : ""
+              }`}
+            >
+              <div className="flex-1 min-w-0">
+                <div
+                  className={`flex items-center gap-2 mb-1 ${
+                    isRTL ? "flex-row-reverse" : ""
+                  }`}
+                >
+                  <QrCode size={13} className="text-[#C9A96E]" />
+                  <p className="font-body text-[10px] tracking-[0.25em] uppercase text-[#1C1C1E]/45">
+                    {tx.serialNumber}
+                  </p>
+                </div>
+                <p className="font-mono text-sm tracking-widest text-[#1C1C1E]">
+                  {v.serialNumber}
+                </p>
+                {v.productName && (
+                  <p className="font-display italic text-[13px] text-[#1C1C1E]/60 mt-0.5">
+                    {v.productName}
+                  </p>
+                )}
+                <p
+                  className={`font-body text-[10px] tracking-[0.2em] uppercase mt-1 ${
+                    owned
+                      ? "text-[#C9A96E]"
+                      : transferring
+                      ? "text-amber-600"
+                      : "text-[#1C1C1E]/40"
+                  }`}
+                >
+                  {owned
+                    ? tx.ownedByYou
+                    : transferring
+                    ? tx.transferring
+                    : tx.ownedByOther}
+                </p>
+              </div>
+              <div
+                className={`flex items-center gap-2 ${
+                  isRTL ? "flex-row-reverse" : ""
+                }`}
+              >
+                {!owned && !transferring && (
+                  <button
+                    onClick={() =>
+                      claimMutation.mutate({ serialNumber: v.serialNumber })
+                    }
+                    disabled={claimMutation.isPending}
+                    className={`inline-flex items-center gap-1.5 font-body text-[10px] tracking-[0.2em] uppercase bg-[#C9A96E] text-white hover:bg-[#1C1C1E] transition-colors px-3.5 py-2.5 disabled:opacity-60 ${
+                      isRTL ? "flex-row-reverse" : ""
+                    }`}
+                  >
+                    <span>{tx.claimOwnership}</span>
+                    <ArrowRight size={12} className={isRTL ? "rotate-180" : ""} />
+                  </button>
+                )}
+                <Link
+                  href={certUrl}
+                  className={`inline-flex items-center gap-1.5 font-body text-[10px] tracking-[0.2em] uppercase border border-[#1C1C1E]/20 text-[#1C1C1E]/60 hover:border-[#C9A96E] hover:text-[#C9A96E] transition-colors px-3.5 py-2.5 ${
+                    isRTL ? "flex-row-reverse" : ""
+                  }`}
+                >
+                  <span>{tx.viewCertificate}</span>
+                  <ExternalLink size={11} />
+                </Link>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 

@@ -6,7 +6,7 @@ import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerLocalAuthRoutes } from "../localAuth";
-import { registerUserAuthRoutes } from "../userAuth";
+import { registerUserAuthRoutes, registerPasswordResetRoutes } from "../userAuth";
 import { registerStorefrontRoutes } from "../storefrontRoutes";
 import { registerUploadRoutes, UPLOADS_DIR } from "../uploadRoutes";
 import { appRouter } from "../routers";
@@ -79,6 +79,7 @@ async function startServer() {
   registerLocalAuthRoutes(app);
   // Storefront user auth (email + password) — register/login/logout/me
   registerUserAuthRoutes(app);
+  registerPasswordResetRoutes(app);
   // Storefront public API — /api/v1/products, /api/v1/collections, /api/v1/orders
   registerStorefrontRoutes(app);
   // Görsel yükleme endpoint'i — /api/upload (admin yetkisi gerektirir)

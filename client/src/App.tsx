@@ -29,6 +29,7 @@ import Checkout from "./pages/Checkout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProductDetail from "./pages/ProductDetail";
+import Dogrulama from "./pages/Dogrulama";
 import ManagementConsolePage from "./pages/management-console";
 
 // Account pages — new architecture
@@ -40,6 +41,8 @@ import IadeDetayPage from "./pages/hesap/iade/[id]/page";
 import AdreslerPage from "./pages/hesap/adresler/page";
 import ListePage from "./pages/hesap/liste/page";
 import BilgilerPage from "./pages/hesap/bilgiler/page";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -75,7 +78,11 @@ function Router() {
         <Route path="/beden-rehberi" component={SizeGuide} />
         <Route path="/odeme" component={Checkout} />
         <Route path="/giris" component={Login} />
+        <Route path="/sifremi-unuttum" component={ForgotPassword} />
+        <Route path="/sifremi-sifirla" component={ResetPassword} />
         <Route path="/uye-ol" component={Register} />
+        <Route path="/dogrulama" component={Dogrulama} />
+        <Route path="/dogrulama/:serial" component={Dogrulama} />
 
         {/* Account — TR */}
         <Route path="/hesap" component={HesapPage} />
@@ -103,6 +110,10 @@ function Router() {
         <Route path="/en/checkout" component={Checkout} />
         <Route path="/en/login" component={Login} />
         <Route path="/en/register" component={Register} />
+        <Route path="/en/verify" component={Dogrulama} />
+        <Route path="/en/forgot-password" component={ForgotPassword} />
+        <Route path="/en/reset-password" component={ResetPassword} />
+        <Route path="/en/verify/:serial" component={Dogrulama} />
 
         {/* Account — EN */}
         <Route path="/en/hesap" component={HesapPage} />
@@ -130,7 +141,11 @@ function Router() {
         <Route path="/ar/checkout" component={Checkout} />
         <Route path="/ar/login" component={Login} />
         <Route path="/ar/register" component={Register} />
+        <Route path="/ar/verify" component={Dogrulama} />
+        <Route path="/ar/verify/:serial" component={Dogrulama} />
 
+        <Route path="/ar/forgot-password" component={ForgotPassword} />
+        <Route path="/ar/reset-password" component={ResetPassword} />
         {/* Account — AR */}
         <Route path="/ar/hesap" component={HesapPage} />
         <Route path="/ar/hesap/siparisler" component={SiparislerPage} />

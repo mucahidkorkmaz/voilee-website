@@ -8,8 +8,14 @@ export const ENV = {
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   adminPassword: process.env.ADMIN_PASSWORD ?? "",
-  // 3-katmanlı mimari: Frontend'in origin'i (virgülle ayrılmış birden fazla olabilir)
   corsOrigin: process.env.CORS_ORIGIN ?? "",
-  // true ise backend statik dosyaları da sunar (tek sunucu kurulumu için)
   serveStatic: process.env.SERVE_STATIC === "true",
+  smtp: {
+    host:   process.env.SMTP_HOST   ?? "",
+    port:   Number(process.env.SMTP_PORT)   || 587,
+    secure: process.env.SMTP_SECURE === "true",
+    user:   process.env.SMTP_USER   ?? "",
+    pass:   process.env.SMTP_PASS   ?? "",
+    from:   process.env.SMTP_FROM   ?? "",
+  },
 };

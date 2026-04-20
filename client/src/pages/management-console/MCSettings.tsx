@@ -25,6 +25,12 @@ type SettingsForm = {
   freeShippingThreshold: string;
   shippingCostDomestic: string;
   shippingCostInternational: string;
+  smtpHost: string;
+  smtpPort: string;
+  smtpSecure: boolean;
+  smtpUser: string;
+  smtpPass: string;
+  smtpFrom: string;
 };
 
 const emptyForm: SettingsForm = {
@@ -40,6 +46,12 @@ const emptyForm: SettingsForm = {
   tiktokUrl: "",
   pinterestUrl: "",
   linkedinUrl: "",
+  smtpHost: "",
+  smtpPort: "587",
+  smtpSecure: false,
+  smtpUser: "",
+  smtpPass: "",
+  smtpFrom: "",
   snapchatUrl: "",
   whatsappUrl: "",
   telegramUrl: "",
@@ -129,12 +141,18 @@ export default function MCSettings() {
         freeShippingThreshold: settings.freeShippingThreshold ?? "500",
         shippingCostDomestic: settings.shippingCostDomestic ?? "49.99",
         shippingCostInternational: settings.shippingCostInternational ?? "199.99",
+        smtpHost: settings.smtpHost ?? "",
+        smtpPort: settings.smtpPort ?? "587",
+        smtpSecure: settings.smtpSecure === true,
+        smtpUser: settings.smtpUser ?? "",
+        smtpPass: settings.smtpPass ?? "",
+        smtpFrom: settings.smtpFrom ?? "",
       });
       setDirty(false);
     }
   }, [settings]);
 
-  const set = (field: keyof SettingsForm, value: string) => {
+  const set = (field: keyof SettingsForm, value: string | boolean) => {
     setForm(f => ({ ...f, [field]: value }));
     setDirty(true);
   };
@@ -354,6 +372,37 @@ export default function MCSettings() {
                   onChange={e => set("shippingCostInternational", e.target.value)}
                   placeholder="199.99"
                 />
+              </div>
+            </div>
+          </section>
+
+          {/* SMTP */}
+          <section className="space-y-4">
+            <SectionTitle>SMTP Konfigürasyonu</SectionTitle>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">SMTP Sunucu</Label>
+                <Input value={form.smtpHost} onChange={e => set("smtpHost", e.target.value)} placeholder="smtp.gmail.com" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">Port</Label>
+                <Input value={form.smtpPort} onChange={e => set("smtpPort", e.target.value)} placeholder="587" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">Kullanıcı Adı</Label>
+                <Input value={form.smtpUser} onChange={e => set("smtpUser", e.target.value)} placeholder="info@voilee.com.tr" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">Şifre</Label>
+                <Input type="password" value={form.smtpPass} onChange={e => set("smtpPass", e.target.value)} placeholder="••••••••" />
+              </div>
+              <div className="space-y-1.5 md:col-span-2">
+                <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">Gönderen Adres</Label>
+                <Input value={form.smtpFrom} onChange={e => set("smtpFrom", e.target.value)} placeholder="VOILÉE <info@voilee.com.tr>" />
+              </div>
+              <div className="flex items-center gap-3">
+                <input type="checkbox" id="smtpSecure" checked={form.smtpSecure} onChange={e => set("smtpSecure", e.target.checked)} className="h-4 w-4" />
+                <Label htmlFor="smtpSecure" className="text-xs tracking-wider uppercase text-muted-foreground font-normal cursor-pointer">TLS (Port 465)</Label>
               </div>
             </div>
           </section>

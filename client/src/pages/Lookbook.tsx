@@ -72,22 +72,13 @@ export default function Lookbook() {
           </div>
           <div className="bg-[#1C1C1E] flex items-center justify-center p-12 lg:p-20">
             <div className="max-w-md">
-              <p className="font-body text-xs tracking-[0.25em] uppercase text-[#C9A96E] mb-6">
-                {c.tag}
-              </p>
               <h1 className="font-display text-4xl lg:text-5xl text-[#F7F3EC] leading-[1.2] mb-6 whitespace-pre-line">
                 {c.title}
               </h1>
               <div className="w-12 h-px bg-[#C9A96E] mb-6" />
-              <p className="font-body text-sm text-[#F7F3EC]/60 leading-relaxed mb-8">
+              <p className="font-body text-sm text-[#F7F3EC]/60 leading-relaxed">
                 {c.body}
               </p>
-              <Link href={c.ctaHref}>
-                <button className="btn-luxury text-[#F7F3EC] border-[#F7F3EC]/40 hover:bg-[#F7F3EC] hover:text-[#1C1C1E]">
-                  {c.cta}
-                  <ArrowRight size={14} />
-                </button>
-              </Link>
             </div>
           </div>
         </div>

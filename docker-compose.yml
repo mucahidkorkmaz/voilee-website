@@ -27,6 +27,8 @@ services:
 
   # ── Tier 2: Application ───────────────────────────────────────────────────────
   node:
+    # Push: docker compose build node && docker push mucahidkorkmaz/voilee-website:v2.3
+    image: mucahidkorkmaz/voilee-website:v2.3
     build:
       context: .
       dockerfile: Dockerfile

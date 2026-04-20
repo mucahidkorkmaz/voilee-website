@@ -28,6 +28,36 @@ type ActiveTemplate = {
 
 type PanelTab = "edit" | "preview";
 
+const PREVIEW_VARS: Record<string, string> = {
+  customer_name: "Ayşe Kaya",
+  customer_email: "ayse@ornek.com",
+  order_number: "1042",
+  order_total: "₺2.450,00",
+  order_date: "20 Nisan 2026",
+  order_url: "#",
+  site_name: "VOILÉE",
+  site_domain: "voilee.com",
+  tracking_number: "1Z999AA10123456784",
+  cargo_company: "Yurtiçi Kargo",
+  reset_url: "#",
+  refund_amount: "₺2.450,00",
+  additional_amount: "₺350,00",
+  payment_url: "#",
+  invoice_number: "INV-2026-1042",
+  invoice_url: "#",
+  download_url: "#",
+  store_address: "Nişantaşı, İstanbul",
+  bank_name: "Ziraat Bankası",
+  iban: "TR12 0001 0017 4531 1234 5678 90",
+  account_holder: "VOILÉE Moda A.Ş.",
+  cancel_reason: "",
+  reject_reason: "",
+};
+
+function applyPreviewVars(text: string): string {
+  return text.replace(/\{\{(\w+)\}\}/g, (_, key: string) => PREVIEW_VARS[key] ?? `{{${key}}}`);
+}
+
 export default function MCEmailTemplates() {
   const { data: templates, isLoading, refetch } = trpc.admin.emailTemplates.list.useQuery();
   const [activeGroupId, setActiveGroupId] = useState(EMAIL_TEMPLATE_GROUPS[0].id);
@@ -88,6 +118,13 @@ export default function MCEmailTemplates() {
 
   const activeGroup = EMAIL_TEMPLATE_GROUPS.find((g) => g.id === activeGroupId) ?? EMAIL_TEMPLATE_GROUPS[0];
   const activeMeta = active ? EMAIL_TEMPLATE_META[active.key] : null;
+
+  const hasOrderBlock =
+    activeMeta?.variables.some((v) => v.key === "order_number") ?? false;
+  const hasResetButton =
+    activeMeta?.variables.some((v) => v.key === "reset_url") ?? false;
+  const hasTrackingInfo =
+    activeMeta?.variables.some((v) => v.key === "tracking_number") ?? false;
 
   const appendVariable = (varKey: string) => {
     if (!active) return;
@@ -293,55 +330,157 @@ export default function MCEmailTemplates() {
                 </div>
               ) : (
                 /* Önizleme */
-                <div className="h-full bg-muted/40 flex items-start justify-center px-6 py-8 overflow-y-auto">
-                  <div className="w-full max-w-lg">
-                    <p className="text-xs text-muted-foreground text-center mb-4">
-                      Konu: <span className="font-medium text-foreground">{active.subject}</span>
+                <div className="h-full bg-[#F7F3EC] flex items-start justify-center px-6 py-8 overflow-y-auto">
+                  <div className="w-full max-w-[560px]">
+
+                    {/* Konu satırı */}
+                    <p className="text-xs text-center mb-4" style={{ color: "#8B7355" }}>
+                      Konu:{" "}
+                      <span className="font-medium" style={{ color: "#1C1C1E" }}>
+                        {applyPreviewVars(active.subject)}
+                      </span>
                     </p>
-                    <div className="bg-background border border-border rounded-2xl shadow-sm overflow-hidden">
-                      {/* E-posta başlığı */}
-                      <div className="bg-foreground px-8 py-6 text-center">
-                        <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-background/10 mb-3">
-                          <Mail className="h-5 w-5 text-background/80" />
-                        </div>
-                        <p className="text-background/50 text-xs tracking-widest uppercase">Bildirim</p>
+
+                    {/* E-posta kartı */}
+                    <div className="overflow-hidden" style={{
+                      background: "#FAFAF8",
+                      boxShadow: "0 2px 12px rgba(28,28,30,0.08)"
+                    }}>
+
+                      {/* Header */}
+                      <div className="px-10 py-7 text-center" style={{
+                        background: "#FAFAF8",
+                        borderBottom: "1px solid #E8E2D9"
+                      }}>
+                        <img
+                          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_logo_2e68b438.webp"
+                          alt="VOILÉE"
+                          style={{
+                            display: "block",
+                            margin: "0 auto",
+                            maxWidth: 140,
+                            height: "auto",
+                          }}
+                          onError={(e) => {
+                            // Logo yüklenemezse yazıya düş
+                            (e.currentTarget as HTMLImageElement).style.display = "none";
+                            const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (fallback) fallback.style.display = "block";
+                          }}
+                        />
+                        <span style={{
+                          display: "none",
+                          fontFamily: "Georgia, 'Times New Roman', serif",
+                          fontSize: 18,
+                          fontWeight: 300,
+                          letterSpacing: 6,
+                          textTransform: "uppercase" as const,
+                          color: "#C9A96E",
+                        }}>
+                          VOILÉE
+                        </span>
                       </div>
 
-                      {/* E-posta gövdesi */}
-                      <div className="px-8 py-7 space-y-5">
-                        <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">
-                          {active.body || activeMeta.defaultBody}
+                      {/* Gövde */}
+                      <div className="px-10 py-9 space-y-4">
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap"
+                          style={{ color: "#1C1C1E", fontWeight: 300, lineHeight: 1.85 }}>
+                          {applyPreviewVars(active.body || activeMeta.defaultBody)}
                         </p>
 
-                        {/* Örnek sipariş detayı */}
-                        <div className="rounded-xl border border-border/60 bg-muted/40 p-4 space-y-2">
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Sipariş No</span>
-                            <span className="font-medium text-foreground">#1001</span>
+                        {/* Sipariş tablosu — sadece order_number içeren şablonlarda */}
+                        {hasOrderBlock && (
+                          <div style={{ border: "1px solid #E8E2D9", marginTop: 24 }}>
+                            {[
+                              { label: "Sipariş No", value: `#${PREVIEW_VARS.order_number}` },
+                              { label: "Tarih", value: PREVIEW_VARS.order_date },
+                              { label: "Tutar", value: PREVIEW_VARS.order_total },
+                            ].map((row, i, arr) => (
+                              <div key={row.label} className="flex justify-between" style={{
+                                padding: "12px 18px",
+                                borderBottom: i < arr.length - 1 ? "1px solid #E8E2D9" : undefined,
+                                background: i === 0 ? "#F7F3EC" : undefined,
+                              }}>
+                                <span style={{
+                                  fontSize: 10, letterSpacing: 2,
+                                  textTransform: "uppercase" as const, color: "#8B7355"
+                                }}>
+                                  {row.label}
+                                </span>
+                                <span style={{ fontSize: 13, color: "#1C1C1E", fontWeight: 500 }}>
+                                  {row.value}
+                                </span>
+                              </div>
+                            ))}
                           </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Tarih</span>
-                            <span className="font-medium text-foreground">11 Nisan 2026</span>
-                          </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Tutar</span>
-                            <span className="font-medium text-foreground">₺1.250,00</span>
-                          </div>
-                        </div>
+                        )}
 
-                        <div className="text-center">
-                          <div className="inline-block bg-foreground text-background text-xs font-medium px-5 py-2.5 rounded-lg">
-                            Siparişi Görüntüle
+                        {/* Kargo takip bilgisi */}
+                        {hasTrackingInfo && (
+                          <div style={{
+                            border: "1px solid #E8E2D9",
+                            padding: "12px 18px",
+                            marginTop: 16,
+                            background: "#F7F3EC"
+                          }}>
+                            <p style={{ fontSize: 11, color: "#8B7355", margin: 0 }}>
+                              Takip No:{" "}
+                              <span style={{ color: "#1C1C1E", fontWeight: 500 }}>
+                                {PREVIEW_VARS.tracking_number}
+                              </span>
+                              {" — "}{PREVIEW_VARS.cargo_company}
+                            </p>
                           </div>
-                        </div>
+                        )}
+
+                        {/* Sipariş butonu */}
+                        {hasOrderBlock && (
+                          <div className="text-center pt-2">
+                            <div className="inline-block" style={{
+                              background: "#1C1C1E",
+                              color: "#C9A96E",
+                              padding: "13px 40px",
+                              fontSize: 10,
+                              letterSpacing: 3,
+                              textTransform: "uppercase" as const,
+                              border: "1px solid #C9A96E",
+                            }}>
+                              SİPARİŞİ GÖRÜNTÜLE
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Şifre sıfırlama butonu */}
+                        {hasResetButton && (
+                          <div className="text-center pt-2">
+                            <div className="inline-block" style={{
+                              background: "#1C1C1E",
+                              color: "#C9A96E",
+                              padding: "13px 40px",
+                              fontSize: 10,
+                              letterSpacing: 3,
+                              textTransform: "uppercase" as const,
+                              border: "1px solid #C9A96E",
+                            }}>
+                              ŞİFREMİ SIFIRLA
+                            </div>
+                          </div>
+                        )}
                       </div>
 
-                      {/* E-posta alt bilgisi */}
-                      <div className="border-t border-border/60 px-8 py-5 text-center bg-muted/20">
-                        <p className="text-[11px] text-muted-foreground">
-                          Bu e-posta mağaza bildirim sistemi tarafından gönderilmiştir.
+                      {/* Ayraç */}
+                      <div style={{ height: 1, background: "#E8E2D9", margin: "0 32px" }} />
+
+                      {/* Footer */}
+                      <div className="px-10 py-5 text-center" style={{ background: "#1C1C1E" }}>
+                        <p style={{
+                          margin: 0, fontSize: 10, letterSpacing: 2,
+                          textTransform: "uppercase" as const, color: "#8B7355"
+                        }}>
+                          © VOILÉE — Bu e-posta bildirim sistemi tarafından gönderilmiştir.
                         </p>
                       </div>
+
                     </div>
                   </div>
                 </div>

@@ -5,7 +5,6 @@ type Variables = Record<string, string | number>;
 
 export interface SendEmailOptions { to: string | string[]; subject: string; html: string; }
 export interface SendEmailResult { success: boolean; messageId?: string; error?: unknown; }
-interface OrderInfoBlock { orderNumber: string; orderDate: string; orderTotal: string; orderUrl: string; }
 
 let _transporter: Transporter | null = null;
 
@@ -53,23 +52,127 @@ function interpolate(text: string, vars: Variables): string {
   return text.replace(/\{\{(\w+)\}\}/g, (match, key: string) => { const v = vars[key]; return v !== undefined ? String(v) : match; });
 }
 
-function buildLayout({ bodyHtml, orderInfo }: { bodyHtml: string; orderInfo?: OrderInfoBlock }): string {
-  const orderBlock = orderInfo ? `
-    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:8px;margin:24px 0;border-collapse:collapse">
-      <tr style="border-bottom:1px solid #e5e7eb"><td style="padding:12px 16px;color:#6b7280;font-size:14px;width:40%">Sipariş No</td><td style="padding:12px 16px;font-weight:600;font-size:14px">#${esc(orderInfo.orderNumber)}</td></tr>
-      <tr style="border-bottom:1px solid #e5e7eb"><td style="padding:12px 16px;color:#6b7280;font-size:14px">Tarih</td><td style="padding:12px 16px;font-size:14px">${esc(orderInfo.orderDate)}</td></tr>
-      <tr><td style="padding:12px 16px;color:#6b7280;font-size:14px">Tutar</td><td style="padding:12px 16px;font-weight:600;font-size:14px">${esc(orderInfo.orderTotal)}</td></tr>
-    </table>
-    <p style="text-align:center;margin:28px 0 0"><a href="${orderInfo.orderUrl}" style="display:inline-block;background:#111827;color:#fff;padding:13px 32px;border-radius:6px;font-size:15px;font-weight:600;text-decoration:none">Siparişi Görüntüle</a></p>` : "";
+export function esc(str: string): string {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
 
-  return `<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f3f0eb;font-family:'Segoe UI',Arial,sans-serif">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f0eb;min-height:100vh"><tr><td align="center" style="padding:48px 16px">
-<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.10);max-width:100%;overflow:hidden">
-<tr><td style="background:#111827;padding:22px 32px;text-align:center"><span style="font-size:22px;margin-right:10px">✉</span><span style="color:#fff;font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase">BİLDİRİM</span></td></tr>
-<tr><td style="padding:36px 40px 40px"><div style="color:#374151;font-size:15px;line-height:1.7">${bodyHtml}</div>${orderBlock}</td></tr>
-<tr><td style="background:#f9f9f8;padding:18px 40px;border-top:1px solid #e5e7eb;text-align:center;color:#9ca3af;font-size:12px">Bu e-posta mağaza bildirim sistemi tarafından gönderilmiştir.</td></tr>
-</table></td></tr></table></body></html>`;
+export function buildLayout({
+  bodyHtml,
+  orderInfo,
+}: {
+  bodyHtml: string;
+  orderInfo?: {
+    orderNumber: string;
+    orderDate: string;
+    orderTotal: string;
+    orderUrl: string;
+  };
+}): string {
+  const orderBlock = orderInfo
+    ? `
+<table width="100%" cellpadding="0" cellspacing="0"
+  style="border:1px solid #E8E2D9;border-collapse:collapse;margin:32px 0">
+  <tr style="background:#F7F3EC">
+    <td style="padding:14px 20px;font-family:'DM Sans','Helvetica Neue',Arial,sans-serif;
+        font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8B7355;
+        width:40%;border-bottom:1px solid #E8E2D9">Sipariş No</td>
+    <td style="padding:14px 20px;font-family:'DM Sans','Helvetica Neue',Arial,sans-serif;
+        font-size:13px;color:#1C1C1E;font-weight:500;border-bottom:1px solid #E8E2D9">
+      #${esc(orderInfo.orderNumber)}</td>
+  </tr>
+  <tr>
+    <td style="padding:14px 20px;font-family:'DM Sans','Helvetica Neue',Arial,sans-serif;
+        font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8B7355;
+        border-bottom:1px solid #E8E2D9">Tarih</td>
+    <td style="padding:14px 20px;font-family:'DM Sans','Helvetica Neue',Arial,sans-serif;
+        font-size:13px;color:#1C1C1E;border-bottom:1px solid #E8E2D9">
+      ${esc(orderInfo.orderDate)}</td>
+  </tr>
+  <tr>
+    <td style="padding:14px 20px;font-family:'DM Sans','Helvetica Neue',Arial,sans-serif;
+        font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8B7355">
+      Tutar</td>
+    <td style="padding:14px 20px;font-family:'Cormorant Garamond',Georgia,serif;
+        font-size:18px;color:#1C1C1E">
+      ${esc(orderInfo.orderTotal)}</td>
+  </tr>
+</table>
+<p style="text-align:center;margin:36px 0 0">
+  <a href="${esc(orderInfo.orderUrl)}"
+     style="display:inline-block;background:#1C1C1E;color:#C9A96E;
+            padding:14px 48px;text-decoration:none;
+            font-family:'DM Sans','Helvetica Neue',Arial,sans-serif;
+            font-size:10px;letter-spacing:3px;text-transform:uppercase;
+            border:1px solid #C9A96E">
+    SİPARİŞİ GÖRÜNTÜLE
+  </a>
+</p>`
+    : "";
+
+  return `<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body style="margin:0;padding:0;background:#F7F3EC">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F7F3EC;min-height:100vh">
+  <tr><td align="center" style="padding:48px 16px">
+    <table width="600" cellpadding="0" cellspacing="0"
+      style="background:#FAFAF8;max-width:100%;box-shadow:0 2px 12px rgba(28,28,30,0.08)">
+
+      <tr>
+        <td style="background:#FAFAF8;padding:28px 40px;text-align:center;
+                   border-bottom:1px solid #E8E2D9">
+          <img
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_logo_2e68b438.webp"
+            alt="VOILÉE"
+            width="140"
+            style="display:block;margin:0 auto;max-width:140px;height:auto"
+          />
+          <!--[if !mso]><!-->
+          <noscript>
+            <span style="font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+                         font-size:22px;font-weight:300;letter-spacing:6px;
+                         text-transform:uppercase;color:#C9A96E">
+              VOILÉE
+            </span>
+          </noscript>
+          <!--<![endif]-->
+        </td>
+      </tr>
+
+      <tr>
+        <td style="padding:44px 48px 48px">
+          <div style="font-family:'DM Sans','Helvetica Neue',Arial,sans-serif;
+                      font-size:14px;line-height:1.85;color:#1C1C1E;font-weight:300">
+            ${bodyHtml}
+          </div>
+          ${orderBlock}
+        </td>
+      </tr>
+
+      <tr>
+        <td style="padding:0 40px">
+          <div style="height:1px;background:#E8E2D9"></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td style="background:#1C1C1E;padding:20px 40px;text-align:center">
+          <p style="margin:0;font-family:'DM Sans','Helvetica Neue',Arial,sans-serif;
+                    font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8B7355">
+            © VOILÉE — Bu e-posta mağaza bildirim sistemi tarafından gönderilmiştir.
+          </p>
+        </td>
+      </tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`;
 }
 
 async function resolveTemplate(key: string, vars: Variables) {
@@ -99,6 +202,20 @@ export async function sendOrderDelivered(payload: OrderDeliveredPayload): Promis
   return sendEmail({ to: payload.to, subject: r.subject, html: buildLayout({ bodyHtml: r.bodyHtml }) });
 }
 
-function esc(str: string): string { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
-function textToHtml(text: string): string { return text.split(/\n/).map(l => l.trim()).map(l => l ? `<p style="margin:0 0 12px">${esc(l)}</p>` : "").join("\n"); }
+export function textToHtmlInline(text: string): string {
+  return text
+    .split(/\n/)
+    .map(l => l.trim())
+    .map(l =>
+      l
+        ? `<p style="margin:0 0 14px;font-family:'DM Sans','Helvetica Neue',Arial,sans-serif;font-size:14px;line-height:1.85;color:#1C1C1E;font-weight:300">${esc(l)}</p>`
+        : `<p style="margin:0 0 8px">&nbsp;</p>`
+    )
+    .join("\n");
+}
+
+function textToHtml(text: string): string {
+  return textToHtmlInline(text);
+}
+
 function stripHtml(html: string): string { return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(); }

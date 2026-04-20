@@ -655,17 +655,19 @@ export default function SilhouetteBuilder() {
         )}
 
         {/* View All Products Banner */}
-        <div className="mt-20 border-t border-[#C9A96E]/20 pt-12">
-          <Link href="/koleksiyonlar">
-            <div className="group flex items-center justify-between px-8 py-6 bg-[#1C1C1E] hover:bg-[#C9A96E] transition-colors duration-500 cursor-pointer">
-              <div>
-                <p className="font-body text-[10px] tracking-[0.25em] uppercase text-white/50 mb-1">
-                  {lang === "TR" ? "Tüm Koleksiyon" : "Full Collection"}
-                </p>
-                <p className="font-display text-2xl text-white">{t.viewAll}</p>
-              </div>
-              <ArrowRight size={24} className="text-white transition-transform duration-300 group-hover:translate-x-2" />
-            </div>
+        <div className="mt-16 sm:mt-20 flex justify-center">
+          <Link
+            href="/koleksiyonlar"
+            className="group inline-flex flex-col items-center"
+          >
+            <div className="w-12 h-px bg-[#1C1C1E]/20 mb-5 group-hover:bg-[#C9A96E] group-hover:w-16 transition-all duration-500" />
+            <h3 className="font-display text-xl sm:text-2xl text-[#1C1C1E] mb-5 group-hover:text-[#C9A96E] transition-colors duration-500">
+              {t.viewAll}
+            </h3>
+            <span className="inline-flex items-center gap-2 font-body text-[11px] tracking-[0.25em] uppercase text-[#1C1C1E]/60 group-hover:text-[#1C1C1E] transition-colors duration-300">
+              {lang === "TR" ? "Tüm Koleksiyonu Gör" : lang === "EN" ? "Browse All" : "استعرض الكل"}
+              <ArrowRight size={12} className="transition-transform duration-300 group-hover:translate-x-1" />
+            </span>
           </Link>
         </div>
       </div>

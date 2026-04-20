@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { eq, desc, and } from "drizzle-orm";
 import { getDb } from "./db";
+import { getStoreSettings } from "./db";
 import { products, collections, silhouettes, categories, orders, orderItems } from "../drizzle/schema";
 
 const STOREFRONT_API_KEY = process.env.VITE_STOREFRONT_API_KEY ?? "";
@@ -292,6 +293,33 @@ export function registerStorefrontRoutes(app: Express) {
       });
     } catch (error) {
       console.error("[Storefront] Order detail error:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // ─── Public Store Settings (social links, contact info) ──────────────────────
+  app.get("/api/v1/store-settings", async (_req: Request, res: Response) => {
+    try {
+      const settings = await getStoreSettings();
+      if (!settings) return res.json({});
+      return res.json({
+        storeName: settings.storeName,
+        storeEmail: settings.storeEmail,
+        storePhone: settings.storePhone,
+        faviconUrl: settings.faviconUrl,
+        instagramUrl: settings.instagramUrl,
+        facebookUrl: settings.facebookUrl,
+        twitterUrl: settings.twitterUrl,
+        youtubeUrl: settings.youtubeUrl,
+        tiktokUrl: settings.tiktokUrl,
+        pinterestUrl: settings.pinterestUrl,
+        linkedinUrl: settings.linkedinUrl,
+        snapchatUrl: settings.snapchatUrl,
+        whatsappUrl: settings.whatsappUrl,
+        telegramUrl: settings.telegramUrl,
+      });
+    } catch (error) {
+      console.error("[Storefront] Store settings error:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   });

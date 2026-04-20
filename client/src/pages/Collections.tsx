@@ -288,21 +288,13 @@ export default function Collections() {
               href={`/olustur${activeSilhouetteId ? `?silhouette=${activeSilhouetteId}` : ""}`}
               className="group inline-flex flex-col items-center"
             >
-              {/* Üst ince çizgi */}
               <div className="w-12 h-px bg-[#1C1C1E]/20 mb-5 group-hover:bg-[#C9A96E] group-hover:w-16 transition-all duration-500" />
-
-              {/* Başlık */}
               <h3 className="font-display text-xl sm:text-2xl text-[#1C1C1E] mb-5 group-hover:text-[#C9A96E] transition-colors duration-500">
                 {getText("Kendi Silüetini Oluştur", "Create Your Silhouette", "أنشئ صورتك الظلية")}
               </h3>
-
-              {/* CTA */}
               <span className="inline-flex items-center gap-2 font-body text-[11px] tracking-[0.25em] uppercase text-[#1C1C1E]/60 group-hover:text-[#1C1C1E] transition-colors duration-300">
                 {getText("Başla", "Begin", "ابدأ")}
-                <ArrowRight
-                  size={12}
-                  className="transition-transform duration-300 group-hover:translate-x-1"
-                />
+                <ArrowRight size={12} className="transition-transform duration-300 group-hover:translate-x-1" />
               </span>
             </Link>
           </div>

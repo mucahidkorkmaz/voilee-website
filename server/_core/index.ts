@@ -8,6 +8,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { registerLocalAuthRoutes } from "../localAuth";
 import { registerUserAuthRoutes } from "../userAuth";
 import { registerStorefrontRoutes } from "../storefrontRoutes";
+import { registerUploadRoutes, UPLOADS_DIR } from "../uploadRoutes";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { ENV } from "./env";
@@ -66,6 +67,12 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+  // Yüklenen görselleri statik olarak sun (/uploads/*)
+  app.use("/uploads", express.static(UPLOADS_DIR, { maxAge: "1y", immutable: false }));
+
+  // Tarayıcının otomatik /favicon.ico isteğini boş yanıtla — gerçek favicon DB'den gelir
+  app.get("/favicon.ico", (_req, res) => res.status(204).end());
+
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // Local admin password login (for dev / self-hosted)
@@ -74,6 +81,8 @@ async function startServer() {
   registerUserAuthRoutes(app);
   // Storefront public API — /api/v1/products, /api/v1/collections, /api/v1/orders
   registerStorefrontRoutes(app);
+  // Görsel yükleme endpoint'i — /api/upload (admin yetkisi gerektirir)
+  registerUploadRoutes(app);
   // tRPC API
   app.use(
     "/api/trpc",

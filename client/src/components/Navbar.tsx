@@ -32,6 +32,10 @@ const getNavLinks = (lang: "TR" | "EN" | "AR") => {
   return baseLinks[lang];
 };
 
+// Desktop sol: ilk 3 link (Silüet, Lookbook, Journal)
+// Desktop sağ: son 1 link (İletişim) + Hesabım + Sepet + Dil
+const LEFT_LINK_COUNT = 3;
+
 export default function Navbar() {
   const { lang, setLang, isRTL } = useLanguage();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -101,10 +105,11 @@ export default function Navbar() {
         dir={isRTL ? "rtl" : "ltr"}
       >
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-16 lg:h-20">
-            {/* Left: Nav Links (Desktop) */}
-            <div className="hidden lg:flex items-center gap-8 flex-1">
-              {navLinks.slice(0, Math.ceil(navLinks.length / 2)).map((link) => (
+          {/* Desktop: 3-column grid — left and right are equal 1fr so logo is always truly centered */}
+          <div className="hidden lg:grid lg:grid-cols-[1fr_auto_1fr] items-center h-20">
+            {/* Col 1: Left Nav Links */}
+            <div className="flex items-center gap-8">
+              {navLinks.slice(0, LEFT_LINK_COUNT).map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
@@ -119,8 +124,8 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* Center: Logo (desktop only — mobile has its own) */}
-            <div className="hidden lg:flex justify-center lg:flex-none">
+            {/* Col 2: Logo (auto width, centered by grid) */}
+            <div className="flex justify-center">
               <Link href={lang === "TR" ? "/" : `/${lang.toLowerCase()}`}>
                 <img
                   src={LOGO_URL}
@@ -132,9 +137,9 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {/* Right: Nav Links + Icons (Desktop) */}
-            <div className="hidden lg:flex items-center justify-end gap-8 flex-1">
-              {navLinks.slice(Math.ceil(navLinks.length / 2)).map((link) => (
+            {/* Col 3: Right Nav Links + Icons */}
+            <div className="flex items-center justify-end gap-8">
+              {navLinks.slice(LEFT_LINK_COUNT).map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
@@ -147,8 +152,10 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
+              <UserMenu isTransparent={isTransparent} />
+              <CartBadge isTransparent={isTransparent} />
+              {/* Pipe | Dil */}
               <div className="flex items-center gap-4 ms-4 ps-4 border-s border-current/20">
-                {/* Language Dropdown */}
                 <div ref={langDropdownRef} className="relative">
                   <button
                     onClick={() => setLangDropdownOpen((v) => !v)}
@@ -181,36 +188,31 @@ export default function Navbar() {
                     </div>
                   )}
                 </div>
-                <UserMenu isTransparent={isTransparent} />
-                <CartBadge isTransparent={isTransparent} />
               </div>
             </div>
+          </div>
 
-            {/* Mobile: Hamburger | Logo | Cart */}
-            <div className="flex lg:hidden items-center justify-between w-full">
-              {/* Left: Hamburger */}
-              <button
-                onClick={() => setMobileOpen(!mobileOpen)}
-                className={`p-1 ${isTransparent ? "text-white" : "text-[#1C1C1E]"}`}
-                aria-label="Menü"
-              >
-                {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-              </button>
+          {/* Mobile: Hamburger | Logo | Cart */}
+          <div className="flex lg:hidden items-center justify-between w-full h-16">
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className={`p-1 ${isTransparent ? "text-white" : "text-[#1C1C1E]"}`}
+              aria-label="Menü"
+            >
+              {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
 
-              {/* Center: Logo */}
-              <Link href={lang === "TR" ? "/" : `/${lang.toLowerCase()}`}>
-                <img
-                  src={LOGO_URL}
-                  alt="VOILÉE"
-                  className={`h-7 w-auto object-contain transition-all duration-300 ${
-                    isTransparent ? "brightness-0 invert" : ""
-                  }`}
-                />
-              </Link>
+            <Link href={lang === "TR" ? "/" : `/${lang.toLowerCase()}`}>
+              <img
+                src={LOGO_URL}
+                alt="VOILÉE"
+                className={`h-7 w-auto object-contain transition-all duration-300 ${
+                  isTransparent ? "brightness-0 invert" : ""
+                }`}
+              />
+            </Link>
 
-              {/* Right: Cart */}
-              <CartBadge isTransparent={isTransparent} mobile />
-            </div>
+            <CartBadge isTransparent={isTransparent} mobile />
           </div>
         </div>
       </nav>
@@ -250,14 +252,33 @@ export default function Navbar() {
 
 function CartBadge({ isTransparent, mobile = false }: { isTransparent: boolean; mobile?: boolean }) {
   const { cartCount, openCart } = useCart();
+  const { lang } = useLanguage();
+  const cartLabel = lang === "TR" ? "Sepet" : lang === "EN" ? "Cart" : "السلة";
+
+  if (mobile) {
+    return (
+      <button
+        onClick={openCart}
+        className={`relative transition-colors duration-300 ${isTransparent ? "text-white/80 hover:text-white" : "text-[#1C1C1E]/60 hover:text-[#1C1C1E]"}`}
+      >
+        <ShoppingBag size={18} />
+        {cartCount > 0 && (
+          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#C9A96E] rounded-full text-[9px] flex items-center justify-center text-white font-medium">
+            {cartCount > 9 ? '9+' : cartCount}
+          </span>
+        )}
+      </button>
+    );
+  }
+
   return (
     <button
       onClick={openCart}
-      className={`relative transition-colors duration-300 ${isTransparent ? "text-white/80 hover:text-white" : "text-[#1C1C1E]/60 hover:text-[#1C1C1E]"}`}
+      className={`relative font-body text-xs tracking-[0.12em] uppercase transition-colors duration-300 ${isTransparent ? "text-white/90 hover:text-white" : "text-[#1C1C1E]/70 hover:text-[#1C1C1E]"}`}
     >
-      <ShoppingBag size={mobile ? 18 : 16} />
+      {cartLabel}
       {cartCount > 0 && (
-        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#C9A96E] rounded-full text-[9px] flex items-center justify-center text-white font-medium">
+        <span className="absolute -top-2 -right-3 w-3.5 h-3.5 bg-[#C9A96E] rounded-full text-[9px] flex items-center justify-center text-white font-medium">
           {cartCount > 9 ? '9+' : cartCount}
         </span>
       )}
@@ -394,14 +415,13 @@ function UserMenu({ isTransparent, mobile = false }: { isTransparent: boolean; m
     return (
       <Link
         href={loginHref}
-        className={`transition-colors duration-300 ${
+        className={`font-body text-xs tracking-[0.12em] uppercase transition-colors duration-300 ${
           isTransparent
-            ? "text-white/80 hover:text-white"
-            : "text-[#1C1C1E]/60 hover:text-[#1C1C1E]"
+            ? "text-white/90 hover:text-white"
+            : "text-[#1C1C1E]/70 hover:text-[#1C1C1E]"
         }`}
-        aria-label={labels.signIn}
       >
-        <UserIcon size={mobile ? 18 : 16} />
+        {labels.signIn}
       </Link>
     );
   }
@@ -413,19 +433,18 @@ function UserMenu({ isTransparent, mobile = false }: { isTransparent: boolean; m
   ];
 
   return (
-    <div ref={ref} className="relative">
-      <button
+    <div ref={ref} className="relative flex items-center">
+      <Link
+        href={accountHref}
         onClick={() => setOpen((v) => !v)}
-        className={`relative transition-colors duration-300 ${
+        className={`font-body text-xs tracking-[0.12em] uppercase transition-colors duration-300 ${
           isTransparent
-            ? "text-white/80 hover:text-white"
-            : "text-[#1C1C1E]/60 hover:text-[#1C1C1E]"
+            ? "text-white/90 hover:text-white"
+            : "text-[#1C1C1E]/70 hover:text-[#1C1C1E]"
         }`}
-        aria-label="account menu"
       >
-        <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#C9A96E] rounded-full" />
-        <UserIcon size={mobile ? 18 : 16} />
-      </button>
+        {labels.account}
+      </Link>
 
       {open && (
         <div

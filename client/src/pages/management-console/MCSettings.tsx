@@ -2,8 +2,8 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Settings, Save } from "lucide-react";
-import { useEffect, useState } from "react";
+import { AlertCircle, Settings, Save, ImageIcon, Upload, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type SettingsForm = {
@@ -11,9 +11,17 @@ type SettingsForm = {
   storeEmail: string;
   storePhone: string;
   storeAddress: string;
+  faviconUrl: string;
   instagramUrl: string;
   facebookUrl: string;
   twitterUrl: string;
+  youtubeUrl: string;
+  tiktokUrl: string;
+  pinterestUrl: string;
+  linkedinUrl: string;
+  snapchatUrl: string;
+  whatsappUrl: string;
+  telegramUrl: string;
   freeShippingThreshold: string;
   shippingCostDomestic: string;
   shippingCostInternational: string;
@@ -24,9 +32,17 @@ const emptyForm: SettingsForm = {
   storeEmail: "",
   storePhone: "",
   storeAddress: "",
+  faviconUrl: "",
   instagramUrl: "",
   facebookUrl: "",
   twitterUrl: "",
+  youtubeUrl: "",
+  tiktokUrl: "",
+  pinterestUrl: "",
+  linkedinUrl: "",
+  snapchatUrl: "",
+  whatsappUrl: "",
+  telegramUrl: "",
   freeShippingThreshold: "500",
   shippingCostDomestic: "49.99",
   shippingCostInternational: "199.99",
@@ -42,6 +58,19 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
+const SOCIAL_PLATFORMS = [
+  { key: "instagramUrl" as const, label: "Instagram", placeholder: "https://instagram.com/voilee" },
+  { key: "facebookUrl" as const, label: "Facebook", placeholder: "https://facebook.com/voilee" },
+  { key: "twitterUrl" as const, label: "X / Twitter", placeholder: "https://x.com/voilee" },
+  { key: "youtubeUrl" as const, label: "YouTube", placeholder: "https://youtube.com/@voilee" },
+  { key: "tiktokUrl" as const, label: "TikTok", placeholder: "https://tiktok.com/@voilee" },
+  { key: "pinterestUrl" as const, label: "Pinterest", placeholder: "https://pinterest.com/voilee" },
+  { key: "linkedinUrl" as const, label: "LinkedIn", placeholder: "https://linkedin.com/company/voilee" },
+  { key: "snapchatUrl" as const, label: "Snapchat", placeholder: "https://snapchat.com/add/voilee" },
+  { key: "whatsappUrl" as const, label: "WhatsApp", placeholder: "https://wa.me/905000000000" },
+  { key: "telegramUrl" as const, label: "Telegram", placeholder: "https://t.me/voilee" },
+];
+
 export default function MCSettings() {
   const utils = trpc.useUtils();
   const { data: settings, isLoading, error } = trpc.admin.settings.get.useQuery(undefined, { retry: false });
@@ -55,6 +84,29 @@ export default function MCSettings() {
 
   const [form, setForm] = useState<SettingsForm>(emptyForm);
   const [dirty, setDirty] = useState(false);
+  const [faviconUploading, setFaviconUploading] = useState(false);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFaviconUpload = async (file: File) => {
+    setFaviconUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd, credentials: "include" });
+      if (!res.ok) {
+        const { error: msg } = await res.json();
+        toast.error(msg ?? "Yükleme başarısız.");
+        return;
+      }
+      const { url } = await res.json();
+      set("faviconUrl", url);
+      toast.success("Favicon yüklendi. Kaydetmeyi unutmayın.");
+    } catch {
+      toast.error("Yükleme sırasında bir hata oluştu.");
+    } finally {
+      setFaviconUploading(false);
+    }
+  };
 
   useEffect(() => {
     if (settings) {
@@ -63,9 +115,17 @@ export default function MCSettings() {
         storeEmail: settings.storeEmail ?? "",
         storePhone: settings.storePhone ?? "",
         storeAddress: settings.storeAddress ?? "",
+        faviconUrl: settings.faviconUrl ?? "",
         instagramUrl: settings.instagramUrl ?? "",
         facebookUrl: settings.facebookUrl ?? "",
         twitterUrl: settings.twitterUrl ?? "",
+        youtubeUrl: settings.youtubeUrl ?? "",
+        tiktokUrl: settings.tiktokUrl ?? "",
+        pinterestUrl: settings.pinterestUrl ?? "",
+        linkedinUrl: settings.linkedinUrl ?? "",
+        snapchatUrl: settings.snapchatUrl ?? "",
+        whatsappUrl: settings.whatsappUrl ?? "",
+        telegramUrl: settings.telegramUrl ?? "",
         freeShippingThreshold: settings.freeShippingThreshold ?? "500",
         shippingCostDomestic: settings.shippingCostDomestic ?? "49.99",
         shippingCostInternational: settings.shippingCostInternational ?? "199.99",
@@ -169,43 +229,83 @@ export default function MCSettings() {
                   className="flex w-full rounded border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
                 />
               </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
+                  Favicon (Sekme İkonu)
+                </Label>
+                <div className="flex items-center gap-4">
+                  {/* Önizleme */}
+                  <div className="shrink-0 w-10 h-10 rounded border border-border/60 bg-muted flex items-center justify-center overflow-hidden">
+                    {form.faviconUrl ? (
+                      <img src={form.faviconUrl} alt="favicon önizleme" className="w-full h-full object-contain" />
+                    ) : (
+                      <ImageIcon className="h-4 w-4 text-muted-foreground/40" />
+                    )}
+                  </div>
+                  {/* Yükleme butonu */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      ref={faviconInputRef}
+                      type="file"
+                      accept=".ico,.png,.svg,.jpg,.jpeg,.webp"
+                      className="hidden"
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFaviconUpload(file);
+                        e.target.value = "";
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={faviconUploading}
+                      onClick={() => faviconInputRef.current?.click()}
+                      className="gap-2"
+                    >
+                      <Upload className="h-3.5 w-3.5" />
+                      {faviconUploading ? "Yükleniyor…" : "Dosya Seç"}
+                    </Button>
+                    {form.faviconUrl && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => set("faviconUrl", "")}
+                        className="gap-1.5 text-muted-foreground hover:text-destructive"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                        Kaldır
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Tarayıcı sekmesinde görünen ikon. .ico, .png veya .svg önerilir (32×32 veya 64×64 px).
+                </p>
+              </div>
             </div>
           </section>
 
-          {/* Sosyal Medya */}
+          {/* Sosyal Medya & Platformlar */}
           <section className="space-y-5">
-            <SectionTitle>Sosyal Medya</SectionTitle>
+            <SectionTitle>Sosyal Medya & Platformlar</SectionTitle>
+            <p className="text-xs text-muted-foreground -mt-2">
+              Yalnızca doldurduğunuz platformlar web sitesinde gösterilir.
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
-                  Instagram
-                </Label>
-                <Input
-                  value={form.instagramUrl}
-                  onChange={e => set("instagramUrl", e.target.value)}
-                  placeholder="https://instagram.com/voilee"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
-                  Facebook
-                </Label>
-                <Input
-                  value={form.facebookUrl}
-                  onChange={e => set("facebookUrl", e.target.value)}
-                  placeholder="https://facebook.com/voilee"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
-                  X / Twitter
-                </Label>
-                <Input
-                  value={form.twitterUrl}
-                  onChange={e => set("twitterUrl", e.target.value)}
-                  placeholder="https://x.com/voilee"
-                />
-              </div>
+              {SOCIAL_PLATFORMS.map(({ key, label, placeholder }) => (
+                <div key={key} className="space-y-1.5">
+                  <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
+                    {label}
+                  </Label>
+                  <Input
+                    value={form[key]}
+                    onChange={e => set(key, e.target.value)}
+                    placeholder={placeholder}
+                  />
+                </div>
+              ))}
             </div>
           </section>
 

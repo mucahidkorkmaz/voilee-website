@@ -27,7 +27,7 @@ services:
 
   # ── Tier 2: Application ───────────────────────────────────────────────────────
   node:
-    image: mucahidkorkmaz/voilee-website:v2.3
+    image: mucahidkorkmaz/voilee-website:v2.3.1
     build:
       context: .
       dockerfile: Dockerfile
@@ -58,7 +58,7 @@ services:
   # ── Frontend dosya kopyalayıcı (one-shot) ─────────────────────────────────────
   # Her deploy'da image içindeki dist/public'i nginx'in okuyacağı volume'a kopyalar
   frontend-sync:
-    image: mucahidkorkmaz/voilee-website:v2.3
+    image: mucahidkorkmaz/voilee-website:v2.3.1
     build:
       context: .
       dockerfile: Dockerfile

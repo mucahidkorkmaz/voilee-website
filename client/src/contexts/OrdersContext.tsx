@@ -26,6 +26,7 @@ export interface OrderHistoryEntry {
 interface OrdersContextType {
   orders: OrderHistoryEntry[];
   addOrder: (order: OrderHistoryEntry) => void;
+  updateOrderStatus: (orderNumber: string, status: string) => void;
   clearOrders: () => void;
   ordersCount: number;
 }
@@ -67,6 +68,12 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   }, []);
 
+  const updateOrderStatus = useCallback((orderNumber: string, status: string) => {
+    setOrders((prev) =>
+      prev.map((o) => (o.orderNumber === orderNumber ? { ...o, status } : o))
+    );
+  }, []);
+
   const clearOrders = useCallback(() => setOrders([]), []);
 
   return (
@@ -74,6 +81,7 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       value={{
         orders,
         addOrder,
+        updateOrderStatus,
         clearOrders,
         ordersCount: orders.length,
       }}

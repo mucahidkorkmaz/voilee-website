@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import { AlertCircle, Mail, Package, ShoppingBag, Users } from "lucide-react";
+import { AlertCircle, Mail, Package, RotateCcw, ShoppingBag, Users } from "lucide-react";
 
 const statusLabels: Record<string, string> = {
   pending: "Bekliyor",
@@ -40,6 +40,12 @@ export default function MCDashboard() {
       description: "Toplam sipariş",
     },
     {
+      label: "Aktif İadeler",
+      value: stats?.activeReturnCount ?? 0,
+      icon: RotateCcw,
+      description: "Bekleyen iade talepleri",
+    },
+    {
       label: "Bülten Abonesi",
       value: stats?.newsletterCount ?? 0,
       icon: Mail,
@@ -75,7 +81,7 @@ export default function MCDashboard() {
       )}
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {statCards.map(card => (
           <div
             key={card.label}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import {
   Package,
@@ -9,6 +9,7 @@ import {
 import AccountLayout, { hesapUrls } from "../layout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOrders, type OrderHistoryEntry } from "@/contexts/OrdersContext";
+import { api } from "@/lib/api";
 
 // ─── Translations ───────────────────────────────────────────────────────────────
 
@@ -134,10 +135,21 @@ function statusTone(status: string) {
 
 export default function SiparislerPage() {
   const { lang, isRTL } = useLanguage();
-  const { orders } = useOrders();
+  const { orders, updateOrderStatus } = useOrders();
   const [expanded, setExpanded] = useState<string | null>(null);
   const tx = t[lang];
   const u = hesapUrls[lang];
+
+  useEffect(() => {
+    orders.forEach((order) => {
+      api.getOrder(order.orderNumber).then((res) => {
+        if (res?.data?.status && res.data.status !== order.status) {
+          updateOrderStatus(order.orderNumber, res.data.status);
+        }
+      }).catch(() => {});
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <AccountLayout>

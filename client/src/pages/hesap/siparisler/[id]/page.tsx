@@ -1,4 +1,5 @@
 import { Link, useParams } from "wouter";
+import { useEffect } from "react";
 import {
   ChevronLeft,
   ShoppingBag,
@@ -12,6 +13,7 @@ import {
 import AccountLayout, { hesapUrls } from "../../layout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOrders } from "@/contexts/OrdersContext";
+import { api } from "@/lib/api";
 
 // ─── Translations ───────────────────────────────────────────────────────────────
 
@@ -114,7 +116,6 @@ function formatDate(ts: number, lang: keyof typeof localeMap) {
 
 const STATUS_STEPS = [
   "pending",
-  "confirmed",
   "processing",
   "shipped",
   "delivered",
@@ -144,7 +145,6 @@ function StatusTimeline({
 
   const stepIcons = {
     pending: Clock,
-    confirmed: CheckCircle2,
     processing: Package,
     shipped: Truck,
     delivered: CheckCircle2,
@@ -203,12 +203,21 @@ function StatusTimeline({
 
 export default function SiparisDetayPage() {
   const { lang, isRTL } = useLanguage();
-  const { orders } = useOrders();
+  const { orders, updateOrderStatus } = useOrders();
   const params = useParams<{ id: string }>();
   const tx = t[lang];
   const u = hesapUrls[lang];
 
   const order = orders.find((o) => o.orderNumber === params.id);
+
+  useEffect(() => {
+    if (!params.id) return;
+    api.getOrder(params.id).then((res) => {
+      if (res?.data?.status) {
+        updateOrderStatus(params.id, res.data.status);
+      }
+    }).catch(() => {});
+  }, [params.id, updateOrderStatus]);
 
   return (
     <AccountLayout>

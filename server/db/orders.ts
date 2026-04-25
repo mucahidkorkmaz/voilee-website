@@ -13,8 +13,23 @@ export async function updateOrderStatus(
   status: "pending" | "processing" | "shipped" | "delivered" | "cancelled",
 ) {
   const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  await db.update(orders).set({ status }).where(eq(orders.id, id));
+  if (!db) return { success: false };
+
+  await db
+    .update(orders)
+    .set(
+      status === "delivered"
+        ? { status, updatedAt: new Date(), paymentStatus: "paid", paidAt: new Date() }
+        : { status, updatedAt: new Date() },
+    )
+    .where(eq(orders.id, id));
+
+  if (status === "delivered") {
+    import("../integrations/parasut")
+      .then(({ handleOrderDeliveredForInvoice }) => handleOrderDeliveredForInvoice(id))
+      .catch(err => console.error("[Paraşüt] handleOrderDelivered hatası:", err));
+  }
+
   return { success: true };
 }
 
@@ -36,6 +51,8 @@ export async function getOrderWithItems(orderId: number) {
       id: orderItems.id,
       quantity: orderItems.quantity,
       price: orderItems.price,
+      unitPrice: orderItems.unitPrice,
+      kdvRate: orderItems.kdvRate,
       productId: orderItems.productId,
       productNameTR: products.nameTR,
       productImageUrl: products.imageUrl,

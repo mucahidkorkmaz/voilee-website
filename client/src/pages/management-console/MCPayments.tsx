@@ -242,6 +242,16 @@ export default function MCPayments() {
         </div>
       )}
 
+      {/* Fatura bekleyen uyarısı */}
+      {!isLoading && (stats?.invoicePendingCount ?? 0) > 0 && (
+        <div className="flex items-start gap-3 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+          <p>
+            <strong>{stats?.invoicePendingCount ?? 0}</strong> teslim edilmiş siparişin faturası henüz kesilmedi.
+          </p>
+        </div>
+      )}
+
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {kpiCards.map((card) => {
@@ -281,6 +291,147 @@ export default function MCPayments() {
           );
         })}
       </div>
+
+      {/* KDV Özeti */}
+      {!isLoading && stats && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            {
+              label: "Tahsil Edilen KDV (Toplam)",
+              value: stats.totalKdvCollected ?? 0,
+              desc: "Müşteriden alınan toplam KDV",
+            },
+            {
+              label: "Bu Ay KDV",
+              value: stats.monthKdvCollected ?? 0,
+              desc: "Bu ay tahsil edilen KDV",
+            },
+            {
+              label: "KDV Hariç Net Gelir",
+              value: stats.netRevenueExKdv ?? 0,
+              desc: "Vergi matrahı",
+              highlight: true,
+            },
+          ].map((card) => (
+            <div
+              key={card.label}
+              className={`bg-card border rounded p-4 space-y-2 ${
+                card.highlight ? "border-primary/30" : "border-border/50"
+              }`}
+            >
+              <p className="text-[10px] tracking-wider uppercase text-muted-foreground font-light">
+                {card.label}
+              </p>
+              <p className="font-['Cormorant_Garamond'] text-xl font-light">
+                {formatCurrency(card.value)}
+              </p>
+              <p className="text-[9px] text-muted-foreground">{card.desc}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* KDV & Vergi (KDV hariç özet) */}
+      {!isLoading && stats && (
+        <div className="bg-card border border-border/50 rounded">
+          <div className="px-6 py-4 border-b border-border/40">
+            <h2 className="font-['Cormorant_Garamond'] text-xl font-light tracking-wide">
+              KDV & Vergi Özeti
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              KDV hariç hesaplamalar — gerçek kâr ve vergi tahmini
+            </p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 p-4">
+            {[
+              {
+                label: "KDV Hariç Net Gelir",
+                value: stats.kdvHaricNetGelir ?? 0,
+                desc: "Vergi matrahı (toplam)",
+                highlight: true,
+              },
+              {
+                label: "Gerçek Kâr",
+                value: stats.gercekKar ?? 0,
+                desc: "KDV hariç, giderler düşülmüş",
+                highlight: true,
+              },
+              {
+                label: "Ödenecek KDV",
+                value: stats.odenecekKdv ?? 0,
+                desc: "Tahsil − iade − indirilecek",
+                negative: true,
+              },
+              {
+                label: "Tahmini Yıllık Vergi",
+                value: stats.yillikGelirVergisiTahmini ?? 0,
+                desc: "Gelir vergisi tahmini*",
+                negative: true,
+              },
+            ].map((card) => (
+              <div
+                key={card.label}
+                className={`border rounded p-4 space-y-2 ${
+                  card.highlight ? "border-primary/30 bg-primary/[0.02]" : "border-border/50"
+                }`}
+              >
+                <p className="text-[10px] tracking-wider uppercase text-muted-foreground font-light">
+                  {card.label}
+                </p>
+                <p
+                  className={`font-['Cormorant_Garamond'] text-xl font-light ${
+                    card.negative ? "text-red-600" : "text-emerald-700"
+                  }`}
+                >
+                  {card.negative ? "−" : ""}
+                  {formatCurrency(Math.abs(card.value))}
+                </p>
+                <p className="text-[9px] text-muted-foreground">{card.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div className="px-6 py-3 border-t border-border/40 bg-muted/20">
+            <p className="text-[10px] text-muted-foreground">
+              * Tahmini vergi hesabı 2024 GVK Madde 103 tarifesine göre yapılmıştır. Kesin beyan için mali
+              müşavirinize danışınız.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Ödeme Yöntemi Dağılımı */}
+      {!isLoading && stats && stats.paymentMethodBreakdown.length > 0 && (
+        <div className="bg-card border border-border/50 rounded">
+          <div className="px-6 py-4 border-b border-border/40">
+            <h2 className="font-['Cormorant_Garamond'] text-xl font-light tracking-wide">
+              Ödeme Yöntemi Dağılımı
+            </h2>
+          </div>
+          <div className="divide-y divide-border/30">
+            {stats.paymentMethodBreakdown.map((row) => (
+              <div key={row.method} className="flex items-center justify-between px-6 py-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm capitalize">
+                    {row.method === "credit_card"
+                      ? "Kredi / Banka Kartı"
+                      : row.method === "wire_transfer"
+                        ? "Havale / EFT"
+                        : row.method === "cash_on_delivery"
+                          ? "Kapıda Ödeme"
+                          : row.method === "store_pickup"
+                            ? "Mağazadan Teslim"
+                            : row.method}
+                  </span>
+                  <span className="text-xs text-muted-foreground">{row.count} sipariş</span>
+                </div>
+                <span className="font-['Cormorant_Garamond'] text-lg font-light">
+                  {formatCurrency(row.total)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Period Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">

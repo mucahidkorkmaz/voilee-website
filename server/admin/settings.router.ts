@@ -33,9 +33,32 @@ export const settingsRouter = router({
         smtpUser: z.string().optional(),
         smtpPass: z.string().optional(),
         smtpFrom: z.string().optional(),
+        taxNumber: z.string().optional(),
+        taxOffice: z.string().optional(),
+        companyType: z.enum(["sahis", "limited", "anonim"]).optional(),
+        mersis: z.string().optional(),
+        parasutClientId: z.string().optional(),
+        parasutClientSecret: z.string().optional(),
+        parasutCompanyId: z.string().optional(),
+        parasutEnabled: z.boolean().optional(),
       }),
     )
     .mutation(async ({ input }) => {
       return await upsertStoreSettings(input);
     }),
+  testParasut: adminProcedure.mutation(async () => {
+    const settings = await getStoreSettings();
+    if (!settings?.parasutClientId || !settings?.parasutClientSecret) {
+      return { success: false as const, error: "Paraşüt bilgileri eksik." };
+    }
+    const { getParasutToken } = await import("../integrations/parasut");
+    const token = await getParasutToken({
+      clientId: settings.parasutClientId,
+      clientSecret: settings.parasutClientSecret,
+      companyId: settings.parasutCompanyId ?? "",
+    });
+    return token
+      ? { success: true as const, message: "Bağlantı başarılı." }
+      : { success: false as const, error: "Token alınamadı. Bilgileri kontrol edin." };
+  }),
 });

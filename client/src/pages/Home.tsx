@@ -5,6 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { sitePaths } from "@/lib/sitePaths";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { trpc } from "@/lib/trpc";
 
 // CDN URLs
 const IMGS = {
@@ -25,9 +26,12 @@ const IMGS = {
   productParfum: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_product_parfum_f4067dbd.webp",
 };
 
-const heroSlides = [
+const fallbackHeroSlides = [
   {
-    img: IMGS.heroMain,
+    imgUrl: IMGS.heroMain,
+    imgUrlMobile: "",
+    duration: 6000,
+    linkUrl: "",
     tagTR: "Yeni Koleksiyon",
     tagEN: "New Collection",
     tagAR: "مجموعة جديدة",
@@ -38,9 +42,26 @@ const heroSlides = [
     subtitleEN: "Every day, a statement with VOILÉE.",
     subtitleAR: "مع VOILÉE، موقف كل يوم.",
     collection: "ORIGINE",
+    ctaLabelTR: "Koleksiyonu Keşfet",
+    ctaLabelEN: "Explore Collection",
+    ctaLabelAR: "استكشف المجموعة",
+    ctaHrefTR: "/koleksiyonlar",
+    ctaHrefEN: "/en/collections",
+    ctaHrefAR: "/ar/collections",
+    ctaVisible: true,
+    secLabelTR: "Hikayemiz",
+    secLabelEN: "Our Story",
+    secLabelAR: "Our Story",
+    secHrefTR: "/hakkimizda",
+    secHrefEN: "/en/about",
+    secHrefAR: "/ar/about",
+    secVisible: true,
   },
   {
-    img: IMGS.heroNoir,
+    imgUrl: IMGS.heroNoir,
+    imgUrlMobile: "",
+    duration: 6000,
+    linkUrl: "",
     tagTR: "NOIR Koleksiyonu",
     tagEN: "NOIR Collection",
     tagAR: "مجموعة NOIR",
@@ -51,9 +72,26 @@ const heroSlides = [
     subtitleEN: "No effort needed. Presence is already felt.",
     subtitleAR: "لا تحتاج إلى جهد. الوجود يُشعر به بالفعل.",
     collection: "NOIR",
+    ctaLabelTR: "Koleksiyonu Keşfet",
+    ctaLabelEN: "Explore Collection",
+    ctaLabelAR: "استكشف المجموعة",
+    ctaHrefTR: "/koleksiyonlar",
+    ctaHrefEN: "/en/collections",
+    ctaHrefAR: "/ar/collections",
+    ctaVisible: true,
+    secLabelTR: "Hikayemiz",
+    secLabelEN: "Our Story",
+    secLabelAR: "Our Story",
+    secHrefTR: "/hakkimizda",
+    secHrefEN: "/en/about",
+    secHrefAR: "/ar/about",
+    secVisible: true,
   },
   {
-    img: IMGS.heroOrigine,
+    imgUrl: IMGS.heroOrigine,
+    imgUrlMobile: "",
+    duration: 6000,
+    linkUrl: "",
     tagTR: "ORIGINE Koleksiyonu",
     tagEN: "ORIGINE Collection",
     tagAR: "مجموعة ORIGINE",
@@ -64,6 +102,20 @@ const heroSlides = [
     subtitleEN: "No excess. Just simple balance.",
     subtitleAR: "لا إفراط. فقط توازن بسيط.",
     collection: "ORIGINE",
+    ctaLabelTR: "Koleksiyonu Keşfet",
+    ctaLabelEN: "Explore Collection",
+    ctaLabelAR: "استكشف المجموعة",
+    ctaHrefTR: "/koleksiyonlar",
+    ctaHrefEN: "/en/collections",
+    ctaHrefAR: "/ar/collections",
+    ctaVisible: true,
+    secLabelTR: "Hikayemiz",
+    secLabelEN: "Our Story",
+    secLabelAR: "Our Story",
+    secHrefTR: "/hakkimizda",
+    secHrefEN: "/en/about",
+    secHrefAR: "/ar/about",
+    secVisible: true,
   },
 ];
 
@@ -116,38 +168,98 @@ function AnimatedSection({ children, className = "", delay = 0 }: { children: Re
 
 export default function Home() {
   const { lang } = useLanguage();
+  const { data: heroSlides = [], isLoading: heroLoading } = trpc.heroSlides.list.useQuery();
+
+  const mappedHeroSlides = heroSlides.length
+    ? heroSlides.map(slide => ({
+      imgUrl: slide.imgUrl,
+      imgUrlMobile: slide.imgUrlMobile ?? "",
+      duration: slide.duration ?? 6000,
+      linkUrl: slide.linkUrl ?? "",
+      tagTR: slide.tagTR,
+      tagEN: slide.tagEN,
+      tagAR: slide.tagAR,
+      titleTR: slide.titleTR,
+      titleEN: slide.titleEN,
+      titleAR: slide.titleAR,
+      subtitleTR: slide.subtitleTR,
+      subtitleEN: slide.subtitleEN,
+      subtitleAR: slide.subtitleAR,
+      collection: slide.titleTR || "VOILÉE",
+      ctaLabelTR: slide.ctaLabelTR,
+      ctaLabelEN: slide.ctaLabelEN,
+      ctaLabelAR: slide.ctaLabelAR,
+      ctaHrefTR: slide.ctaHrefTR,
+      ctaHrefEN: slide.ctaHrefEN,
+      ctaHrefAR: slide.ctaHrefAR,
+      ctaVisible: slide.ctaVisible,
+      secLabelTR: slide.secLabelTR,
+      secLabelEN: slide.secLabelEN,
+      secLabelAR: slide.secLabelAR,
+      secHrefTR: slide.secHrefTR,
+      secHrefEN: slide.secHrefEN,
+      secHrefAR: slide.secHrefAR,
+      secVisible: slide.secVisible,
+    }))
+    : fallbackHeroSlides;
   
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroTransition, setHeroTransition] = useState(true);
 
+  useEffect(() => {
+    if (mappedHeroSlides.length > 0 && heroIndex >= mappedHeroSlides.length) {
+      setHeroIndex(0);
+    }
+  }, [mappedHeroSlides.length, heroIndex]);
+
   // Auto-advance hero
   useEffect(() => {
-    const timer = setInterval(() => {
+    if (mappedHeroSlides.length === 0) return;
+    const currentDuration = mappedHeroSlides[heroIndex]?.duration ?? 6000;
+    const timer = setTimeout(() => {
       setHeroTransition(false);
       setTimeout(() => {
-        setHeroIndex((i) => (i + 1) % heroSlides.length);
+        setHeroIndex((i) => (i + 1) % mappedHeroSlides.length);
         setHeroTransition(true);
       }, 300);
-    }, 6000);
-    
-  const getText = (tr: string, en: string, ar: string) => {
-    if (lang === "TR") return tr;
-    if (lang === "EN") return en;
-    return ar;
-  };
-
-  return () => clearInterval(timer);
-  }, []);
+    }, currentDuration);
+    return () => clearTimeout(timer);
+  }, [heroIndex, mappedHeroSlides]);
 
   const goHero = (dir: number) => {
     setHeroTransition(false);
     setTimeout(() => {
-      setHeroIndex((i) => (i + dir + heroSlides.length) % heroSlides.length);
+      setHeroIndex((i) => (i + dir + mappedHeroSlides.length) % mappedHeroSlides.length);
       setHeroTransition(true);
     }, 300);
   };
 
-  const slide = heroSlides[heroIndex];
+  const slide = mappedHeroSlides[heroIndex];
+
+  if (heroLoading || !slide) {
+    return (
+      <section className="relative h-screen min-h-[600px] bg-[#1C1C1E] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#C9A96E] border-t-transparent rounded-full animate-spin" />
+      </section>
+    );
+  }
+
+  const bgContent = (
+    <>
+      <picture className="block w-full h-full">
+        {slide.imgUrlMobile && (
+          <source media="(max-width: 768px)" srcSet={slide.imgUrlMobile} />
+        )}
+        <img
+          src={slide.imgUrl}
+          alt=""
+          className="w-full h-full object-cover object-center"
+        />
+      </picture>
+      <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+    </>
+  );
 
   
   const getText = (tr: string, en: string, ar: string) => {
@@ -165,13 +277,15 @@ export default function Home() {
         <div
           className={`absolute inset-0 transition-opacity duration-700 ${heroTransition ? "opacity-100" : "opacity-0"}`}
         >
-          <img
-            src={slide.img}
-            alt={slide.collection}
-            className="w-full h-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+          {slide.linkUrl ? (
+            <Link href={slide.linkUrl} className="absolute inset-0 block">
+              {bgContent}
+            </Link>
+          ) : (
+            <div className="absolute inset-0">
+              {bgContent}
+            </div>
+          )}
         </div>
 
         {/* Hero Content */}
@@ -202,17 +316,21 @@ export default function Home() {
                 className={`flex items-center gap-4 transition-all duration-700 ${heroTransition ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
                 style={{ transitionDelay: "400ms" }}
               >
-                <Link href={sitePaths.collections[lang]}>
-                  <button className="btn-luxury btn-luxury-filled text-sm">
-                    {getText("Koleksiyonu Keşfet", "Explore Collection", "استكشف المجموعة")}
-                    <ArrowRight size={14} />
-                  </button>
-                </Link>
-                <Link href={sitePaths.about[lang]}>
-                  <button className="font-body text-xs tracking-[0.15em] uppercase text-white/80 hover:text-white border-b border-white/40 hover:border-white pb-0.5 transition-all duration-300">
-                    {getText("Hikayemiz", "Our Story", "Our Story")}
-                  </button>
-                </Link>
+                {slide.ctaVisible && slide.ctaHrefTR && (
+                  <Link href={getText(slide.ctaHrefTR, slide.ctaHrefEN, slide.ctaHrefAR)}>
+                    <button className="btn-luxury btn-luxury-filled text-sm">
+                      {getText(slide.ctaLabelTR, slide.ctaLabelEN, slide.ctaLabelAR)}
+                      <ArrowRight size={14} />
+                    </button>
+                  </Link>
+                )}
+                {slide.secVisible && slide.secHrefTR && (
+                  <Link href={getText(slide.secHrefTR, slide.secHrefEN, slide.secHrefAR)}>
+                    <button className="font-body text-xs tracking-[0.15em] uppercase text-white/80 hover:text-white border-b border-white/40 hover:border-white pb-0.5 transition-all duration-300">
+                      {getText(slide.secLabelTR, slide.secLabelEN, slide.secLabelAR)}
+                    </button>
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -224,7 +342,7 @@ export default function Home() {
             <ChevronLeft size={20} />
           </button>
           <div className="flex items-center gap-2">
-            {heroSlides.map((_, i) => (
+            {mappedHeroSlides.map((_, i) => (
               <button
                 key={i}
                 onClick={() => { setHeroTransition(false); setTimeout(() => { setHeroIndex(i); setHeroTransition(true); }, 300); }}
@@ -244,6 +362,12 @@ export default function Home() {
           </div>
           <p className="font-body text-[10px] tracking-[0.2em] uppercase text-white/40 rotate-90 origin-center mt-4">Scroll</p>
         </div>
+
+        {heroLoading && (
+          <div className="absolute top-6 right-6 z-20">
+            <div className="h-5 w-5 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
       </section>
 
       {/* ===== COLLECTIONS GRID ===== */}

@@ -1,0 +1,1 @@
+ALTER TABLE "heroSlides" ADD COLUMN "linkUrl" varchar(500);

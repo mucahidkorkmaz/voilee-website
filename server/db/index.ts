@@ -4,6 +4,7 @@ export * from "./products";
 export * from "./categories";
 export * from "./silhouettes";
 export * from "./collections";
+export * from "./heroSlides";
 export * from "./orders";
 export * from "./returns";
 export * from "./revenue";

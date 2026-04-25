@@ -3,6 +3,7 @@ import { eq, desc, and } from "drizzle-orm";
 import { getDb } from "./db";
 import { getStoreSettings } from "./db";
 import { products, collections, silhouettes, categories, orders, orderItems } from "../drizzle/schema";
+import { ayrıstırKdv } from "./finance";
 
 const STOREFRONT_API_KEY = process.env.VITE_STOREFRONT_API_KEY ?? "";
 
@@ -212,18 +213,23 @@ export function registerStorefrontRoutes(app: Express) {
       }
 
       const orderNumber = `VO-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
-      const totalPrice = items.reduce(
+      const totalPriceNumber = items.reduce(
         (sum: number, item: { price: string; quantity: number }) =>
           sum + parseFloat(item.price || "0") * (item.quantity || 1),
         0
       );
+
+      const { kdvHaric: subtotalNum, kdv: kdvAmountNum } = ayrıstırKdv(totalPriceNumber, 20);
 
       const [order] = await db
         .insert(orders)
         .values({
           userId: 0,
           orderNumber,
-          totalPrice: totalPrice.toFixed(2),
+          totalPrice: totalPriceNumber.toFixed(2),
+          subtotal: subtotalNum.toFixed(2),
+          kdvAmount: kdvAmountNum.toFixed(2),
+          kdvRate: "20.00",
           shippingAddress: shippingAddress ?? null,
           shippingCountry: shippingCountry ?? null,
         })

@@ -1,0 +1,20 @@
+CREATE TABLE "heroSlides" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"imgUrl" varchar(500) NOT NULL,
+	"tagTR" varchar(255) DEFAULT '' NOT NULL,
+	"tagEN" varchar(255) DEFAULT '' NOT NULL,
+	"tagAR" varchar(255) DEFAULT '' NOT NULL,
+	"titleTR" varchar(500) DEFAULT '' NOT NULL,
+	"titleEN" varchar(500) DEFAULT '' NOT NULL,
+	"titleAR" varchar(500) DEFAULT '' NOT NULL,
+	"subtitleTR" text DEFAULT '' NOT NULL,
+	"subtitleEN" text DEFAULT '' NOT NULL,
+	"subtitleAR" text DEFAULT '' NOT NULL,
+	"ctaHrefTR" varchar(500) DEFAULT '/koleksiyonlar' NOT NULL,
+	"ctaHrefEN" varchar(500) DEFAULT '/en/collections' NOT NULL,
+	"ctaHrefAR" varchar(500) DEFAULT '/ar/collections' NOT NULL,
+	"sortOrder" integer DEFAULT 0 NOT NULL,
+	"isActive" boolean DEFAULT true NOT NULL,
+	"createdAt" timestamp DEFAULT now() NOT NULL,
+	"updatedAt" timestamp DEFAULT now() NOT NULL
+);

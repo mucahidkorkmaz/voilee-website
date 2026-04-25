@@ -16,6 +16,7 @@ import { cmsRouter } from "./cms.router";
 import { emailTemplatesRouter } from "./emailTemplates.router";
 import { verificationsRouter } from "./verifications.router";
 import { settingsRouter } from "./settings.router";
+import { heroSlidesRouter } from "./heroSlides.router";
 import { getAdminStats } from "../db";
 
 export const adminRouter = router({
@@ -39,4 +40,5 @@ export const adminRouter = router({
   emailTemplates: emailTemplatesRouter,
   verifications: verificationsRouter,
   settings: settingsRouter,
+  heroSlides: heroSlidesRouter,
 });

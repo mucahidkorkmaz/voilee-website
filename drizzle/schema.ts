@@ -88,6 +88,8 @@ export const products = pgTable("products", {
   descriptionEN: text("descriptionEN"),
   descriptionAR: text("descriptionAR"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  kdvRate: decimal("kdvRate", { precision: 5, scale: 2 }).default("20.00"),
+  currency: varchar("currency", { length: 3 }).default("TRY"),
   collection: varchar("collection", { length: 100 }),
   silhouetteId: integer("silhouetteId"),
   categoryId: integer("categoryId"),
@@ -112,6 +114,24 @@ export const orders = pgTable("orders", {
   shippingAddress: text("shippingAddress"),
   shippingCountry: varchar("shippingCountry", { length: 100 }),
   trackingNumber: varchar("trackingNumber", { length: 100 }),
+  kdvRate: decimal("kdvRate", { precision: 5, scale: 2 }).default("20.00"),
+  kdvAmount: decimal("kdvAmount", { precision: 12, scale: 2 }),
+  subtotal: decimal("subtotal", { precision: 12, scale: 2 }),
+  shippingCost: decimal("shippingCost", { precision: 10, scale: 2 }).default("0"),
+  discountAmount: decimal("discountAmount", { precision: 10, scale: 2 }).default("0"),
+  currency: varchar("currency", { length: 3 }).default("TRY"),
+  paymentMethod: varchar("paymentMethod", { length: 50 }),
+  paymentStatus: varchar("paymentStatus", { length: 20 }).default("pending"),
+  paidAt: timestamp("paidAt"),
+  invoiceNumber: varchar("invoiceNumber", { length: 100 }),
+  invoiceStatus: varchar("invoiceStatus", { length: 20 }).default("not_issued"),
+  invoiceIssuedAt: timestamp("invoiceIssuedAt"),
+  parasutInvoiceId: varchar("parasutInvoiceId", { length: 100 }),
+  billingName: varchar("billingName", { length: 255 }),
+  billingAddress: text("billingAddress"),
+  billingCity: varchar("billingCity", { length: 100 }),
+  billingCountry: varchar("billingCountry", { length: 100 }).default("TR"),
+  taxNumber: varchar("taxNumber", { length: 20 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
@@ -127,6 +147,9 @@ export const orderItems = pgTable("orderItems", {
   productId: integer("productId").notNull(),
   quantity: integer("quantity").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  kdvRate: decimal("kdvRate", { precision: 5, scale: 2 }).default("20.00"),
+  kdvAmount: decimal("kdvAmount", { precision: 10, scale: 2 }),
+  unitPrice: decimal("unitPrice", { precision: 10, scale: 2 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -178,6 +201,46 @@ export const collections = pgTable("collections", {
 
 export type Collection = typeof collections.$inferSelect;
 export type InsertCollection = typeof collections.$inferInsert;
+
+// ─── Hero Slides ───────────────────────────────────────────────────────────────
+
+export const heroSlides = pgTable("heroSlides", {
+  id: serial("id").primaryKey(),
+  imgUrl: varchar("imgUrl", { length: 500 }).notNull(),
+  imgUrlMobile: varchar("imgUrlMobile", { length: 500 }),
+  duration: integer("duration").notNull().default(6000),
+  linkUrl: varchar("linkUrl", { length: 500 }),
+  tagTR: varchar("tagTR", { length: 255 }).notNull().default(""),
+  tagEN: varchar("tagEN", { length: 255 }).notNull().default(""),
+  tagAR: varchar("tagAR", { length: 255 }).notNull().default(""),
+  titleTR: varchar("titleTR", { length: 500 }).notNull().default(""),
+  titleEN: varchar("titleEN", { length: 500 }).notNull().default(""),
+  titleAR: varchar("titleAR", { length: 500 }).notNull().default(""),
+  subtitleTR: text("subtitleTR").notNull().default(""),
+  subtitleEN: text("subtitleEN").notNull().default(""),
+  subtitleAR: text("subtitleAR").notNull().default(""),
+  ctaLabelTR: varchar("ctaLabelTR", { length: 255 }).notNull().default("Koleksiyonu Keşfet"),
+  ctaLabelEN: varchar("ctaLabelEN", { length: 255 }).notNull().default("Explore Collection"),
+  ctaLabelAR: varchar("ctaLabelAR", { length: 255 }).notNull().default("استكشف المجموعة"),
+  ctaHrefTR: varchar("ctaHrefTR", { length: 500 }).notNull().default("/koleksiyonlar"),
+  ctaHrefEN: varchar("ctaHrefEN", { length: 500 }).notNull().default("/en/collections"),
+  ctaHrefAR: varchar("ctaHrefAR", { length: 500 }).notNull().default("/ar/collections"),
+  ctaVisible: boolean("ctaVisible").notNull().default(true),
+  secLabelTR: varchar("secLabelTR", { length: 255 }).notNull().default("Hikayemiz"),
+  secLabelEN: varchar("secLabelEN", { length: 255 }).notNull().default("Our Story"),
+  secLabelAR: varchar("secLabelAR", { length: 255 }).notNull().default("Our Story"),
+  secHrefTR: varchar("secHrefTR", { length: 500 }).notNull().default("/hakkimizda"),
+  secHrefEN: varchar("secHrefEN", { length: 500 }).notNull().default("/en/about"),
+  secHrefAR: varchar("secHrefAR", { length: 500 }).notNull().default("/ar/about"),
+  secVisible: boolean("secVisible").notNull().default(true),
+  sortOrder: integer("sortOrder").notNull().default(0),
+  isActive: boolean("isActive").notNull().default(true),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+});
+
+export type HeroSlide = typeof heroSlides.$inferSelect;
+export type InsertHeroSlide = typeof heroSlides.$inferInsert;
 
 // ─── Media ────────────────────────────────────────────────────────────────────
 
@@ -283,6 +346,8 @@ export const returns = pgTable("returns", {
   notes: text("notes"),
   status: returnStatusEnum("status").default("requested").notNull(),
   refundAmount: decimal("refundAmount", { precision: 12, scale: 2 }),
+  kdvRefundAmount: decimal("kdvRefundAmount", { precision: 12, scale: 2 }),
+  parasutCreditNoteId: varchar("parasutCreditNoteId", { length: 100 }),
   adminNote: text("adminNote"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
@@ -340,6 +405,14 @@ export const expenses = pgTable("expenses", {
   date: timestamp("date").notNull(),
   isRecurring: boolean("isRecurring").default(false),
   notes: text("notes"),
+  kdvRate: decimal("kdvRate", { precision: 5, scale: 2 }).default("20.00"),
+  kdvAmount: decimal("kdvAmount", { precision: 12, scale: 2 }),
+  netAmount: decimal("netAmount", { precision: 12, scale: 2 }),
+  invoiceNumber: varchar("invoiceNumber", { length: 100 }),
+  invoiceDate: timestamp("invoiceDate"),
+  supplier: varchar("supplier", { length: 255 }),
+  isKdvDeductible: boolean("isKdvDeductible").default(true),
+  parasutExpenseId: varchar("parasutExpenseId", { length: 100 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
@@ -418,6 +491,14 @@ export const storeSettings = pgTable("storeSettings", {
   smtpUser: varchar("smtpUser", { length: 320 }),
   smtpPass: varchar("smtpPass", { length: 500 }),
   smtpFrom: varchar("smtpFrom", { length: 320 }),
+  taxNumber: varchar("taxNumber", { length: 20 }),
+  taxOffice: varchar("taxOffice", { length: 100 }),
+  companyType: varchar("companyType", { length: 50 }),
+  mersis: varchar("mersis", { length: 20 }),
+  parasutClientId: varchar("parasutClientId", { length: 255 }),
+  parasutClientSecret: varchar("parasutClientSecret", { length: 500 }),
+  parasutCompanyId: varchar("parasutCompanyId", { length: 100 }),
+  parasutEnabled: boolean("parasutEnabled").default(false),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 

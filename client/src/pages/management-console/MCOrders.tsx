@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { AlertCircle, Eye } from "lucide-react";
+import { AlertCircle, Eye, FileCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -93,6 +93,64 @@ function OrderDetailDialog({ orderId, open, onClose }: { orderId: number | null;
                 </div>
               )}
             </div>
+
+            {/* Ödeme & Fatura */}
+            <div className="pt-3 border-t border-border/40 space-y-2">
+              <p className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
+                Ödeme & Fatura
+              </p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+                <span className="text-muted-foreground">Ödeme Yöntemi</span>
+                <span>{order.paymentMethod ?? "—"}</span>
+                <span className="text-muted-foreground">Ödeme Durumu</span>
+                <span className={order.paymentStatus === "paid" ? "text-emerald-600" : "text-amber-600"}>
+                  {order.paymentStatus === "paid"
+                    ? "Ödendi"
+                    : order.paymentStatus === "failed"
+                      ? "Başarısız"
+                      : order.paymentStatus === "refunded"
+                        ? "İade Edildi"
+                        : "Bekliyor"}
+                </span>
+                <span className="text-muted-foreground">Fatura No</span>
+                <span>{order.invoiceNumber ?? "—"}</span>
+                <span className="text-muted-foreground">Fatura Durumu</span>
+                <span>
+                  {order.invoiceStatus === "issued"
+                    ? "Kesildi"
+                    : order.invoiceStatus === "cancelled"
+                      ? "İptal"
+                      : "Kesilmedi"}
+                </span>
+                {order.paidAt && (
+                  <>
+                    <span className="text-muted-foreground">Ödeme Tarihi</span>
+                    <span>{new Date(order.paidAt).toLocaleDateString("tr-TR")}</span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Fatura bilgileri (varsa) */}
+            {order.billingName && (
+              <div className="pt-3 border-t border-border/40 space-y-2">
+                <p className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
+                  Fatura Adresi
+                </p>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+                  <span className="text-muted-foreground">Ad / Ünvan</span>
+                  <span>{order.billingName}</span>
+                  {order.taxNumber && (
+                    <>
+                      <span className="text-muted-foreground">Vergi / TC No</span>
+                      <span>{order.taxNumber}</span>
+                    </>
+                  )}
+                  <span className="text-muted-foreground">Adres</span>
+                  <span>{order.billingAddress ?? "—"}</span>
+                </div>
+              </div>
+            )}
 
             {order.items?.length > 0 && (
               <div>
@@ -192,7 +250,7 @@ export default function MCOrders() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border/40 bg-muted/20">
-                  {["Sipariş No", "Toplam", "Ülke", "Takip No", "Durum", "Tarih", ""].map(h => (
+                  {["Sipariş No", "Toplam", "Ülke", "Takip No", "Durum", "Ödeme", "Fatura", "Tarih", ""].map(h => (
                     <th
                       key={h}
                       className="text-left px-5 py-3 text-xs tracking-wider uppercase text-muted-foreground font-normal whitespace-nowrap"
@@ -247,6 +305,37 @@ export default function MCOrders() {
                           ))}
                         </SelectContent>
                       </Select>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                          order.paymentStatus === "paid"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : order.paymentStatus === "failed"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-amber-100 text-amber-700"
+                        }`}
+                      >
+                        {order.paymentStatus === "paid"
+                          ? "Ödendi"
+                          : order.paymentStatus === "failed"
+                            ? "Başarısız"
+                            : order.paymentStatus === "refunded"
+                              ? "İade"
+                              : "Bekliyor"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      {order.invoiceStatus === "issued" ? (
+                        <span className="inline-flex items-center gap-1 text-xs text-emerald-600">
+                          <FileCheck className="h-3 w-3" />
+                          {order.invoiceNumber ?? "Kesildi"}
+                        </span>
+                      ) : order.invoiceStatus === "cancelled" ? (
+                        <span className="text-xs text-red-500">İptal</span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
                     </td>
                     <td className="px-5 py-3.5 text-muted-foreground whitespace-nowrap">
                       {new Date(order.createdAt).toLocaleDateString("tr-TR")}

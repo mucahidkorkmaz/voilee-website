@@ -5,6 +5,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { adminRouter } from "./adminRouter";
+import { heroSlidesRouter } from "./routers/heroSlides";
 import {
   cancelVerificationTransfer,
   claimVerificationForUser,
@@ -134,6 +135,7 @@ export const appRouter = router({
         });
       }),
   }),
+  heroSlides: heroSlidesRouter,
   admin: adminRouter,
 });
 

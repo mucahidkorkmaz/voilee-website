@@ -54,7 +54,6 @@ const heroSlideInputSchema = z.object({
 export const heroSlidesRouter = router({
   list: publicProcedure.query(async () => {
     const rows = await getActiveHeroSlides();
-    console.log("DB LIST SAMPLE:", JSON.stringify(rows[0]));
     return normalizeSlideBooleans(rows);
   }),
   adminList: adminProcedure.query(async () => {

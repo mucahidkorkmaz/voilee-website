@@ -25,6 +25,7 @@ import ShippingReturns from "./pages/ShippingReturns";
 import SizeGuide from "./pages/SizeGuide";
 import Story from "./pages/Story";
 import Lookbook from "./pages/Lookbook";
+import LookbookDetail from "./pages/LookbookDetail";
 import Checkout from "./pages/Checkout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -161,6 +162,7 @@ function Router() {
         <Route path="/tr/about" component={About} />
         <Route path="/tr/story" component={Story} />
         <Route path="/tr/lookbook" component={Lookbook} />
+        <Route path="/tr/lookbook/:slug" component={LookbookDetail} />
         <Route path="/tr/sustainability" component={Sustainability} />
         <Route path="/tr/contact" component={Contact} />
         <Route path="/tr/journal" component={Journal} />
@@ -191,6 +193,7 @@ function Router() {
         <Route path="/en/about" component={About} />
         <Route path="/en/story" component={Story} />
         <Route path="/en/lookbook" component={Lookbook} />
+        <Route path="/en/lookbook/:slug" component={LookbookDetail} />
         <Route path="/en/sustainability" component={Sustainability} />
         <Route path="/en/contact" component={Contact} />
         <Route path="/en/journal" component={Journal} />
@@ -221,6 +224,7 @@ function Router() {
         <Route path="/ar/about" component={About} />
         <Route path="/ar/story" component={Story} />
         <Route path="/ar/lookbook" component={Lookbook} />
+        <Route path="/ar/lookbook/:slug" component={LookbookDetail} />
         <Route path="/ar/sustainability" component={Sustainability} />
         <Route path="/ar/contact" component={Contact} />
         <Route path="/ar/journal" component={Journal} />
@@ -251,6 +255,10 @@ function Router() {
         <Route path="/hakkimizda" component={replaceWith("/tr/about")} />
         <Route path="/hikayemiz" component={replaceWith("/tr/story")} />
         <Route path="/lookbook" component={replaceWith("/tr/lookbook")} />
+        <Route path="/lookbook/:slug" component={({ params }: any) => { 
+  window.location.replace(`/tr/lookbook/${params.slug}`); 
+  return null; 
+}} />
         <Route path="/surdurulebilirlik" component={replaceWith("/tr/sustainability")} />
         <Route path="/iletisim" component={replaceWith("/tr/contact")} />
         <Route path="/journal" component={replaceWith("/tr/journal")} />

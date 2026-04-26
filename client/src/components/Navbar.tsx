@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { sitePaths } from "@/lib/sitePaths";
 
-const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_logo_2e68b438.webp";
+type StoreSettingsPublic = { logoUrl?: string | null };
 
 const getNavLinks = (lang: "TR" | "EN" | "AR") => {
   const c = sitePaths.silhouettes[lang];
@@ -47,6 +47,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const langDropdownRef = useRef<HTMLDivElement>(null);
+  const [siteSettings, setSiteSettings] = useState<StoreSettingsPublic | null>(null);
   const [location] = useLocation();
   const isHome =
     location === "/tr" || location === "/en" || location === "/ar";
@@ -57,6 +58,13 @@ export default function Navbar() {
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/v1/store-settings")
+      .then(r => r.json())
+      .then(setSiteSettings)
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -89,6 +97,7 @@ export default function Navbar() {
 
   const isTransparent = isHome && !isScrolled && !mobileOpen;
   const navLinks = getNavLinks(lang);
+  const logoSrc = siteSettings?.logoUrl || "/fallback-logo.png";
 
   const [, setLocationNav] = useLocation();
   const isLangSwitch = useRef(false);
@@ -137,7 +146,7 @@ export default function Navbar() {
             <div className="flex justify-center">
               <Link href={sitePaths.home[lang]}>
                 <img
-                  src={LOGO_URL}
+                  src={logoSrc}
                   alt="VOILÉE"
                   className={`h-8 lg:h-10 w-auto object-contain transition-all duration-300 ${
                     isTransparent ? "brightness-0 invert" : ""
@@ -213,7 +222,7 @@ export default function Navbar() {
 
             <Link href={sitePaths.home[lang]}>
               <img
-                src={LOGO_URL}
+                src={logoSrc}
                 alt="VOILÉE"
                 className={`h-7 w-auto object-contain transition-all duration-300 ${
                   isTransparent ? "brightness-0 invert" : ""

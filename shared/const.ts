@@ -416,22 +416,18 @@ VOILÉE`,
   // ── Müşteri ─────────────────────────────────────────────────────────────────
   customerPasswordReset: {
     label: "Şifre Sıfırlama",
-    description: "Müşteri, hesap parolasını sıfırlamak istediğinde müşteriye gönderilir.",
-    defaultSubject: "Şifre Sıfırlama — VOILÉE",
-    defaultBody: `Sayın {{customer_name}},
+    description:
+      "Müşteri şifre sıfırlama talebinde bulunduğunda gönderilir. Hitap satırı otomatik eklenir; aşağıdaki metin butondan önce gösterilir (düz metin, satır sonları paragrafa dönüşür).",
+    defaultSubject: "Şifre Sıfırlama Talebi — {{site_name}}",
+    defaultBody: `Hesabınız için bir şifre sıfırlama talebinde bulunuldu.
+Aşağıdaki bağlantı 30 dakika geçerlidir.
 
-Hesabınız için bir şifre sıfırlama talebinde bulunuldu. Aşağıdaki bağlantı 30 dakika geçerlidir.
-
-{{reset_url}}
-
-Bu isteği siz yapmadıysanız bu e-postayı görmezden gelebilirsiniz.
-
-VOILÉE`,
+Bu isteği siz yapmadıysanız bu e-postayı görmezden gelebilirsiniz.`,
     variables: [
-      { key: "customer_name", description: "Müşteri adı veya e-postası" },
+      { key: "customer_name", description: "Müşteri adı (konu ve gövdede kullanılabilir)" },
       { key: "customer_email", description: "Müşteri e-postası" },
       { key: "site_name", description: "Mağaza adı" },
-      { key: "reset_url", description: "Şifre sıfırlama bağlantısı" },
+      { key: "reset_url", description: "Sıfırlama bağlantısı (metin içinde referans için)" },
     ],
   },
   customerWelcome: {

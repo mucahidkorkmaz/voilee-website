@@ -22,6 +22,7 @@ type SettingsForm = {
   storePhone: string;
   storeAddress: string;
   faviconUrl: string;
+  logoUrl: string;
   instagramUrl: string;
   facebookUrl: string;
   twitterUrl: string;
@@ -57,6 +58,7 @@ const emptyForm: SettingsForm = {
   storePhone: "",
   storeAddress: "",
   faviconUrl: "",
+  logoUrl: "",
   instagramUrl: "",
   facebookUrl: "",
   twitterUrl: "",
@@ -137,6 +139,8 @@ const SOCIAL_PLATFORMS = [
 function TabGeneral({ form, set }: TabProps) {
   const [faviconUploading, setFaviconUploading] = useState(false);
   const faviconInputRef = useRef<HTMLInputElement>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const handleFaviconUpload = async (file: File) => {
     setFaviconUploading(true);
@@ -156,6 +160,27 @@ function TabGeneral({ form, set }: TabProps) {
       toast.error("Yükleme sırasında bir hata oluştu.");
     } finally {
       setFaviconUploading(false);
+    }
+  };
+
+  const handleLogoUpload = async (file: File) => {
+    setLogoUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd, credentials: "include" });
+      if (!res.ok) {
+        const { error: msg } = await res.json();
+        toast.error(msg ?? "Yükleme başarısız.");
+        return;
+      }
+      const { url } = await res.json();
+      set("logoUrl", url);
+      toast.success("Logo yüklendi. Kaydetmeyi unutmayın.");
+    } catch {
+      toast.error("Yükleme sırasında bir hata oluştu.");
+    } finally {
+      setLogoUploading(false);
     }
   };
 
@@ -248,6 +273,62 @@ function TabGeneral({ form, set }: TabProps) {
             </div>
             <p className="text-xs text-muted-foreground">
               Tarayıcı sekmesinde görünen ikon. .ico, .png veya .svg önerilir (32×32 veya 64×64 px).
+            </p>
+          </div>
+
+          <hr className="md:col-span-2 border-border/40" />
+
+          <div className="space-y-2 md:col-span-2">
+            <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
+              Site Logosu (E-posta ve Genel Kullanım)
+            </Label>
+            <div className="flex items-center gap-4">
+              <div className="shrink-0 w-24 h-16 rounded border border-border/60 bg-muted flex items-center justify-center overflow-hidden">
+                {form.logoUrl ? (
+                  <img src={form.logoUrl} alt="logo önizleme" className="w-full h-full object-contain" />
+                ) : (
+                  <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept=".png,.svg,.jpg,.jpeg,.webp"
+                  className="hidden"
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) handleLogoUpload(file);
+                    e.target.value = "";
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={logoUploading}
+                  onClick={() => logoInputRef.current?.click()}
+                  className="gap-2"
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  {logoUploading ? "Yükleniyor…" : "Dosya Seç"}
+                </Button>
+                {form.logoUrl && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => set("logoUrl", "")}
+                    className="gap-1.5 text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    Kaldır
+                  </Button>
+                )}
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              E-posta üstbilgisi, navbar ve footer gibi alanlarda kullanılır. PNG veya SVG önerilir, şeffaf arka planlı.
             </p>
           </div>
         </div>
@@ -509,6 +590,7 @@ export default function MCSettings() {
         storePhone: settings.storePhone ?? "",
         storeAddress: settings.storeAddress ?? "",
         faviconUrl: settings.faviconUrl ?? "",
+        logoUrl: settings.logoUrl ?? "",
         instagramUrl: settings.instagramUrl ?? "",
         facebookUrl: settings.facebookUrl ?? "",
         twitterUrl: settings.twitterUrl ?? "",

@@ -319,6 +319,7 @@ export function registerStorefrontRoutes(app: Express) {
         storeEmail: settings.storeEmail,
         storePhone: settings.storePhone,
         faviconUrl: settings.faviconUrl,
+        logoUrl: settings.logoUrl,
         instagramUrl: settings.instagramUrl,
         facebookUrl: settings.facebookUrl,
         twitterUrl: settings.twitterUrl,

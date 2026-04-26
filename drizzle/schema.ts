@@ -472,6 +472,7 @@ export const storeSettings = pgTable("storeSettings", {
   storePhone: varchar("storePhone", { length: 32 }),
   storeAddress: text("storeAddress"),
   faviconUrl: varchar("faviconUrl", { length: 500 }),
+  logoUrl: varchar("logoUrl", { length: 500 }),
   instagramUrl: varchar("instagramUrl", { length: 500 }),
   facebookUrl: varchar("facebookUrl", { length: 500 }),
   twitterUrl: varchar("twitterUrl", { length: 500 }),

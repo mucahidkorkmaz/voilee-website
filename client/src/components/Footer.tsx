@@ -3,9 +3,8 @@ import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { sitePaths } from "@/lib/sitePaths";
 
-const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_logo_2e68b438.webp";
-
 type SocialSettings = {
+  logoUrl?: string | null;
   instagramUrl?: string | null;
   facebookUrl?: string | null;
   twitterUrl?: string | null;
@@ -318,7 +317,11 @@ export default function Footer() {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className={`grid lg:grid-cols-3 gap-8 items-center ${isRTL ? "text-right" : ""}`}>
           <div>
-            <img src={LOGO_URL} alt="VOILÉE" className="h-6 w-auto object-contain mb-4" />
+            <img
+              src={social.logoUrl || "/fallback-logo.png"}
+              alt="VOILÉE"
+              className="h-6 w-auto object-contain mb-4"
+            />
             <p className="font-body text-xs text-[#F7F3EC]/40">
               {lang === "TR"
                 ? "Koleksiyon yapmıyoruz. Siluet kuruyoruz."

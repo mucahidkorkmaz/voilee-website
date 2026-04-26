@@ -272,7 +272,7 @@ export function registerPasswordResetRoutes(app: Express) {
       const { users, passwordResetTokens } = await import("../drizzle/schema");
       const { eq } = await import("drizzle-orm");
       const { randomBytes } = await import("crypto");
-      const { sendEmail, buildLayout, textToHtmlInline, esc } = await import("./_core/email");
+      const { sendPasswordReset } = await import("./_core/email");
 
       const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
       // Kullanıcı bulunamasa bile başarılı dön (güvenlik)
@@ -288,27 +288,10 @@ export function registerPasswordResetRoutes(app: Express) {
       const baseUrl = ENV.corsOrigin?.split(",")[0]?.trim() ?? "";
       const resetUrl = `${baseUrl}/tr/reset-password?token=${token}`;
 
-      await sendEmail({
+      await sendPasswordReset({
         to: email,
-        subject: "Şifre Sıfırlama — VOILÉE",
-        html: buildLayout({
-          bodyHtml:
-            textToHtmlInline(`Sayın Müşterimiz,
-
-Hesabınız için bir şifre sıfırlama talebinde bulunuldu. Aşağıdaki bağlantı 30 dakika geçerlidir.
-
-Bu isteği siz yapmadıysanız bu e-postayı görmezden gelebilirsiniz.`) +
-            `<p style="text-align:center;margin:32px 0">
-  <a href="${esc(resetUrl)}"
-     style="display:inline-block;background:#1C1C1E;color:#C9A96E;
-            padding:14px 48px;text-decoration:none;
-            font-family:'DM Sans','Helvetica Neue',Arial,sans-serif;
-            font-size:10px;letter-spacing:3px;text-transform:uppercase;
-            border:1px solid #C9A96E">
-    ŞİFREMİ SIFIRLA
-  </a>
-</p>`,
-        }),
+        customerName: user.name || user.email || "Müşteri",
+        resetUrl,
       });
 
       return res.json({ ok: true });

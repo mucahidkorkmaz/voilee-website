@@ -1834,6 +1834,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "logoUrl": {
+          "name": "logoUrl",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": false
+        },
         "instagramUrl": {
           "name": "instagramUrl",
           "type": "varchar(500)",

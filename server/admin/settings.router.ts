@@ -14,6 +14,7 @@ export const settingsRouter = router({
         storePhone: z.string().optional(),
         storeAddress: z.string().optional(),
         faviconUrl: z.string().optional(),
+        logoUrl: z.string().optional(),
         instagramUrl: z.string().optional(),
         facebookUrl: z.string().optional(),
         twitterUrl: z.string().optional(),

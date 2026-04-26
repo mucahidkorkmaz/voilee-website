@@ -1,5 +1,43 @@
 # Changelog
 
+## 3.2.0 — 2026-04-27
+
+### Mağaza ayarları ve kalıcılık
+
+- **Site logosu:** Şemada `siteLogoUrl` alanı mevcut PostgreSQL kolonu `logoUrl` ile eşlendi; yönetim paneli ve `settings.update` mutasyonu aynı isimle hizalandı.
+- **`upsertStoreSettings`:** `undefined` değerli alanlar güncelleme/insert payload’ından çıkarılıyor; kısmi kayıtların diğer kolonları (ör. favicon, logo, banka) yanlışlıkla silinmesi engellendi.
+- **Kaydet akışı:** Ayarlar başarıyla kaydedildiğinde `dirty` bayrağı sıfırlanıyor (mutasyon `onSuccess`); favicon/logo yüklemesi sonrası kayıt davranışı netleştirildi.
+- **Banka bilgileri:** `storeSettings` için `bankName`, `iban`, `accountHolder` (migration 0012); Zod input, form state, Yasal sekmesinde düzenleme alanları ve API uyumu.
+
+### Genel API
+
+- **`GET /api/v1/store-settings`:** `siteLogoUrl` alanı; geriye dönük uyumluluk için `logoUrl` aynı değerle dönüyor. Navbar ve Footer önce `siteLogoUrl` okuyor.
+
+### Terk edilen sepetler
+
+- **Veritabanı:** `abandonedCarts` tablosu (migration 0011), oturum / müşteri / sepet özeti ve hatırlatma e-postası zaman damgası.
+- **Yönetim paneli:** Terk sepetler listesi ve hatırlatma gönderimi; admin router entegrasyonu.
+- **Sepet:** İstemci ve sunucu tarafı sepet senkronu / `cart` router ile checkout ile uyum.
+
+### Siparişler ve müşteri bilgisi
+
+- **Sipariş satırı:** `cargoCompany`, `deliveryMethod`, müşteri iletişim alanları (`customerEmail`, `customerName`, `customerPhone`), teslimat şehri, sipariş notları (migration 0012).
+- **Admin:** Sipariş yönetimi ve ilgili DB katmanı güncellemeleri; Paraşüt entegrasyonu tarafında ilgili iyileştirmeler.
+
+### E-posta ve iade
+
+- **`server/_core/email.ts`:** Şablon ve otomasyon e-postalarında genişletmeler (banka / mağaza verisi kullanımı vb.).
+- **E-posta şablonları yönetimi:** `MCEmailTemplates` güncellemeleri.
+- **İadeler:** Admin iade akışında mağaza ayarları ve e-posta ile uyumlu düzenlemeler.
+
+### Kimlik doğrulama ve sabitler
+
+- **`userAuth` / `shared/const`:** Oturum ve hata mesajları ile uyumlu ince ayarlar.
+
+**Dağıtım:** Üretimde `0011_abandoned_carts.sql` ve `0012_order_customer_cargo_bank.sql` migration’larını (veya proje standartlarına uygun eşdeğer) uygulayın.
+
+---
+
 ## 1.1.0 — 2026-04-20
 
 ### Mağaza ve site ayarları

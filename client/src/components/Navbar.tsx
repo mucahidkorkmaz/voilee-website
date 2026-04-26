@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { sitePaths } from "@/lib/sitePaths";
 
-type StoreSettingsPublic = { logoUrl?: string | null };
+type StoreSettingsPublic = { siteLogoUrl?: string | null; logoUrl?: string | null };
 
 const getNavLinks = (lang: "TR" | "EN" | "AR") => {
   const c = sitePaths.silhouettes[lang];
@@ -97,7 +97,8 @@ export default function Navbar() {
 
   const isTransparent = isHome && !isScrolled && !mobileOpen;
   const navLinks = getNavLinks(lang);
-  const logoSrc = siteSettings?.logoUrl || "/fallback-logo.png";
+  const logoSrc =
+    siteSettings?.siteLogoUrl || siteSettings?.logoUrl || "/fallback-logo.png";
 
   const [, setLocationNav] = useLocation();
   const isLangSwitch = useRef(false);

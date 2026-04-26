@@ -113,6 +113,8 @@ const ORDER_VARS = [
   { key: "customer_email", description: "Müşteri e-postası" },
   { key: "order_number", description: "Sipariş numarası" },
   { key: "order_total", description: "Sipariş tutarı" },
+  { key: "order_date", description: "Sipariş tarihi" },
+  { key: "order_url", description: "Sipariş detay bağlantısı" },
   { key: "site_name", description: "Mağaza adı" },
 ];
 
@@ -417,13 +419,15 @@ VOILÉE`,
   customerPasswordReset: {
     label: "Şifre Sıfırlama",
     description:
-      "Müşteri şifre sıfırlama talebinde bulunduğunda gönderilir. Aşağıdaki metin şifre sıfırlama butonundan önce gösterilir (düz metin, satır sonları paragrafa dönüşür).",
+      "Müşteri şifre sıfırlama talebinde bulunduğunda gönderilir. Gövde metni; şifre sıfırlama düğmesi ve yedek bağlantı şablon düzeninin bir parçası olarak eklenir.",
     defaultSubject: "Şifre Sıfırlama Talebi — {{site_name}}",
-    defaultBody: `Sayın {{customer_name}},
+    defaultBody: `Merhaba {{customer_name}},
 
-Hesabınız için bir şifre sıfırlama talebinde bulunuldu. Aşağıdaki bağlantı 30 dakika geçerlidir.
+{{site_name}} hesabınız için şifre sıfırlama talebinde bulunuldu.
 
-Bu isteği siz yapmadıysanız bu e-postayı görmezden gelebilirsiniz.`,
+Şifrenizi sıfırlamak için bu bağlantıyı kullanın: {{reset_url}}
+
+Bu bağlantı 30 dakika geçerlidir. Eğer bu talebi siz yapmadıysanız bu e-postayı görmezden gelebilirsiniz.`,
     variables: [
       { key: "customer_name", description: "Müşteri adı (konu ve gövdede kullanılabilir)" },
       { key: "customer_email", description: "Müşteri e-postası" },
@@ -458,9 +462,9 @@ VOILÉE`,
     defaultSubject: "Sepetinizde Bekleyen Parçalar Var",
     defaultBody: `Sayın {{customer_name}},
 
-Sepetinize eklediğiniz parçalar sizi bekliyor. Stoklar sınırlı olduğundan siparişinizi tamamlamanızı öneririz.
+Sepetinize eklediğiniz parçalar sizi bekliyor ({{cart_total}}). Siparişi tamamlamak için: {{cart_url}}
 
-VOILÉE`,
+VOILÉE — {{site_name}}`,
     variables: [
       { key: "customer_name", description: "Müşteri adı veya e-postası" },
       { key: "customer_email", description: "Müşteri e-postası" },

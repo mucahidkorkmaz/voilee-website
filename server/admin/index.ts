@@ -17,6 +17,7 @@ import { emailTemplatesRouter } from "./emailTemplates.router";
 import { verificationsRouter } from "./verifications.router";
 import { settingsRouter } from "./settings.router";
 import { heroSlidesRouter } from "./heroSlides.router";
+import { abandonedCartsAdminRouter } from "./abandonedCarts.router";
 import { getAdminStats } from "../db";
 
 export const adminRouter = router({
@@ -41,4 +42,5 @@ export const adminRouter = router({
   verifications: verificationsRouter,
   settings: settingsRouter,
   heroSlides: heroSlidesRouter,
+  abandonedCarts: abandonedCartsAdminRouter,
 });

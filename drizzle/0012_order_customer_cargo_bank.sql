@@ -1,0 +1,10 @@
+ALTER TABLE "orders" ADD COLUMN "cargoCompany" varchar(100);
+ALTER TABLE "orders" ADD COLUMN "deliveryMethod" varchar(32) DEFAULT 'shipping';
+ALTER TABLE "orders" ADD COLUMN "customerEmail" varchar(320);
+ALTER TABLE "orders" ADD COLUMN "customerName" varchar(255);
+ALTER TABLE "orders" ADD COLUMN "customerPhone" varchar(32);
+ALTER TABLE "orders" ADD COLUMN "shippingCity" varchar(100);
+ALTER TABLE "orders" ADD COLUMN "orderNotes" text;
+ALTER TABLE "storeSettings" ADD COLUMN "bankName" varchar(255);
+ALTER TABLE "storeSettings" ADD COLUMN "iban" varchar(34);
+ALTER TABLE "storeSettings" ADD COLUMN "accountHolder" varchar(255);

@@ -4,8 +4,10 @@ import type { Express, Request, Response } from "express";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { sdk } from "./_core/sdk";
+import { sendCustomerWelcome } from "./_core/email";
 import {
   createUserWithPassword,
+  getStoreSettings,
   getUserByEmail,
   getUserByOpenId,
   updateUserLastSignedIn,
@@ -108,6 +110,24 @@ export function registerUserAuthRoutes(app: Express) {
       }
 
       await setSessionCookie(req, res, openId, created.name ?? cleanEmail);
+
+      try {
+        const settings = await getStoreSettings();
+        const siteName = settings?.storeName ?? "";
+        const { ENV } = await import("./_core/env");
+        const origin = ENV.corsOrigin?.split(",")[0]?.trim() ?? "";
+        const siteDomain = origin.replace(/^https?:\/\//i, "").split("/")[0] ?? "";
+
+        await sendCustomerWelcome({
+          to: cleanEmail,
+          customerName: created.name ?? cleanEmail,
+          customerEmail: cleanEmail,
+          siteName,
+          siteDomain,
+        });
+      } catch (emailErr) {
+        console.error("[UserAuth] Welcome email failed:", emailErr);
+      }
 
       return res.status(201).json({ user: publicUser(created) });
     } catch (error) {
@@ -274,7 +294,8 @@ export function registerPasswordResetRoutes(app: Express) {
       const { randomBytes } = await import("crypto");
       const { sendPasswordReset } = await import("./_core/email");
 
-      const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      const cleanEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+      const [user] = await db.select().from(users).where(eq(users.email, cleanEmail)).limit(1);
       // Kullanıcı bulunamasa bile başarılı dön (güvenlik)
       if (!user || !user.passwordHash) return res.json({ ok: true });
 
@@ -288,10 +309,14 @@ export function registerPasswordResetRoutes(app: Express) {
       const baseUrl = ENV.corsOrigin?.split(",")[0]?.trim() ?? "";
       const resetUrl = `${baseUrl}/tr/reset-password?token=${token}`;
 
+      const settings = await getStoreSettings();
+
       await sendPasswordReset({
-        to: email,
+        to: cleanEmail,
         customerName: user.name || user.email || "Müşteri",
+        customerEmail: cleanEmail,
         resetUrl,
+        siteName: settings?.storeName ?? "",
       });
 
       return res.json({ ok: true });

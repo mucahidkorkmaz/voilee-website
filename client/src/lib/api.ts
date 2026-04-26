@@ -102,6 +102,10 @@ export interface CreateOrderPayload {
   shippingCity?: string;
   shippingCountry?: string;
   notes?: string;
+  /** "card" | "bank" — havale şablonu için */
+  paymentMethod?: "card" | "bank";
+  /** "shipping" | "store_pickup" */
+  deliveryMethod?: "shipping" | "store_pickup";
   items: OrderItem[];
 }
 

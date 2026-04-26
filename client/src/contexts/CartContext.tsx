@@ -1,4 +1,21 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/contexts/AuthContext";
+
+const CART_SESSION_KEY = "voilee_cart_session_id";
+const ABANDONED_SYNC_MS = 900;
+
+function getOrCreateCartSessionId(): string {
+  try {
+    const existing = localStorage.getItem(CART_SESSION_KEY);
+    if (existing && existing.length >= 8) return existing;
+    const id = crypto.randomUUID();
+    localStorage.setItem(CART_SESSION_KEY, id);
+    return id;
+  } catch {
+    return `sess_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+  }
+}
 
 export interface CartItem {
   id: number;
@@ -27,21 +44,39 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isLoading: authLoading } = useAuth();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const sessionIdRef = useRef<string | null>(null);
+  const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const syncAbandoned = trpc.cart.syncAbandoned.useMutation();
 
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
 
-  // localStorage'dan cart'ı yükle
+  const flushAbandonedSync = useCallback(
+    (items: CartItem[], total: number) => {
+      const sid = sessionIdRef.current;
+      if (!sid || authLoading) return;
+      syncAbandoned.mutate({
+        sessionId: sid,
+        items,
+        cartTotal: total,
+      });
+    },
+    [authLoading, syncAbandoned],
+  );
+
+  // localStorage'dan cart'ı yükle; terk sepet oturum anahtarı
   useEffect(() => {
-    const savedCart = localStorage.getItem('voilee_cart');
+    sessionIdRef.current = getOrCreateCartSessionId();
+    const savedCart = localStorage.getItem("voilee_cart");
     if (savedCart) {
       try {
         setCartItems(JSON.parse(savedCart));
       } catch (error) {
-        console.error('Failed to load cart from localStorage:', error);
+        console.error("Failed to load cart from localStorage:", error);
       }
     }
     setIsLoaded(true);
@@ -53,6 +88,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('voilee_cart', JSON.stringify(cartItems));
     }
   }, [cartItems, isLoaded]);
+
+  // Sepet snapshot'ını sunucuya yaz (terk sepet listesi; boş sepet satırı siler)
+  useEffect(() => {
+    if (!isLoaded || authLoading) return;
+    if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+    syncTimerRef.current = setTimeout(() => {
+      syncTimerRef.current = null;
+      const total = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
+      flushAbandonedSync(cartItems, total);
+    }, ABANDONED_SYNC_MS);
+    return () => {
+      if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+    };
+  }, [cartItems, isLoaded, authLoading, flushAbandonedSync]);
 
   const addToCart = (item: CartItem) => {
     setCartItems((prevItems) => {
@@ -83,6 +132,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const clearCart = () => {
+    if (syncTimerRef.current) {
+      clearTimeout(syncTimerRef.current);
+      syncTimerRef.current = null;
+    }
+    flushAbandonedSync([], 0);
     setCartItems([]);
   };
 

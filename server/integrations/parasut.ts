@@ -275,5 +275,29 @@ export async function handleOrderDeliveredForInvoice(orderId: number): Promise<v
       .where(eq(orders.id, orderId));
 
     console.log(`[Paraşüt] ✓ Fatura oluşturuldu: ${result.invoiceNumber} → Sipariş #${order.orderNumber}`);
+
+    try {
+      const { ENV } = await import("../_core/env");
+      const { sendOrderInvoice } = await import("../_core/email");
+      const customerEmail = (order.customerEmail ?? "").trim();
+      if (customerEmail) {
+        const baseUrl = ENV.corsOrigin?.split(",")[0]?.trim() ?? "";
+        const invoiceUrl = baseUrl
+          ? `${baseUrl.replace(/\/$/, "")}/tr/account/orders/${encodeURIComponent(order.orderNumber)}`
+          : "";
+        await sendOrderInvoice({
+          to: customerEmail,
+          customerName: (order.customerName ?? order.billingName ?? customerEmail).trim(),
+          customerEmail,
+          orderNumber: order.orderNumber,
+          orderTotal: `₺${Number(order.totalPrice).toFixed(2)}`,
+          siteName: settings?.storeName ?? "",
+          invoiceNumber: result.invoiceNumber,
+          invoiceUrl,
+        });
+      }
+    } catch (emailErr) {
+      console.error("[Paraşüt] Fatura e-postası gönderilemedi:", emailErr);
+    }
   }
 }

@@ -4,6 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { sitePaths } from "@/lib/sitePaths";
 
 type SocialSettings = {
+  siteLogoUrl?: string | null;
   logoUrl?: string | null;
   instagramUrl?: string | null;
   facebookUrl?: string | null;
@@ -318,7 +319,7 @@ export default function Footer() {
         <div className={`grid lg:grid-cols-3 gap-8 items-center ${isRTL ? "text-right" : ""}`}>
           <div>
             <img
-              src={social.logoUrl || "/fallback-logo.png"}
+              src={social.siteLogoUrl || social.logoUrl || "/fallback-logo.png"}
               alt="VOILÉE"
               className="h-6 w-auto object-contain mb-4"
             />

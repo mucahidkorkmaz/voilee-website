@@ -6,10 +6,12 @@ import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { adminRouter } from "./adminRouter";
 import { heroSlidesRouter } from "./routers/heroSlides";
+import { cartRouter } from "./routers/cart";
 import {
   cancelVerificationTransfer,
   claimVerificationForUser,
   createReturn,
+  getOrderSummaryByOrderNumber,
   getProductVerificationBySerial,
   getReturn,
   getReturnsByUserId,
@@ -18,6 +20,8 @@ import {
   initiateVerificationTransfer,
   registerVerificationOwner,
 } from "./db";
+import { getStoreSettings } from "./db/settings";
+import { sendRefundRequested } from "./_core/email";
 
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -53,7 +57,7 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ input, ctx }) => {
-        return await createReturn({
+        const created = await createReturn({
           orderNumber: input.orderNumber,
           userId: ctx.user?.id ?? null,
           customerEmail: ctx.user?.email ?? input.customerEmail ?? null,
@@ -62,6 +66,27 @@ export const appRouter = router({
           notes: input.notes ?? null,
           items: input.items,
         });
+
+        try {
+          const settings = await getStoreSettings();
+          const orderRow = await getOrderSummaryByOrderNumber(input.orderNumber);
+          const orderTotal =
+            orderRow?.totalPrice != null ? `₺${Number(orderRow.totalPrice).toFixed(2)}` : "";
+          const email = (input.customerEmail ?? ctx.user?.email ?? "").trim();
+          if (!email) return created;
+          await sendRefundRequested({
+            to: email,
+            customerName: (input.customerName ?? ctx.user?.name ?? email).trim() || email,
+            customerEmail: email,
+            orderNumber: input.orderNumber,
+            orderTotal,
+            siteName: settings?.storeName ?? "",
+          });
+        } catch (e) {
+          console.error("[Returns] Email failed:", e);
+        }
+
+        return created;
       }),
     get: publicProcedure
       .input(z.object({ id: z.number() }))
@@ -136,6 +161,7 @@ export const appRouter = router({
       }),
   }),
   heroSlides: heroSlidesRouter,
+  cart: cartRouter,
   admin: adminRouter,
 });
 

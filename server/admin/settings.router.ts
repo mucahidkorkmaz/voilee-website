@@ -14,7 +14,7 @@ export const settingsRouter = router({
         storePhone: z.string().optional(),
         storeAddress: z.string().optional(),
         faviconUrl: z.string().optional(),
-        logoUrl: z.string().optional(),
+        siteLogoUrl: z.string().optional(),
         instagramUrl: z.string().optional(),
         facebookUrl: z.string().optional(),
         twitterUrl: z.string().optional(),
@@ -42,6 +42,9 @@ export const settingsRouter = router({
         parasutClientSecret: z.string().optional(),
         parasutCompanyId: z.string().optional(),
         parasutEnabled: z.boolean().optional(),
+        bankName: z.string().optional(),
+        iban: z.string().optional(),
+        accountHolder: z.string().optional(),
       }),
     )
     .mutation(async ({ input }) => {

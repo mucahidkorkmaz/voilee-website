@@ -385,24 +385,41 @@ export default function MCEmailTemplates() {
                       </p>
 
                       {active.key === "customerPasswordReset" && (
-                        <div style={{ textAlign: "center", padding: "8px 0 24px" }}>
-                          <span
+                        <>
+                          <div style={{ textAlign: "center", margin: "24px 0" }}>
+                            <span
+                              style={{
+                                display: "inline-block",
+                                backgroundColor: "#0f0f0f",
+                                color: "#C9A96E",
+                                textDecoration: "none",
+                                fontSize: "11px",
+                                letterSpacing: "4px",
+                                textTransform: "uppercase",
+                                padding: "16px 48px",
+                                fontFamily: "Georgia, serif",
+                                border: "1px solid #C9A96E",
+                              }}
+                            >
+                              Şifremi Sıfırla
+                            </span>
+                          </div>
+                          <p
                             style={{
-                              display: "inline-block",
-                              backgroundColor: "#0f0f0f",
-                              color: "#C9A96E",
-                              textDecoration: "none",
-                              fontSize: "11px",
-                              letterSpacing: "4px",
-                              textTransform: "uppercase",
-                              padding: "16px 48px",
-                              fontFamily: "Georgia, serif",
-                              border: "1px solid #C9A96E",
+                              margin: "0 0 8px",
+                              color: "#b0a898",
+                              fontSize: "12px",
+                              lineHeight: 1.6,
+                              fontFamily: "Arial, sans-serif",
                             }}
                           >
-                            ŞİFREMİ SIFIRLA
-                          </span>
-                        </div>
+                            Bağlantı çalışmıyorsa aşağıdaki URL'yi tarayıcınıza kopyalayın:
+                            <br />
+                            <span style={{ color: "#9ca3af", wordBreak: "break-all" }}>
+                              {PREVIEW_VARS.reset_url}
+                            </span>
+                          </p>
+                        </>
                       )}
 
                       {hasOrderBlock && (

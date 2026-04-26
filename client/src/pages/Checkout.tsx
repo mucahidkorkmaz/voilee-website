@@ -240,6 +240,8 @@ export default function Checkout() {
         shippingCity: form.city,
         shippingCountry: "TR",
         notes: paymentMethod === "bank" ? "Havale/EFT ile ödeme" : undefined,
+        paymentMethod,
+        deliveryMethod: "shipping",
         items: cartItems.map((item) => ({
           productId: item.id,
           productName: item.nameTR,

@@ -4,6 +4,12 @@ import { getDb } from "./db";
 import { getStoreSettings } from "./db";
 import { products, collections, silhouettes, categories, orders, orderItems } from "../drizzle/schema";
 import { ayrıstırKdv } from "./finance";
+import { ENV } from "./_core/env";
+import {
+  sendOrderCreated,
+  sendOrderCreatedStorePickup,
+  sendOrderCreatedWireTransfer,
+} from "./_core/email";
 
 const STOREFRONT_API_KEY = process.env.VITE_STOREFRONT_API_KEY ?? "";
 
@@ -212,7 +218,19 @@ export function registerStorefrontRoutes(app: Express) {
       const db = await getDb();
       if (!db) return res.status(503).json({ error: "Database not available" });
 
-      const { items, customerEmail, customerName, shippingAddress, shippingCountry } = req.body ?? {};
+      const body = req.body ?? {};
+      const {
+        items,
+        customerEmail,
+        customerName,
+        customerPhone,
+        shippingAddress,
+        shippingCity,
+        shippingCountry,
+        paymentMethod: rawPaymentMethod,
+        deliveryMethod: rawDeliveryMethod,
+        notes,
+      } = body as Record<string, unknown>;
 
       if (!Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ error: "Order must have at least one item" });
@@ -227,17 +245,32 @@ export function registerStorefrontRoutes(app: Express) {
 
       const { kdvHaric: subtotalNum, kdv: kdvAmountNum } = ayrıstırKdv(totalPriceNumber, 20);
 
+      const paymentMethod = rawPaymentMethod === "bank" ? "bank" : "card";
+      const deliveryMethod = rawDeliveryMethod === "store_pickup" ? "store_pickup" : "shipping";
+
+      const emailStr = typeof customerEmail === "string" ? customerEmail.trim() : "";
+      const nameStr = typeof customerName === "string" ? customerName.trim() : "";
+      const phoneStr = typeof customerPhone === "string" ? customerPhone.trim() : "";
+      const notesStr = typeof notes === "string" ? notes.trim() : "";
+
       const [order] = await db
         .insert(orders)
         .values({
-          userId: 0,
+          userId: null,
           orderNumber,
           totalPrice: totalPriceNumber.toFixed(2),
           subtotal: subtotalNum.toFixed(2),
           kdvAmount: kdvAmountNum.toFixed(2),
           kdvRate: "20.00",
-          shippingAddress: shippingAddress ?? null,
-          shippingCountry: shippingCountry ?? null,
+          shippingAddress: typeof shippingAddress === "string" ? shippingAddress : null,
+          shippingCountry: typeof shippingCountry === "string" ? shippingCountry : null,
+          shippingCity: typeof shippingCity === "string" ? shippingCity : null,
+          customerEmail: emailStr || null,
+          customerName: nameStr || null,
+          customerPhone: phoneStr || null,
+          orderNotes: notesStr || null,
+          paymentMethod,
+          deliveryMethod,
         })
         .returning();
 
@@ -248,6 +281,64 @@ export function registerStorefrontRoutes(app: Express) {
           quantity: item.quantity || 1,
           price: item.price || "0",
         });
+      }
+
+      if (emailStr) {
+        try {
+          const settings = await getStoreSettings();
+          const siteName = settings?.storeName ?? "";
+          const baseUrl = ENV.corsOrigin?.split(",")[0]?.trim() ?? "";
+          const orderUrl = baseUrl
+            ? `${baseUrl.replace(/\/$/, "")}/tr/account/orders/${encodeURIComponent(order.orderNumber)}`
+            : "";
+          const orderDate = new Date(order.createdAt).toLocaleDateString("tr-TR");
+          const orderTotal = `₺${Number(order.totalPrice).toFixed(2)}`;
+          const displayName = nameStr || emailStr;
+          const bankName = (settings?.bankName ?? "").trim() || "—";
+          const iban = (settings?.iban ?? "").trim() || "—";
+          const accountHolder = (settings?.accountHolder ?? "").trim() || "—";
+          const storeAddress = (settings?.storeAddress ?? "").trim() || "—";
+
+          if (deliveryMethod === "store_pickup") {
+            await sendOrderCreatedStorePickup({
+              to: emailStr,
+              customerName: displayName,
+              customerEmail: emailStr,
+              orderNumber: order.orderNumber,
+              orderTotal,
+              orderDate,
+              orderUrl,
+              siteName,
+              storeAddress,
+            });
+          } else if (paymentMethod === "bank") {
+            await sendOrderCreatedWireTransfer({
+              to: emailStr,
+              customerName: displayName,
+              customerEmail: emailStr,
+              orderNumber: order.orderNumber,
+              orderTotal,
+              orderDate,
+              orderUrl,
+              siteName,
+              bankName,
+              iban,
+              accountHolder,
+            });
+          } else {
+            await sendOrderCreated({
+              to: emailStr,
+              customerName: displayName,
+              orderNumber: order.orderNumber,
+              orderDate,
+              orderTotal,
+              orderUrl,
+              siteName,
+            });
+          }
+        } catch (emailErr) {
+          console.error("[Storefront] Order confirmation email failed:", emailErr);
+        }
       }
 
       return res.status(201).json({
@@ -319,7 +410,8 @@ export function registerStorefrontRoutes(app: Express) {
         storeEmail: settings.storeEmail,
         storePhone: settings.storePhone,
         faviconUrl: settings.faviconUrl,
-        logoUrl: settings.logoUrl,
+        siteLogoUrl: settings.siteLogoUrl,
+        logoUrl: settings.siteLogoUrl,
         instagramUrl: settings.instagramUrl,
         facebookUrl: settings.facebookUrl,
         twitterUrl: settings.twitterUrl,

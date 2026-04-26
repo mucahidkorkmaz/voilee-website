@@ -115,6 +115,14 @@ export const orders = pgTable("orders", {
   shippingAddress: text("shippingAddress"),
   shippingCountry: varchar("shippingCountry", { length: 100 }),
   trackingNumber: varchar("trackingNumber", { length: 100 }),
+  cargoCompany: varchar("cargoCompany", { length: 100 }),
+  /** shipping | store_pickup */
+  deliveryMethod: varchar("deliveryMethod", { length: 32 }).default("shipping"),
+  customerEmail: varchar("customerEmail", { length: 320 }),
+  customerName: varchar("customerName", { length: 255 }),
+  customerPhone: varchar("customerPhone", { length: 32 }),
+  shippingCity: varchar("shippingCity", { length: 100 }),
+  orderNotes: text("orderNotes"),
   kdvRate: decimal("kdvRate", { precision: 5, scale: 2 }).default("20.00"),
   kdvAmount: decimal("kdvAmount", { precision: 12, scale: 2 }),
   subtotal: decimal("subtotal", { precision: 12, scale: 2 }),
@@ -168,6 +176,26 @@ export const wishlist = pgTable("wishlist", {
 
 export type Wishlist = typeof wishlist.$inferSelect;
 export type InsertWishlist = typeof wishlist.$inferInsert;
+
+// ─── Abandoned carts (terk sepet takibi) ─────────────────────────────────────
+
+export const abandonedCarts = pgTable("abandonedCarts", {
+  id: serial("id").primaryKey(),
+  /** İstemcide üretilen kalıcı oturum anahtarı (localStorage). */
+  sessionId: varchar("sessionId", { length: 64 }).notNull().unique(),
+  userId: integer("userId"),
+  customerEmail: varchar("customerEmail", { length: 320 }),
+  customerName: varchar("customerName", { length: 255 }),
+  itemsJson: text("itemsJson").notNull(),
+  cartTotal: decimal("cartTotal", { precision: 12, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("TRY").notNull(),
+  lastActivityAt: timestamp("lastActivityAt").defaultNow().notNull(),
+  reminderEmailSentAt: timestamp("reminderEmailSentAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AbandonedCart = typeof abandonedCarts.$inferSelect;
+export type InsertAbandonedCart = typeof abandonedCarts.$inferInsert;
 
 // ─── Newsletter ───────────────────────────────────────────────────────────────
 
@@ -473,7 +501,8 @@ export const storeSettings = pgTable("storeSettings", {
   storePhone: varchar("storePhone", { length: 32 }),
   storeAddress: text("storeAddress"),
   faviconUrl: varchar("faviconUrl", { length: 500 }),
-  logoUrl: varchar("logoUrl", { length: 500 }),
+  /** DB column remains `logoUrl` for existing migrations */
+  siteLogoUrl: varchar("logoUrl", { length: 500 }),
   instagramUrl: varchar("instagramUrl", { length: 500 }),
   facebookUrl: varchar("facebookUrl", { length: 500 }),
   twitterUrl: varchar("twitterUrl", { length: 500 }),
@@ -501,6 +530,9 @@ export const storeSettings = pgTable("storeSettings", {
   parasutClientSecret: varchar("parasutClientSecret", { length: 500 }),
   parasutCompanyId: varchar("parasutCompanyId", { length: 100 }),
   parasutEnabled: boolean("parasutEnabled").default(false),
+  bankName: varchar("bankName", { length: 255 }),
+  iban: varchar("iban", { length: 34 }),
+  accountHolder: varchar("accountHolder", { length: 255 }),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 

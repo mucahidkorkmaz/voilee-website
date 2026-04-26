@@ -78,6 +78,20 @@
       "when": 1777400000000,
       "tag": "0010_orders_userid_nullable",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1777500000000,
+      "tag": "0011_abandoned_carts",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1777600000000,
+      "tag": "0012_order_customer_cargo_bank",
+      "breakpoints": true
     }
   ]
 }

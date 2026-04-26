@@ -25,7 +25,7 @@ type SettingsForm = {
   storePhone: string;
   storeAddress: string;
   faviconUrl: string;
-  logoUrl: string;
+  siteLogoUrl: string;
   instagramUrl: string;
   facebookUrl: string;
   twitterUrl: string;
@@ -53,6 +53,9 @@ type SettingsForm = {
   parasutClientSecret: string;
   parasutCompanyId: string;
   parasutEnabled: boolean;
+  bankName: string;
+  iban: string;
+  accountHolder: string;
 };
 
 const emptyForm: SettingsForm = {
@@ -61,7 +64,7 @@ const emptyForm: SettingsForm = {
   storePhone: "",
   storeAddress: "",
   faviconUrl: "",
-  logoUrl: "",
+  siteLogoUrl: "",
   instagramUrl: "",
   facebookUrl: "",
   twitterUrl: "",
@@ -89,6 +92,9 @@ const emptyForm: SettingsForm = {
   parasutClientSecret: "",
   parasutCompanyId: "",
   parasutEnabled: false,
+  bankName: "",
+  iban: "",
+  accountHolder: "",
 };
 
 type TabProps = {
@@ -178,7 +184,7 @@ function TabGeneral({ form, set }: TabProps) {
         return;
       }
       const { url } = await res.json();
-      set("logoUrl", url);
+      set("siteLogoUrl", url);
       toast.success("Logo yüklendi. Kaydetmeyi unutmayın.");
     } catch {
       toast.error("Yükleme sırasında bir hata oluştu.");
@@ -287,8 +293,8 @@ function TabGeneral({ form, set }: TabProps) {
             </Label>
             <div className="flex items-center gap-4">
               <div className="shrink-0 w-24 h-16 rounded border border-border/60 bg-muted flex items-center justify-center overflow-hidden">
-                {form.logoUrl ? (
-                  <img src={form.logoUrl} alt="logo önizleme" className="w-full h-full object-contain" />
+                {form.siteLogoUrl ? (
+                  <img src={form.siteLogoUrl} alt="logo önizleme" className="w-full h-full object-contain" />
                 ) : (
                   <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
                 )}
@@ -316,12 +322,12 @@ function TabGeneral({ form, set }: TabProps) {
                   <Upload className="h-3.5 w-3.5" />
                   {logoUploading ? "Yükleniyor…" : "Dosya Seç"}
                 </Button>
-                {form.logoUrl && (
+                {form.siteLogoUrl && (
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => set("logoUrl", "")}
+                    onClick={() => set("siteLogoUrl", "")}
                     className="gap-1.5 text-muted-foreground hover:text-destructive"
                   >
                     <X className="h-3.5 w-3.5" />
@@ -484,6 +490,25 @@ function TabLegal({ form, set }: TabProps) {
           <Input value={form.mersis} onChange={e => set("mersis", e.target.value)} placeholder="0123456789012345" />
         </div>
       </div>
+
+      <SectionTitle>Banka (E-posta / Havale)</SectionTitle>
+      <p className="text-xs text-muted-foreground -mt-2">
+        Sipariş ve bilgilendirme şablonlarında kullanılır. Boş bırakılan alanlar şablonda gösterilmez.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-1.5 md:col-span-2">
+          <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">Banka Adı</Label>
+          <Input value={form.bankName} onChange={e => set("bankName", e.target.value)} placeholder="Örn. Türkiye İş Bankası A.Ş." />
+        </div>
+        <div className="space-y-1.5 md:col-span-2">
+          <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">IBAN</Label>
+          <Input value={form.iban} onChange={e => set("iban", e.target.value)} placeholder="TR00 0000 0000 0000 0000 0000 00" />
+        </div>
+        <div className="space-y-1.5 md:col-span-2">
+          <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">Hesap Sahibi</Label>
+          <Input value={form.accountHolder} onChange={e => set("accountHolder", e.target.value)} placeholder="Unvan veya ad soyad" />
+        </div>
+      </div>
     </section>
   );
 }
@@ -577,6 +602,7 @@ export default function MCSettings() {
     onSuccess: () => {
       utils.admin.settings.get.invalidate();
       toast.success("Ayarlar kaydedildi.");
+      setDirty(false);
     },
     onError: e => toast.error(e.message),
   });
@@ -593,7 +619,7 @@ export default function MCSettings() {
         storePhone: settings.storePhone ?? "",
         storeAddress: settings.storeAddress ?? "",
         faviconUrl: settings.faviconUrl ?? "",
-        logoUrl: settings.logoUrl ?? "",
+        siteLogoUrl: settings.siteLogoUrl ?? "",
         instagramUrl: settings.instagramUrl ?? "",
         facebookUrl: settings.facebookUrl ?? "",
         twitterUrl: settings.twitterUrl ?? "",
@@ -621,6 +647,9 @@ export default function MCSettings() {
         parasutClientSecret: settings.parasutClientSecret ?? "",
         parasutCompanyId: settings.parasutCompanyId ?? "",
         parasutEnabled: settings.parasutEnabled === true,
+        bankName: settings.bankName ?? "",
+        iban: settings.iban ?? "",
+        accountHolder: settings.accountHolder ?? "",
       });
       setDirty(false);
     }
@@ -637,7 +666,6 @@ export default function MCSettings() {
         ? form.companyType
         : undefined;
     updateMutation.mutate({ ...form, companyType });
-    setDirty(false);
   };
 
   const errorMessage = error

@@ -17,3 +17,4 @@ export * from "./emailTemplates";
 export * from "./verifications";
 export * from "./settings";
 export * from "./stats";
+export * from "./abandonedCarts";

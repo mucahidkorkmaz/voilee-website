@@ -69,9 +69,14 @@ export interface OrderInfoBlock {
 export async function buildLayout({
   bodyHtml,
   orderInfo,
+  ctaUrl,
+  ctaLabel,
 }: {
   bodyHtml: string;
   orderInfo?: OrderInfoBlock;
+  /** Şifre sıfırlama vb. için ortalanmış düğüm; href için güvenli kaçış kullanılır */
+  ctaUrl?: string;
+  ctaLabel?: string;
 }): Promise<string> {
   let settings: Awaited<ReturnType<typeof getStoreSettings>> = null;
   try {
@@ -131,6 +136,26 @@ export async function buildLayout({
         </tr>
       </table>`
     : "";
+
+  const hrefEsc = ctaUrl ? esc(ctaUrl) : "";
+  const ctaBlock =
+    ctaUrl && hrefEsc
+      ? `<div style="text-align:center;margin:24px 0">
+          <a href="${hrefEsc}"
+             style="display:inline-block;background-color:#0f0f0f;color:#C9A96E;
+                    text-decoration:none;font-size:11px;letter-spacing:4px;
+                    text-transform:uppercase;padding:16px 48px;
+                    font-family:Georgia,serif;border:1px solid #C9A96E;
+                    mso-padding-alt:16px 48px">
+            ${esc(ctaLabel ?? "İşlemi Gerçekleştir")}
+          </a>
+        </div>
+        <p style="margin:0 0 8px;color:#b0a898;font-size:12px;line-height:1.6;
+                  font-family:Arial,sans-serif">
+          Bağlantı çalışmıyorsa aşağıdaki URL'yi tarayıcınıza kopyalayın:<br/>
+          <a href="${hrefEsc}" style="color:#9ca3af;word-break:break-all">${hrefEsc}</a>
+        </p>`
+      : "";
 
   return `<!DOCTYPE html>
 <html lang="tr" xmlns="http://www.w3.org/1999/xhtml"
@@ -235,6 +260,7 @@ export async function buildLayout({
                        color:#374151;font-size:15px;line-height:1.85;
                        font-family:Georgia,'Times New Roman',serif">
               ${bodyHtml}
+              ${ctaBlock}
               ${orderBlock}
             </td>
           </tr>
@@ -280,60 +306,37 @@ async function resolveTemplate(key: EmailTemplateKey, vars: Variables) {
 export interface PasswordResetPayload {
   to: string;
   customerName: string;
+  customerEmail: string;
   resetUrl: string;
+  siteName: string;
 }
 
 export async function sendPasswordReset(payload: PasswordResetPayload): Promise<SendEmailResult> {
-  let storeName = DEFAULT_STORE_NAME;
-  try {
-    const settings = await getStoreSettings();
-    storeName = settings?.storeName || DEFAULT_STORE_NAME;
-  } catch {
-    /* use DEFAULT_STORE_NAME */
+  let siteName = payload.siteName?.trim() || DEFAULT_STORE_NAME;
+  if (!payload.siteName?.trim()) {
+    try {
+      const settings = await getStoreSettings();
+      if (settings?.storeName?.trim()) siteName = settings.storeName;
+    } catch {
+      /* keep siteName */
+    }
   }
 
-  const meta = EMAIL_TEMPLATE_META.customerPasswordReset;
-  const tpl = await getEmailTemplate("customerPasswordReset");
-  const subjectSrc = tpl?.subject?.trim() ? tpl.subject : meta.defaultSubject;
-  const bodySrc = tpl?.body?.trim() ? tpl.body : meta.defaultBody;
-  const ivars = {
+  const r = await resolveTemplate("customerPasswordReset", {
     customer_name: payload.customerName,
-    site_name: storeName,
-    customer_email: payload.to,
+    customer_email: payload.customerEmail,
     reset_url: payload.resetUrl,
-  };
-  const subject = interpolate(subjectSrc, ivars);
-  const hrefUrl = esc(payload.resetUrl);
-  const bodyMiddleHtml = textToHtml(interpolate(bodySrc, ivars));
-
-  const bodyHtml = `
-    ${bodyMiddleHtml}
-    <table width="100%" cellpadding="0" cellspacing="0" border="0">
-      <tr>
-        <td align="center" style="padding:8px 0 32px">
-          <a href="${hrefUrl}"
-             style="display:inline-block;background-color:#0f0f0f;color:#C9A96E;
-                    text-decoration:none;font-size:11px;letter-spacing:4px;
-                    text-transform:uppercase;padding:16px 48px;
-                    font-family:Georgia,serif;border:1px solid #C9A96E;
-                    mso-padding-alt:16px 48px">
-            ŞİFREMİ SIFIRLA
-          </a>
-        </td>
-      </tr>
-    </table>
-    <p style="margin:0;color:#b0a898;font-size:12px;line-height:1.6;
-              font-family:Arial,sans-serif">
-      Bağlantı çalışmıyorsa aşağıdaki URL'yi tarayıcınıza kopyalayın:<br/>
-      <a href="${hrefUrl}"
-         style="color:#9ca3af;word-break:break-all">${hrefUrl}</a>
-    </p>
-  `;
+    site_name: siteName,
+  });
 
   return sendEmail({
     to: payload.to,
-    subject,
-    html: await buildLayout({ bodyHtml }),
+    subject: r.subject,
+    html: await buildLayout({
+      bodyHtml: r.bodyHtml,
+      ctaUrl: payload.resetUrl,
+      ctaLabel: "Şifremi Sıfırla",
+    }),
   });
 }
 
@@ -369,7 +372,7 @@ export interface ShipmentSentPayload {
   customerEmail?: string;
   orderNumber: string;
   trackingNumber: string;
-  cargoCompany: string;
+  cargoCompany?: string;
   siteName: string;
 }
 
@@ -380,7 +383,7 @@ export async function sendShipmentSent(payload: ShipmentSentPayload): Promise<Se
     order_number: payload.orderNumber,
     order_total: "",
     tracking_number: payload.trackingNumber,
-    cargo_company: payload.cargoCompany,
+    cargo_company: payload.cargoCompany ?? "",
     site_name: payload.siteName,
   });
   return sendEmail({ to: payload.to, subject: r.subject, html: await buildLayout({ bodyHtml: r.bodyHtml }) });
@@ -390,7 +393,10 @@ export async function sendShipmentSent(payload: ShipmentSentPayload): Promise<Se
 export async function sendOrderShipped(
   payload: ShipmentSentPayload | Omit<ShipmentSentPayload, "cargoCompany">,
 ): Promise<SendEmailResult> {
-  const cargoCompany = "cargoCompany" in payload && payload.cargoCompany !== undefined ? payload.cargoCompany : "—";
+  const cargoCompany =
+    "cargoCompany" in payload && payload.cargoCompany !== undefined && payload.cargoCompany !== ""
+      ? payload.cargoCompany
+      : "—";
   return sendShipmentSent({ ...payload, cargoCompany });
 }
 
@@ -412,6 +418,8 @@ export interface OrderCreatedWireTransferPayload {
   customerEmail: string;
   orderNumber: string;
   orderTotal: string;
+  orderDate: string;
+  orderUrl: string;
   siteName: string;
   bankName: string;
   iban: string;
@@ -428,7 +436,19 @@ export async function sendOrderCreatedWireTransfer(payload: OrderCreatedWireTran
     iban: payload.iban,
     account_holder: payload.accountHolder,
   });
-  return sendEmail({ to: payload.to, subject: r.subject, html: await buildLayout({ bodyHtml: r.bodyHtml }) });
+  return sendEmail({
+    to: payload.to,
+    subject: r.subject,
+    html: await buildLayout({
+      bodyHtml: r.bodyHtml,
+      orderInfo: {
+        orderNumber: payload.orderNumber,
+        orderDate: payload.orderDate,
+        orderTotal: payload.orderTotal,
+        orderUrl: payload.orderUrl,
+      },
+    }),
+  });
 }
 
 export interface OrderPaymentApprovedWireTransferPayload {
@@ -458,6 +478,8 @@ export interface OrderCreatedStorePickupPayload {
   customerEmail: string;
   orderNumber: string;
   orderTotal: string;
+  orderDate: string;
+  orderUrl: string;
   siteName: string;
   storeAddress: string;
 }
@@ -470,7 +492,19 @@ export async function sendOrderCreatedStorePickup(payload: OrderCreatedStorePick
     site_name: payload.siteName,
     store_address: payload.storeAddress,
   });
-  return sendEmail({ to: payload.to, subject: r.subject, html: await buildLayout({ bodyHtml: r.bodyHtml }) });
+  return sendEmail({
+    to: payload.to,
+    subject: r.subject,
+    html: await buildLayout({
+      bodyHtml: r.bodyHtml,
+      orderInfo: {
+        orderNumber: payload.orderNumber,
+        orderDate: payload.orderDate,
+        orderTotal: payload.orderTotal,
+        orderUrl: payload.orderUrl,
+      },
+    }),
+  });
 }
 
 export interface OrderReadyStorePickupPayload {
@@ -514,7 +548,15 @@ export async function sendOrderInvoice(payload: OrderInvoicePayload): Promise<Se
     invoice_number: payload.invoiceNumber,
     invoice_url: payload.invoiceUrl,
   });
-  return sendEmail({ to: payload.to, subject: r.subject, html: await buildLayout({ bodyHtml: r.bodyHtml }) });
+  return sendEmail({
+    to: payload.to,
+    subject: r.subject,
+    html: await buildLayout({
+      bodyHtml: r.bodyHtml,
+      ctaUrl: payload.invoiceUrl,
+      ctaLabel: "Faturayı Görüntüle",
+    }),
+  });
 }
 
 export interface OrderDigitalProductPayload {
@@ -535,7 +577,15 @@ export async function sendOrderDigitalProduct(payload: OrderDigitalProductPayloa
     site_name: payload.siteName,
     download_url: payload.downloadUrl,
   });
-  return sendEmail({ to: payload.to, subject: r.subject, html: await buildLayout({ bodyHtml: r.bodyHtml }) });
+  return sendEmail({
+    to: payload.to,
+    subject: r.subject,
+    html: await buildLayout({
+      bodyHtml: r.bodyHtml,
+      ctaUrl: payload.downloadUrl,
+      ctaLabel: "Ürünü İndir",
+    }),
+  });
 }
 
 export interface OrderUpdatedPayload {
@@ -577,7 +627,15 @@ export async function sendOrderAdditionalPayment(payload: OrderAdditionalPayment
     additional_amount: payload.additionalAmount,
     payment_url: payload.paymentUrl,
   });
-  return sendEmail({ to: payload.to, subject: r.subject, html: await buildLayout({ bodyHtml: r.bodyHtml }) });
+  return sendEmail({
+    to: payload.to,
+    subject: r.subject,
+    html: await buildLayout({
+      bodyHtml: r.bodyHtml,
+      ctaUrl: payload.paymentUrl,
+      ctaLabel: "Ödemeyi Tamamla",
+    }),
+  });
 }
 
 export interface OrderCancelledPayload {
@@ -762,7 +820,15 @@ export async function sendAutomationAbandonedCart(payload: AutomationAbandonedCa
     cart_url: payload.cartUrl,
     cart_total: payload.cartTotal,
   });
-  return sendEmail({ to: payload.to, subject: r.subject, html: await buildLayout({ bodyHtml: r.bodyHtml }) });
+  return sendEmail({
+    to: payload.to,
+    subject: r.subject,
+    html: await buildLayout({
+      bodyHtml: r.bodyHtml,
+      ctaUrl: payload.cartUrl,
+      ctaLabel: "Sepetime Dön",
+    }),
+  });
 }
 
 export interface AutomationProductReviewPayload {
@@ -781,7 +847,15 @@ export async function sendAutomationProductReview(payload: AutomationProductRevi
     order_number: payload.orderNumber,
     review_url: payload.reviewUrl,
   });
-  return sendEmail({ to: payload.to, subject: r.subject, html: await buildLayout({ bodyHtml: r.bodyHtml }) });
+  return sendEmail({
+    to: payload.to,
+    subject: r.subject,
+    html: await buildLayout({
+      bodyHtml: r.bodyHtml,
+      ctaUrl: payload.reviewUrl,
+      ctaLabel: "Ürünü Değerlendir",
+    }),
+  });
 }
 
 export interface AutomationBackInStockPayload {
@@ -800,7 +874,15 @@ export async function sendAutomationBackInStock(payload: AutomationBackInStockPa
     product_name: payload.productName,
     product_url: payload.productUrl,
   });
-  return sendEmail({ to: payload.to, subject: r.subject, html: await buildLayout({ bodyHtml: r.bodyHtml }) });
+  return sendEmail({
+    to: payload.to,
+    subject: r.subject,
+    html: await buildLayout({
+      bodyHtml: r.bodyHtml,
+      ctaUrl: payload.productUrl,
+      ctaLabel: "Ürünü Görüntüle",
+    }),
+  });
 }
 
 export interface AutomationWireTransferReminderPayload {

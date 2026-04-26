@@ -23,7 +23,7 @@ export default function Journal() {
   const categories = [
     { value: "all", labelTR: "Tümü", labelEN: "All" },
     { value: "stil", labelTR: "Stil", labelEN: "Style" },
-    { value: "koleksiyon", labelTR: "Koleksiyon", labelEN: "Collection" },
+    { value: "siluet", labelTR: "Silüet", labelEN: "Silhouette" },
     { value: "surdurulebilirlik", labelTR: "Sürdürülebilirlik", labelEN: "Sustainability" },
     { value: "bakim", labelTR: "Bakım", labelEN: "Care" },
   ];

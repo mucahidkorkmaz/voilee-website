@@ -871,7 +871,7 @@ function downloadCertificate(
     title,
     "",
     `${pickText(lang, "Parça", "Piece", "القطعة")}: ${productName || "—"}`,
-    `${pickText(lang, "Koleksiyon", "Collection", "المجموعة")}: ${data.collection ?? "—"}${data.collectionYear ? ` · ${data.collectionYear}` : ""}`,
+    `${pickText(lang, "Sezon / Seri", "Season / Series", "الموسم / السلسلة")}: ${data.collection ?? "—"}${data.collectionYear ? ` · ${data.collectionYear}` : ""}`,
     `${pickText(lang, "Seri No", "Serial", "الرقم")}: ${data.serialNumber}`,
     `${pickText(lang, "Parti", "Batch", "الدفعة")}: ${data.batchNumber ?? "—"}`,
     `${pickText(lang, "Üretim", "Production", "الإنتاج")}: ${data.productionDate ?? "—"}`,

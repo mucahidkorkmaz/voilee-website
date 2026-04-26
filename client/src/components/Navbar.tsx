@@ -10,7 +10,7 @@ import { sitePaths } from "@/lib/sitePaths";
 const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_logo_2e68b438.webp";
 
 const getNavLinks = (lang: "TR" | "EN" | "AR") => {
-  const c = sitePaths.collections[lang];
+  const c = sitePaths.silhouettes[lang];
   const lb = sitePaths.lookbook[lang];
   const j = sitePaths.journal[lang];
   const ct = sitePaths.contact[lang];

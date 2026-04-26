@@ -21,10 +21,10 @@ import { sitePaths, productPath } from "@/lib/sitePaths";
 const t = {
   TR: {
     home: "Ana Sayfa",
-    collections: "Koleksiyonlar",
+    collections: "Silüetler",
     loading: "Ürün yükleniyor...",
     notFound: "Ürün bulunamadı.",
-    backToCollections: "Koleksiyonlara Dön",
+    backToCollections: "Silüetlere Dön",
     color: "Renk",
     size: "Beden",
     sizeGuide: "Beden Rehberi",
@@ -46,10 +46,10 @@ const t = {
   },
   EN: {
     home: "Home",
-    collections: "Collections",
+    collections: "Silhouettes",
     loading: "Loading product...",
     notFound: "Product not found.",
-    backToCollections: "Back to Collections",
+    backToCollections: "Back to Silhouettes",
     color: "Color",
     size: "Size",
     sizeGuide: "Size Guide",
@@ -71,10 +71,10 @@ const t = {
   },
   AR: {
     home: "الرئيسية",
-    collections: "المجموعات",
+    collections: "الصور الظلية",
     loading: "جارٍ تحميل المنتج...",
     notFound: "المنتج غير موجود.",
-    backToCollections: "العودة إلى المجموعات",
+    backToCollections: "العودة إلى الصور الظلية",
     color: "اللون",
     size: "المقاس",
     sizeGuide: "دليل المقاسات",
@@ -212,7 +212,7 @@ export default function ProductDetail() {
         <div className="flex-1 flex flex-col items-center justify-center text-center px-6 gap-6 pt-24">
           <h2 className="font-display text-3xl text-[#1C1C1E]">{tx.notFound}</h2>
           <Link
-            href={sitePaths.collections[lang]}
+            href={sitePaths.silhouettes[lang]}
             className="font-body text-xs tracking-[0.2em] uppercase bg-[#1C1C1E] text-white px-8 py-3 hover:bg-[#C9A96E] transition-colors duration-300"
           >
             {tx.backToCollections}
@@ -240,7 +240,7 @@ export default function ProductDetail() {
               {tx.home}
             </Link>
             <ChevronRight size={11} className={isRTL ? "rotate-180" : ""} />
-            <Link href={sitePaths.collections[lang]} className="hover:text-[#C9A96E] transition-colors">
+            <Link href={sitePaths.silhouettes[lang]} className="hover:text-[#C9A96E] transition-colors">
               {tx.collections}
             </Link>
             <ChevronRight size={11} className={isRTL ? "rotate-180" : ""} />

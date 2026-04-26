@@ -66,16 +66,22 @@ export interface Category {
 
 export interface Collection {
   id: number;
-  name: string;
+  nameTR: string;
+  nameEN: string;
+  nameAR: string;
   slug: string;
-  description?: string | null;
+  descriptionTR?: string | null;
+  descriptionEN?: string | null;
+  descriptionAR?: string | null;
   imageUrl?: string | null;
   sortOrder?: number | null;
 }
 
 export interface Silhouette {
   id: number;
-  name: string;
+  nameTR: string;
+  nameEN: string;
+  nameAR: string;
   slug: string;
   imageUrl?: string | null;
   sortOrder?: number | null;

@@ -22,8 +22,8 @@ const values = [
     numTR: "02", numEN: "02",
     titleTR: "Az ve Özenli",
     titleEN: "Little and Careful",
-    descTR: "Her koleksiyonumuz sınırlı adetlerde üretilir. Bu, her parçanın gerçek bir değer taşıdığı anlamına gelir.",
-    descEN: "Each of our collections is produced in limited quantities. This means each piece carries real value.",
+    descTR: "Her silüetimiz sınırlı adetlerde üretilir. Bu, her parçanın gerçek bir değer taşıdığı anlamına gelir.",
+    descEN: "Each of our silhouettes is produced in limited quantities. This means each piece carries real value.",
   },
   {
     numTR: "03", numEN: "03",
@@ -176,7 +176,7 @@ export default function About() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
             {[
               { numTR: "2023", numEN: "2023", labelTR: "Kuruluş Yılı", labelEN: "Founded" },
-              { numTR: "6", numEN: "6", labelTR: "Koleksiyon", labelEN: "Collections" },
+              { numTR: "6", numEN: "6", labelTR: "Silüet", labelEN: "Silhouettes" },
               { numTR: "%100", numEN: "100%", labelTR: "Doğal Kumaş", labelEN: "Natural Fabric" },
               { numTR: "40+", numEN: "40+", labelTR: "Ülkeye Kargo", labelEN: "Countries Shipped" },
             ].map((stat, i) => (

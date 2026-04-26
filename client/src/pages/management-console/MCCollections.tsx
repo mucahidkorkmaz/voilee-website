@@ -73,19 +73,26 @@ export default function MCCollections() {
 
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-5xl">
+      <div className="flex items-start gap-3 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 mb-4">
+        <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+        <p>
+          Bu bölüm eski &quot;Koleksiyon&quot; yapısına aittir ve artık kullanılmamaktadır.
+          Ürün gruplandırması için <strong>Silüetler</strong> bölümünü kullanın.
+        </p>
+      </div>
       <div className="flex items-end justify-between">
         <div>
           <p className="text-xs tracking-[0.25em] uppercase text-muted-foreground font-light">Katalog</p>
-          <h1 className="font-['Cormorant_Garamond'] text-3xl font-light tracking-wide mt-1">Koleksiyonlar</h1>
+          <h1 className="font-['Cormorant_Garamond'] text-3xl font-light tracking-wide mt-1">Koleksiyonlar (Eski)</h1>
         </div>
-        <Button onClick={openCreate} size="sm" className="gap-1.5"><Plus className="h-4 w-4" />Yeni Koleksiyon</Button>
+        <Button onClick={openCreate} size="sm" className="gap-1.5"><Plus className="h-4 w-4" />Yeni Koleksiyon (Eski Yapı)</Button>
       </div>
 
       {error && <ErrorAlert message={error.message} />}
 
       <div className="bg-card border border-border/50 rounded overflow-hidden">
         {isLoading ? <LoadingSkeleton /> : !data?.length ? (
-          <div className="p-12 text-center text-sm text-muted-foreground">Henüz koleksiyon bulunmuyor.</div>
+          <div className="p-12 text-center text-sm text-muted-foreground">Henüz kayıt yok. (Eski yapı — kullanılmıyor)</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -128,7 +135,7 @@ export default function MCCollections() {
       <Dialog open={open} onOpenChange={v => { setOpen(v); if (!v) { setEditId(null); setForm(emptyForm); } }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-['Cormorant_Garamond'] text-2xl font-light">{editId !== null ? "Koleksiyonu Düzenle" : "Yeni Koleksiyon"}</DialogTitle>
+            <DialogTitle className="font-['Cormorant_Garamond'] text-2xl font-light">{editId !== null ? "Koleksiyonu Düzenle (Eski)" : "Yeni Koleksiyon (Eski Yapı)"}</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
             <div className="space-y-1.5 md:col-span-2">
@@ -174,8 +181,8 @@ export default function MCCollections() {
       <AlertDialog open={deleteId !== null} onOpenChange={v => !v && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Koleksiyonu Sil</AlertDialogTitle>
-            <AlertDialogDescription>Bu koleksiyonu kalıcı olarak silmek istiyor musunuz?</AlertDialogDescription>
+            <AlertDialogTitle>Koleksiyonu Sil (Eski yapı)</AlertDialogTitle>
+            <AlertDialogDescription>Bu eski yapı kaydını kalıcı olarak silmek istiyor musunuz?</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>İptal</AlertDialogCancel>

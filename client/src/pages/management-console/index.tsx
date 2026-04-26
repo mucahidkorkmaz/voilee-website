@@ -81,7 +81,7 @@ const menuSections: MenuSection[] = [
       { icon: Package, label: "Ürünler", path: `${MC_BASE}/products` },
       { icon: Shapes, label: "Silüetler", path: `${MC_BASE}/silhouettes` },
       { icon: FolderOpen, label: "Kategoriler", path: `${MC_BASE}/categories` },
-      { icon: Layers, label: "Koleksiyonlar", path: `${MC_BASE}/collections` },
+      { icon: Layers, label: "Koleksiyonlar (Eski)", path: `${MC_BASE}/collections` },
       { icon: GalleryHorizontal, label: "Hero Slaytlar", path: `${MC_BASE}/hero-slides` },
       { icon: Image, label: "Medya", path: `${MC_BASE}/media` },
       { icon: ShieldCheck, label: "Doğrulama", path: `${MC_BASE}/verifications` },

@@ -389,7 +389,7 @@ export default function MCVerifications() {
                       onChange={() => toggleAll(data)}
                     />
                   </th>
-                  {["Seri", "Parça", "Koleksiyon", "Parti", "Durum", "Sahip", "Tarama", ""].map(h => (
+                  {["Seri", "Parça", "Sezon / Seri", "Parti", "Durum", "Sahip", "Tarama", ""].map(h => (
                     <th
                       key={h}
                       className="text-left px-5 py-3 text-xs tracking-wider uppercase text-muted-foreground font-normal whitespace-nowrap"
@@ -562,8 +562,8 @@ export default function MCVerifications() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">Koleksiyon</Label>
-              <Input value={form.collection} onChange={e => set("collection", e.target.value)} placeholder="Kış Koleksiyonu" />
+              <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">Sezon / Seri</Label>
+              <Input value={form.collection} onChange={e => set("collection", e.target.value)} placeholder="örn. 2025 İlkbahar" />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">Yıl</Label>

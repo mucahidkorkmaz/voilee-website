@@ -360,12 +360,12 @@ export default function MCProducts() {
 
             <div className="space-y-1.5">
               <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
-                Koleksiyon
+                Sezon / Seri
               </Label>
               <Input
                 value={form.collection}
                 onChange={e => setForm(f => ({ ...f, collection: e.target.value }))}
-                placeholder="örn. Sonbahar 2025 (opsiyonel)"
+                placeholder="örn. 2025 İlkbahar"
               />
             </div>
 

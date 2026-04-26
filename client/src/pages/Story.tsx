@@ -18,7 +18,7 @@ const content = {
     sections: [
       {
         title: "Başlangıç: Bir Sorunun Cevabı",
-        text: "Geleneksel modest fashion pazarında, iki seçenek vardı: Ya çok basit, ya çok gösterişli. Arası yoktu. Bir kadın, hem etik hem zarafet arayan, hem modern hem zamansız olan bir parça bulmak istiyordu. Onu bulamadığında, kendisi yaratmaya karar verdi.\n\nVOILÉE'nin ilk koleksiyonu, bu sorunun cevabıydı: Sessiz bir gücü, kalıcı bir zarafeti temsil eden parçalar.",
+        text: "Geleneksel modest fashion pazarında, iki seçenek vardı: Ya çok basit, ya çok gösterişli. Arası yoktu. Bir kadın, hem etik hem zarafet arayan, hem modern hem zamansız olan bir parça bulmak istiyordu. Onu bulamadığında, kendisi yaratmaya karar verdi.\n\nVOILÉE'nin ilk silüeti, bu sorunun cevabıydı: Sessiz bir gücü, kalıcı bir zarafeti temsil eden parçalar.",
         icon: Heart,
       },
       {
@@ -43,7 +43,7 @@ const content = {
       { title: "Kadın Güçlendirmesi", desc: "Her parça, bir kadının duruşudur" },
       { title: "Niyetlilik", desc: "Her karar, bir amacı vardır" },
     ],
-    cta: "Koleksiyonu Keşfet",
+    cta: "Silüetleri Keşfet",
   },
   EN: {
     title: "Our Story",
@@ -52,7 +52,7 @@ const content = {
     sections: [
       {
         title: "The Beginning: An Answer to a Problem",
-        text: "In the traditional modest fashion market, there were only two options: either too simple or too ostentatious. Nothing in between. A woman wanted to find a piece that was both ethical and elegant, both modern and timeless. When she couldn't find it, she decided to create it.\n\nVOILÉE's first collection was the answer to that problem: pieces representing a quiet strength and lasting elegance.",
+        text: "In the traditional modest fashion market, there were only two options: either too simple or too ostentatious. Nothing in between. A woman wanted to find a piece that was both ethical and elegant, both modern and timeless. When she couldn't find it, she decided to create it.\n\nVOILÉE's first silhouette was the answer to that problem: pieces representing a quiet strength and lasting elegance.",
         icon: Heart,
       },
       {
@@ -77,7 +77,7 @@ const content = {
       { title: "Women Empowerment", desc: "Every piece is a woman's posture" },
       { title: "Intention", desc: "Every decision has a purpose" },
     ],
-    cta: "Explore Collection",
+    cta: "Explore Silhouettes",
   },
   AR: {
     title: "قصتنا",
@@ -86,7 +86,7 @@ const content = {
     sections: [
       {
         title: "البداية: إجابة على مشكلة",
-        text: "في سوق الموضة المتحفظة التقليدية، كان هناك خياران فقط: إما بسيط جداً أو براق جداً. لا شيء في الوسط. أرادت امرأة أن تجد قطعة أنيقة وأخلاقية، حديثة وخالدة. عندما لم تجدها، قررت أن تنشئها بنفسها.\n\nكانت أول مجموعة من VOILÉE هي الإجابة على تلك المشكلة: قطع تمثل قوة هادئة وأناقة دائمة.",
+        text: "في سوق الموضة المتحفظة التقليدية، كان هناك خياران فقط: إما بسيط جداً أو براق جداً. لا شيء في الوسط. أرادت امرأة أن تجد قطعة أنيقة وأخلاقية، حديثة وخالدة. عندما لم تجدها، قررت أن تنشئها بنفسها.\n\nكانت أول صورة ظلية من VOILÉE هي الإجابة على تلك المشكلة: قطع تمثل قوة هادئة وأناقة دائمة.",
         icon: Heart,
       },
       {
@@ -111,7 +111,7 @@ const content = {
       { title: "تمكين المرأة", desc: "كل قطعة هي موقف امرأة" },
       { title: "النية", desc: "لكل قرار غرض" },
     ],
-    cta: "استكشف المجموعة",
+    cta: "استكشف الصور الظلية",
   },
 };
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "wouter";
+import { Link, useSearch } from "wouter";
 import { SlidersHorizontal, X, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCart } from "@/contexts/CartContext";
@@ -24,16 +24,25 @@ export default function Collections() {
   const [sortOpen, setSortOpen] = useState(false);
   const [addedToCart, setAddedToCart] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const search = useSearch();
 
   // Silüetleri yükle ve ilkini otomatik seç
   useEffect(() => {
     api.getSilhouettes().then((res) => {
       setSilhouettes(res.data);
-      if (res.data.length > 0) {
+      if (res.data.length === 0) return;
+
+      const params = new URLSearchParams(search);
+      const slugParam = params.get("silhouette");
+
+      if (slugParam) {
+        const match = res.data.find((s) => s.slug === slugParam);
+        setActiveSilhouetteId(match ? match.id : res.data[0].id);
+      } else {
         setActiveSilhouetteId(res.data[0].id);
       }
     }).catch(console.error);
-  }, []);
+  }, [search]);
 
   // Seçili silüet değişince ürünleri yeniden çek
   useEffect(() => {
@@ -96,12 +105,12 @@ export default function Collections() {
 
       {/* Page Header */}
       <div className="relative h-64 lg:h-80 overflow-hidden">
-        <img src={heroMain} alt="Collections" className="w-full h-full object-cover object-top" />
+        <img src={heroMain} alt="Silhouettes" className="w-full h-full object-cover object-top" />
         <div className="absolute inset-0 bg-black/50" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <p className="font-body text-xs tracking-[0.25em] uppercase text-[#C9A96E] mb-3">
-              {getText("Tüm Koleksiyonlar", "All Collections", "جميع المجموعات")}
+              {getText("Tüm Silüetler", "All Silhouettes", "جميع الصور الظلية")}
             </p>
             <h1 className="font-display text-5xl lg:text-6xl text-white">
               {getText("Siluetler", "Silhouettes", "Silhouettes")}
@@ -125,7 +134,7 @@ export default function Collections() {
                     : "bg-transparent text-[#1C1C1E]/60 border-[#1C1C1E]/20 hover:border-[#1C1C1E]/60"
                 }`}
               >
-                {sil.name}
+                {getText(sil.nameTR, sil.nameEN, sil.nameAR)}
               </button>
             ))}
           </div>
@@ -223,7 +232,9 @@ export default function Collections() {
                           slug: product.slug,
                           price: product.price,
                           imageUrl: img ?? null,
-                          collection: activeSilhouette?.name ?? null,
+                          collection: activeSilhouette
+                            ? getText(activeSilhouette.nameTR, activeSilhouette.nameEN, activeSilhouette.nameAR)
+                            : null,
                         })
                       }
                       aria-label={getText("Favorilere ekle", "Add to favorites", "أضف إلى المفضلة")}
@@ -253,7 +264,7 @@ export default function Collections() {
                   <Link href={detailHref} className="block">
                     {activeSilhouette && (
                       <p className="font-body text-[10px] tracking-[0.15em] uppercase text-[#C9A96E] mb-1">
-                        {activeSilhouette.name}
+                        {getText(activeSilhouette.nameTR, activeSilhouette.nameEN, activeSilhouette.nameAR)}
                       </p>
                     )}
                     <h3 className="font-body text-sm text-[#1C1C1E] mb-1 hover:text-[#C9A96E] transition-colors">{product.name}</h3>

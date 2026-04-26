@@ -16,7 +16,7 @@ const t = {
     empty: "Henüz listeye ürün eklemediniz.",
     emptyDesc:
       "Beğendiğiniz parçaları kalp simgesine dokunarak buraya ekleyebilirsiniz.",
-    explore: "Koleksiyonları Keşfet",
+    explore: "Silüetleri Keşfet",
     addToCart: "Sepete Ekle",
     remove: "Listeden Kaldır",
     removed: "Listeden kaldırıldı.",
@@ -30,7 +30,7 @@ const t = {
     subtitle: "The items you loved are waiting for you here.",
     empty: "You haven't added any items yet.",
     emptyDesc: "Tap the heart icon on any piece you love to save it here.",
-    explore: "Explore Collections",
+    explore: "Explore Silhouettes",
     addToCart: "Add to Cart",
     remove: "Remove",
     removed: "Removed from wishlist.",
@@ -44,7 +44,7 @@ const t = {
     subtitle: "العناصر التي أعجبتك تنتظرك هنا.",
     empty: "لم تقم بإضافة أي عنصر بعد.",
     emptyDesc: "اضغط على رمز القلب على أي قطعة تحبها لحفظها هنا.",
-    explore: "استكشف المجموعات",
+    explore: "استكشف الصور الظلية",
     addToCart: "أضف إلى السلة",
     remove: "إزالة",
     removed: "تمت الإزالة من القائمة.",
@@ -121,7 +121,7 @@ export default function ListePage() {
             {tx.emptyDesc}
           </p>
           <Link
-            href={u.koleksiyonlar}
+            href={u.siluetler}
             className="font-body text-[11px] tracking-[0.25em] uppercase bg-[#1C1C1E] text-[#F7F3EC] px-8 py-3.5 hover:bg-[#C9A96E] transition-colors duration-300"
           >
             {tx.explore}

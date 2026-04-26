@@ -29,7 +29,7 @@ export default function MCSiteAPI() {
     { method: "GET", path: "admin.stats", desc: "Dashboard istatistikleri" },
     { method: "GET", path: "admin.products.list", desc: "Tüm ürünler" },
     { method: "GET", path: "admin.orders.list", desc: "Tüm siparişler" },
-    { method: "GET", path: "admin.collections.list", desc: "Tüm koleksiyonlar" },
+    { method: "GET", path: "admin.collections.list", desc: "Eski yapı: tüm koleksiyon kayıtları" },
     { method: "GET", path: "admin.cms.list", desc: "CMS sayfaları" },
     { method: "GET", path: "admin.revenue.stats", desc: "Gelir istatistikleri" },
   ];

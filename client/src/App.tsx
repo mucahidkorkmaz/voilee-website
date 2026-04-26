@@ -156,7 +156,8 @@ function Router() {
 
         {/* ── Turkish (/tr) ── */}
         <Route path="/tr" component={Home} />
-        <Route path="/tr/collections" component={Collections} />
+        <Route path="/siluetler" component={Collections} />
+        <Route path="/tr/silhouettes" component={Collections} />
         <Route path="/tr/product/:slug" component={ProductDetail} />
         <Route path="/tr/builder" component={SilhouetteBuilder} />
         <Route path="/tr/about" component={About} />
@@ -187,7 +188,7 @@ function Router() {
 
         {/* ── English (/en) ── */}
         <Route path="/en" component={Home} />
-        <Route path="/en/collections" component={Collections} />
+        <Route path="/en/silhouettes" component={Collections} />
         <Route path="/en/product/:slug" component={ProductDetail} />
         <Route path="/en/builder" component={SilhouetteBuilder} />
         <Route path="/en/about" component={About} />
@@ -218,7 +219,7 @@ function Router() {
 
         {/* ── Arabic (/ar) ── */}
         <Route path="/ar" component={Home} />
-        <Route path="/ar/collections" component={Collections} />
+        <Route path="/ar/silhouettes" component={Collections} />
         <Route path="/ar/product/:slug" component={ProductDetail} />
         <Route path="/ar/builder" component={SilhouetteBuilder} />
         <Route path="/ar/about" component={About} />
@@ -249,7 +250,10 @@ function Router() {
         <Route path="/ar/account" component={HesapPage} />
 
         {/* ── Legacy: Turkish slug → /tr/... ── */}
-        <Route path="/koleksiyonlar" component={replaceWith("/tr/collections")} />
+        <Route path="/koleksiyonlar" component={replaceWith("/siluetler")} />
+        <Route path="/tr/collections" component={replaceWith("/siluetler")} />
+        <Route path="/en/collections" component={replaceWith("/en/silhouettes")} />
+        <Route path="/ar/collections" component={replaceWith("/ar/silhouettes")} />
         <Route path="/urun/:slug" component={LegacyUrunRedirect} />
         <Route path="/olustur" component={replaceWithSearch("/tr/builder")} />
         <Route path="/hakkimizda" component={replaceWith("/tr/about")} />

@@ -20,7 +20,7 @@ const t = {
     subtitle: "Geçmiş siparişlerinizi inceleyin ve durumlarını takip edin.",
     empty: "Henüz bir sipariş vermediniz.",
     emptyDesc:
-      "İlk siparişinizi vermek için koleksiyonlarımıza göz atabilirsiniz.",
+      "İlk siparişinizi vermek için silüetlerimize göz atabilirsiniz.",
     explore: "Alışverişe Başla",
     orderNo: "Sipariş No",
     date: "Tarih",
@@ -48,7 +48,7 @@ const t = {
     title: "Order History",
     subtitle: "Review your past orders and track their status.",
     empty: "You haven't placed any orders yet.",
-    emptyDesc: "Browse our collections to place your first order.",
+    emptyDesc: "Browse our silhouettes to place your first order.",
     explore: "Start Shopping",
     orderNo: "Order No",
     date: "Date",
@@ -76,7 +76,7 @@ const t = {
     title: "سجل الطلبات",
     subtitle: "راجع طلباتك السابقة وتابع حالتها.",
     empty: "لم تقم بأي طلب بعد.",
-    emptyDesc: "تصفح مجموعاتنا لإجراء طلبك الأول.",
+    emptyDesc: "تصفح صورنا الظلية لإجراء طلبك الأول.",
     explore: "ابدأ التسوق",
     orderNo: "رقم الطلب",
     date: "التاريخ",
@@ -187,7 +187,7 @@ export default function SiparislerPage() {
             {tx.emptyDesc}
           </p>
           <Link
-            href={u.koleksiyonlar}
+            href={u.siluetler}
             className="font-body text-[11px] tracking-[0.25em] uppercase bg-[#1C1C1E] text-[#F7F3EC] px-8 py-3.5 hover:bg-[#C9A96E] transition-colors duration-300"
           >
             {tx.explore}

@@ -79,17 +79,17 @@ export default function Footer() {
           placeholder: "Your email address",
           subscribe: "Subscribe",
           thanks: "Subscribed.",
-          collections: "Collections",
+          silhouettes: "Silhouettes",
           company: "Company",
           support: "Support",
           legal: "Legal",
-          collectionLinks: [
-            { label: "ORIGINE", href: "/en/collections" },
-            { label: "MOUVEMENT", href: "/en/collections" },
-            { label: "ÉPURE", href: "/en/collections" },
-            { label: "NOIR", href: "/en/collections" },
-            { label: "HÉRITAGE", href: "/en/collections" },
-            { label: "ATELIER", href: "/en/collections" },
+          silhouetteLinks: [
+            { label: "ORIGINE", href: "/en/silhouettes" },
+            { label: "MOUVEMENT", href: "/en/silhouettes" },
+            { label: "ÉPURE", href: "/en/silhouettes" },
+            { label: "NOIR", href: "/en/silhouettes" },
+            { label: "HÉRITAGE", href: "/en/silhouettes" },
+            { label: "ATELIER", href: "/en/silhouettes" },
           ],
           companyLinks: [
             { label: "About", href: "/en/about" },
@@ -118,17 +118,17 @@ export default function Footer() {
           placeholder: "عنوان بريدك الإلكتروني",
           subscribe: "اشترك",
           thanks: "تم الاشتراك.",
-          collections: "المجموعات",
+          silhouettes: "الصور الظلية",
           company: "الشركة",
           support: "الدعم",
           legal: "القانونية",
-          collectionLinks: [
-            { label: "ORIGINE", href: "/ar/collections" },
-            { label: "MOUVEMENT", href: "/ar/collections" },
-            { label: "ÉPURE", href: "/ar/collections" },
-            { label: "NOIR", href: "/ar/collections" },
-            { label: "HÉRITAGE", href: "/ar/collections" },
-            { label: "ATELIER", href: "/ar/collections" },
+          silhouetteLinks: [
+            { label: "ORIGINE", href: "/ar/silhouettes" },
+            { label: "MOUVEMENT", href: "/ar/silhouettes" },
+            { label: "ÉPURE", href: "/ar/silhouettes" },
+            { label: "NOIR", href: "/ar/silhouettes" },
+            { label: "HÉRITAGE", href: "/ar/silhouettes" },
+            { label: "ATELIER", href: "/ar/silhouettes" },
           ],
           companyLinks: [
             { label: "من نحن", href: "/ar/about" },
@@ -157,17 +157,17 @@ export default function Footer() {
           placeholder: "E-posta adresiniz",
           subscribe: "Abone Ol",
           thanks: "Abone olundu.",
-          collections: "Koleksiyonlar",
+          silhouettes: "Silüetler",
           company: "Şirket",
           support: "Destek",
           legal: "Yasal",
-          collectionLinks: [
-            { label: "ORIGINE", href: sitePaths.collections.TR },
-            { label: "MOUVEMENT", href: sitePaths.collections.TR },
-            { label: "ÉPURE", href: sitePaths.collections.TR },
-            { label: "NOIR", href: sitePaths.collections.TR },
-            { label: "HÉRITAGE", href: sitePaths.collections.TR },
-            { label: "ATELIER", href: sitePaths.collections.TR },
+          silhouetteLinks: [
+            { label: "ORIGINE", href: sitePaths.silhouettes.TR },
+            { label: "MOUVEMENT", href: sitePaths.silhouettes.TR },
+            { label: "ÉPURE", href: sitePaths.silhouettes.TR },
+            { label: "NOIR", href: sitePaths.silhouettes.TR },
+            { label: "HÉRITAGE", href: sitePaths.silhouettes.TR },
+            { label: "ATELIER", href: sitePaths.silhouettes.TR },
           ],
           companyLinks: [
             { label: "Hakkımızda", href: sitePaths.about.TR },
@@ -214,13 +214,13 @@ export default function Footer() {
       <div>
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12 border-b border-[#F7F3EC]/10">
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-8">
-            {/* Collections */}
+            {/* Silhouettes */}
             <div>
               <h4 className={`font-body text-xs tracking-[0.15em] uppercase text-[#C9A96E] mb-4 ${isRTL ? "text-right" : ""}`}>
-                {content.collections}
+                {content.silhouettes}
               </h4>
               <ul className={`space-y-2 ${isRTL ? "text-right" : ""}`}>
-                {content.collectionLinks.map((link) => (
+                {content.silhouetteLinks.map((link) => (
                   <li key={link.label}>
                     <a href={link.href} className="font-body text-sm text-[#F7F3EC]/60 hover:text-[#C9A96E] transition-colors">
                       {link.label}

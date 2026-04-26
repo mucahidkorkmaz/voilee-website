@@ -97,7 +97,7 @@ function accountUrls(lang: SiteLang) {
     adresler: sitePaths.accountAddresses[lang],
     liste: sitePaths.accountWishlist[lang],
     bilgiler: sitePaths.accountProfile[lang],
-    koleksiyonlar: sitePaths.collections[lang],
+    siluetler: sitePaths.silhouettes[lang],
     urun: (slug: string) => productPath(lang, slug),
   };
 }

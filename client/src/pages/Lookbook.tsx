@@ -72,31 +72,31 @@ const ui = {
     seasonTag: "Lookbook 2026",
     coverTitle: "Bir Duruşun\nHikayesi",
     editorLabel: "Editörden",
-    editorText: "2026 koleksiyonu, ışığın bir günde nasıl değiştiğini anlatır. Her koleksiyon ayrı bir an değil — aynı kadının içinden geçtiği farklı bir hâl. Bir parçayı giymek, o hâle adım atmaktır.",
+    editorText: "2026 sezonu, ışığın bir günde nasıl değiştiğini anlatır. Her silüet ayrı bir an değil — aynı kadının içinden geçtiği farklı bir hâl. Bir parçayı giymek, o hâle adım atmaktır.",
     editorSign: "— VOILÉE Atelier",
     exploreLink: "Keşfet",
-    ctaHref: "/koleksiyonlar",
-    closingCta: "Tüm Koleksiyonları Gör",
+    ctaHref: "/siluetler",
+    closingCta: "Tüm Silüetleri Gör",
   },
   EN: {
     seasonTag: "Lookbook 2026",
     coverTitle: "The Story of\na Posture",
     editorLabel: "Editor's Note",
-    editorText: "The 2026 collection tells the story of how light shifts across a single day. Each collection is not a separate moment — it is a different state the same woman moves through. To wear a piece is to step into that state.",
+    editorText: "The 2026 season tells the story of how light shifts across a single day. Each silhouette is not a separate moment — it is a different state the same woman moves through. To wear a piece is to step into that state.",
     editorSign: "— VOILÉE Atelier",
     exploreLink: "Explore",
-    ctaHref: "/en/collections",
-    closingCta: "View All Collections",
+    ctaHref: "/en/silhouettes",
+    closingCta: "View All Silhouettes",
   },
   AR: {
     seasonTag: "Lookbook 2026",
     coverTitle: "قصة\nموقف",
     editorLabel: "من المحرر",
-    editorText: "تحكي مجموعة 2026 كيف يتغير الضوء خلال يوم واحد. كل مجموعة ليست لحظة منفصلة — بل هي حالة مختلفة تمر بها نفس المرأة. ارتداء قطعة يعني الدخول في تلك الحالة.",
+    editorText: "تحكي موسم 2026 كيف يتغير الضوء خلال يوم واحد. كل صورة ظلية ليست لحظة منفصلة — بل هي حالة مختلفة تمر بها نفس المرأة. ارتداء قطعة يعني الدخول في تلك الحالة.",
     editorSign: "— أتيليه VOILÉE",
     exploreLink: "استكشف",
-    ctaHref: "/ar/collections",
-    closingCta: "عرض جميع المجموعات",
+    ctaHref: "/ar/silhouettes",
+    closingCta: "عرض جميع الصور الظلية",
   },
 };
 
@@ -234,10 +234,10 @@ export default function Lookbook() {
               <div className="w-12 h-px bg-[#C9A96E] mb-6" />
               <p className="font-body text-sm text-[#F7F3EC]/55 leading-relaxed">
                 {lang === "TR"
-                  ? `${toWordTR(collections.length)} koleksiyon. Aynı kadının farklı hâlleri. Sabahın sessizliğinden gecenin gücüne.`
+                  ? `${toWordTR(collections.length)} silüet. Aynı kadının farklı hâlleri. Sabahın sessizliğinden gecenin gücüne.`
                   : lang === "EN"
-                  ? `${toWordEN(collections.length)} collections. The many states of one woman. From the silence of morning to the power of night.`
-                  : `${collections.length} مجموعات. حالات مختلفة لنفس المرأة. من هدوء الصباح إلى قوة الليل.`}
+                  ? `${toWordEN(collections.length)} silhouettes. The many states of one woman. From the silence of morning to the power of night.`
+                  : `${collections.length} صور ظلية. حالات مختلفة لنفس المرأة. من هدوء الصباح إلى قوة الليل.`}
               </p>
             </div>
           </div>

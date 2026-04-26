@@ -6,7 +6,7 @@ const P = { TR: "/tr", EN: "/en", AR: "/ar" } as const;
 
 export const sitePaths = {
   home: { TR: "/tr", EN: "/en", AR: "/ar" },
-  collections: { TR: "/tr/collections", EN: "/en/collections", AR: "/ar/collections" },
+  silhouettes: { TR: "/siluetler", EN: "/en/silhouettes", AR: "/ar/silhouettes" },
   builder: { TR: "/tr/builder", EN: "/en/builder", AR: "/ar/builder" },
   about: { TR: "/tr/about", EN: "/en/about", AR: "/ar/about" },
   story: { TR: "/tr/story", EN: "/en/story", AR: "/ar/story" },

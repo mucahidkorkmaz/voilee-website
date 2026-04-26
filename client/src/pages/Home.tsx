@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
-import { ArrowRight, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { sitePaths } from "@/lib/sitePaths";
+import { api, type Silhouette } from "@/lib/api";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
@@ -12,18 +13,7 @@ const IMGS = {
   heroMain: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_hero_main-Z5A8u2f2u9H3JoSTeyVYih.webp",
   heroNoir: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_hero_noir-hQu4cXB47EThQiYwkHnE3F.webp",
   heroOrigine: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_hero_origine-gGGQSDVPAKHHXiL3dcqJVR.webp",
-  lookbook: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_lookbook-NdUh3UyfmAcub83uXdTERo.webp",
   about: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_about-koUYMmwRdG337Rztgx3iuQ.webp",
-  cdnOrigine: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_cdn_origine_57e73407.webp",
-  cdnNoir: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_cdn_noir_68a8f8b6.webp",
-  cdnEpure: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_cdn_epure_2d5aaf15.webp",
-  cdnHeritage: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_cdn_heritage_1a6b4b02.webp",
-  cdnMouvement: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_cdn_mouvement_7b7c4f3e.webp",
-  cdnAtelier: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_cdn_atelier_d60dabd2.webp",
-  productCanta: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_product_canta_cf6f1d7f.webp",
-  productEsarp: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_product_esarp_119045e5.webp",
-  productAbaya: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_product_abaya_ed7dff4a.webp",
-  productParfum: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_product_parfum_f4067dbd.webp",
 };
 
 const fallbackHeroSlides = [
@@ -32,9 +22,9 @@ const fallbackHeroSlides = [
     imgUrlMobile: "",
     duration: 6000,
     linkUrl: "",
-    tagTR: "Yeni Koleksiyon",
-    tagEN: "New Collection",
-    tagAR: "مجموعة جديدة",
+    tagTR: "Yeni Sezon",
+    tagEN: "New Season",
+    tagAR: "موسم جديد",
     titleTR: "Sessiz Lüks,\nKalıcı Zarafet",
     titleEN: "Quiet Luxury,\nTimeless Grace",
     titleAR: "الفخامة الهادئة،\nالأناقة الدائمة",
@@ -42,12 +32,12 @@ const fallbackHeroSlides = [
     subtitleEN: "Every day, a statement with VOILÉE.",
     subtitleAR: "مع VOILÉE، موقف كل يوم.",
     collection: "ORIGINE",
-    ctaLabelTR: "Koleksiyonu Keşfet",
-    ctaLabelEN: "Explore Collection",
-    ctaLabelAR: "استكشف المجموعة",
-    ctaHrefTR: "/koleksiyonlar",
-    ctaHrefEN: "/en/collections",
-    ctaHrefAR: "/ar/collections",
+    ctaLabelTR: "Silüetleri Keşfet",
+    ctaLabelEN: "Explore Silhouettes",
+    ctaLabelAR: "استكشف الصور الظلية",
+    ctaHrefTR: "/siluetler",
+    ctaHrefEN: "/en/silhouettes",
+    ctaHrefAR: "/ar/silhouettes",
     ctaVisible: true,
     secLabelTR: "Hikayemiz",
     secLabelEN: "Our Story",
@@ -62,9 +52,9 @@ const fallbackHeroSlides = [
     imgUrlMobile: "",
     duration: 6000,
     linkUrl: "",
-    tagTR: "NOIR Koleksiyonu",
-    tagEN: "NOIR Collection",
-    tagAR: "مجموعة NOIR",
+    tagTR: "NOIR Silüeti",
+    tagEN: "NOIR Silhouette",
+    tagAR: "صورة ظلية NOIR",
     titleTR: "Sessiz Bir Güç,\nKaranlıkta Varlık",
     titleEN: "Silent Power,\nPresence in Darkness",
     titleAR: "قوة صامتة،\nالوجود في الظلام",
@@ -72,12 +62,12 @@ const fallbackHeroSlides = [
     subtitleEN: "No effort needed. Presence is already felt.",
     subtitleAR: "لا تحتاج إلى جهد. الوجود يُشعر به بالفعل.",
     collection: "NOIR",
-    ctaLabelTR: "Koleksiyonu Keşfet",
-    ctaLabelEN: "Explore Collection",
-    ctaLabelAR: "استكشف المجموعة",
-    ctaHrefTR: "/koleksiyonlar",
-    ctaHrefEN: "/en/collections",
-    ctaHrefAR: "/ar/collections",
+    ctaLabelTR: "Silüetleri Keşfet",
+    ctaLabelEN: "Explore Silhouettes",
+    ctaLabelAR: "استكشف الصور الظلية",
+    ctaHrefTR: "/siluetler",
+    ctaHrefEN: "/en/silhouettes",
+    ctaHrefAR: "/ar/silhouettes",
     ctaVisible: true,
     secLabelTR: "Hikayemiz",
     secLabelEN: "Our Story",
@@ -92,9 +82,9 @@ const fallbackHeroSlides = [
     imgUrlMobile: "",
     duration: 6000,
     linkUrl: "",
-    tagTR: "ORIGINE Koleksiyonu",
-    tagEN: "ORIGINE Collection",
-    tagAR: "مجموعة ORIGINE",
+    tagTR: "ORIGINE Silüeti",
+    tagEN: "ORIGINE Silhouette",
+    tagAR: "صورة ظلية ORIGINE",
     titleTR: "Sade Bir Başlangıç,\nDoğadan Gelen Denge",
     titleEN: "A Simple Beginning,\nBalance from Nature",
     titleAR: "بداية بسيطة،\nتوازن من الطبيعة",
@@ -102,12 +92,12 @@ const fallbackHeroSlides = [
     subtitleEN: "No excess. Just simple balance.",
     subtitleAR: "لا إفراط. فقط توازن بسيط.",
     collection: "ORIGINE",
-    ctaLabelTR: "Koleksiyonu Keşfet",
-    ctaLabelEN: "Explore Collection",
-    ctaLabelAR: "استكشف المجموعة",
-    ctaHrefTR: "/koleksiyonlar",
-    ctaHrefEN: "/en/collections",
-    ctaHrefAR: "/ar/collections",
+    ctaLabelTR: "Silüetleri Keşfet",
+    ctaLabelEN: "Explore Silhouettes",
+    ctaLabelAR: "استكشف الصور الظلية",
+    ctaHrefTR: "/siluetler",
+    ctaHrefEN: "/en/silhouettes",
+    ctaHrefAR: "/ar/silhouettes",
     ctaVisible: true,
     secLabelTR: "Hikayemiz",
     secLabelEN: "Our Story",
@@ -118,18 +108,6 @@ const fallbackHeroSlides = [
     secVisible: true,
   },
 ];
-
-const collections = [
-  { name: "ORIGINE", subtitleTR: "Sade Bir Başlangıç", subtitleEN: "A Simple Beginning", img: IMGS.cdnOrigine },
-  { name: "MOUVEMENT", subtitleTR: "Akışta Bir Hâl", subtitleEN: "A State of Flow", img: IMGS.cdnMouvement },
-  { name: "ÉPURE", subtitleTR: "Net Bir Duruş", subtitleEN: "A Clear Stance", img: IMGS.cdnEpure },
-  { name: "NOIR", subtitleTR: "Sessiz Bir Güç", subtitleEN: "Silent Power", img: IMGS.cdnNoir },
-  { name: "HÉRITAGE", subtitleTR: "Anlam Taşıyan Anlar", subtitleEN: "Moments of Meaning", img: IMGS.cdnHeritage },
-  { name: "ATELIER", subtitleTR: "Tek Parça. Tek İfade.", subtitleEN: "One Piece. One Expression.", img: IMGS.cdnAtelier },
-];
-
-const reviews: { name: string; city: string; rating: number; textTR: string; textEN: string }[] = [];
-
 
 function useScrollAnimation() {
   const ref = useRef<HTMLDivElement>(null);
@@ -163,6 +141,107 @@ function AnimatedSection({ children, className = "", delay = 0 }: { children: Re
     >
       {children}
     </div>
+  );
+}
+
+function SilhouetteIndex({
+  getText,
+  lang,
+}: {
+  getText: (tr: string, en: string, ar: string) => string;
+  lang: string;
+}) {
+  const [silhouettes, setHomeSilhouettes] = useState<Silhouette[]>([]);
+  const [silhouettesLoading, setSilhouettesLoading] = useState(true);
+
+  useEffect(() => {
+    api.getSilhouettes()
+      .then((res) =>
+        setHomeSilhouettes(
+          [...res.data].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+        )
+      )
+      .catch(console.error)
+      .finally(() => setSilhouettesLoading(false));
+  }, []);
+
+  const countLabel = String(silhouettes.length).padStart(2, "0");
+  const heading = lang === "TR" ? "Siluetler" : lang === "EN" ? "Silhouettes" : "صور ظلية";
+
+  const silhouettesPath =
+    lang === "EN" ? "/en/silhouettes" :
+    lang === "AR" ? "/ar/silhouettes" :
+    "/siluetler";
+
+  return (
+    <AnimatedSection>
+      <section className="bg-[#F7F3EC]">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+          <div className="flex items-baseline justify-between gap-4">
+            <p className="font-body text-xs tracking-[0.2em] uppercase text-[#C9A96E]">
+              {heading}
+            </p>
+            <p className="font-body text-sm tabular-nums text-[#1C1C1E]/40">
+              {silhouettesLoading ? "00" : countLabel}
+            </p>
+          </div>
+
+          <div className="mt-6">
+            {silhouettesLoading ? (
+              <>
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className={`silhouette-skeleton-row grid grid-cols-[40px_1fr_24px] gap-x-4 items-center border-t border-[#1C1C1E]/10 py-5 lg:py-6 ${i === 2 ? "border-b border-[#1C1C1E]/10" : ""}`}
+                  >
+                    <div className="h-4 w-7 rounded bg-[#1C1C1E]/10" />
+                    <div className="min-w-0">
+                      <div className="h-8 max-w-[220px] rounded bg-[#1C1C1E]/10" />
+                    </div>
+                    <div className="h-4 w-4 rounded bg-[#1C1C1E]/10" />
+                  </div>
+                ))}
+              </>
+            ) : (
+              silhouettes.map((sil, index) => {
+                const num = String(index + 1).padStart(2, "0");
+                const name =
+                  lang === "EN" ? sil.nameEN :
+                  lang === "AR" ? sil.nameAR :
+                  sil.nameTR;
+                return (
+                  <AnimatedSection key={sil.id} delay={index * 60}>
+                    <Link
+                      href={`${silhouettesPath}?silhouette=${sil.slug}`}
+                      className={`group grid grid-cols-[40px_1fr_24px] gap-x-4 items-start border-t border-[#1C1C1E]/10 py-5 lg:py-6 transition-colors duration-300 ${index === silhouettes.length - 1 ? "border-b border-[#1C1C1E]/10" : ""}`}
+                    >
+                      <span className="font-body text-sm text-[#1C1C1E]/30 transition-colors duration-300 group-hover:text-[#C9A96E] pt-0.5">
+                        {num}
+                      </span>
+                      <div className="min-w-0 leading-tight">
+                        <span className="font-display text-2xl lg:text-3xl text-[#1C1C1E] align-baseline">{name}</span>
+                      </div>
+                      <span className="flex justify-end pt-1 text-[#1C1C1E]/30 transition-colors duration-300 group-hover:text-[#C9A96E]">
+                        <ArrowRight size={16} aria-hidden />
+                      </span>
+                    </Link>
+                  </AnimatedSection>
+                );
+              })
+            )}
+          </div>
+
+          <div className="pt-6 flex justify-end">
+            <Link
+              href="/siluetler"
+              className="font-body text-xs tracking-[0.15em] uppercase text-[#1C1C1E]/60 hover:text-[#1C1C1E] border-b border-[#1C1C1E]/20 hover:border-[#1C1C1E] pb-0.5 transition-colors duration-300"
+            >
+              {getText("Tümünü keşfet", "Explore all", "استكشف الكل")}
+            </Link>
+          </div>
+        </div>
+      </section>
+    </AnimatedSection>
   );
 }
 
@@ -370,54 +449,6 @@ export default function Home() {
         )}
       </section>
 
-      {/* ===== COLLECTIONS GRID ===== */}
-      <section className="py-20 lg:py-28">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <AnimatedSection>
-            <div className="flex items-end justify-between mb-12">
-              <div>
-                <p className="font-body text-xs tracking-[0.2em] uppercase text-[#C9A96E] mb-3">
-                  {getText("Koleksiyonlarımız", "Our Collections", "مجموعاتنا")}
-                </p>
-                <h2 className="font-display text-4xl lg:text-5xl text-[#1C1C1E]">
-                  {getText("Altı Siluet,\nBir Kadın", "Six Silhouettes,\nOne Woman", "Six Silhouettes,\nOne Woman")}
-                </h2>
-              </div>
-              <Link href={sitePaths.collections[lang]} className="hidden lg:flex items-center gap-2 font-body text-xs tracking-[0.15em] uppercase text-[#1C1C1E]/60 hover:text-[#1C1C1E] transition-colors border-b border-[#1C1C1E]/20 hover:border-[#1C1C1E] pb-0.5">
-                {getText("Tümünü Gör", "View All", "عرض الكل")}
-                <ArrowRight size={12} />
-              </Link>
-            </div>
-          </AnimatedSection>
-
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
-            {collections.map((col, i) => (
-              <AnimatedSection key={col.name} delay={i * 80}>
-                <Link href={sitePaths.collections[lang]}>
-                  <div className="group relative overflow-hidden cursor-pointer">
-                    <div className="aspect-[3/4] overflow-hidden">
-                      <img
-                        src={col.img}
-                        alt={col.name}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6">
-                      <p className="font-body text-[10px] tracking-[0.2em] uppercase text-[#C9A96E] mb-1">
-                        {lang === "TR" ? col.subtitleTR : col.subtitleEN}
-                      </p>
-                      <h3 className="font-display text-xl lg:text-2xl text-white">{col.name}</h3>
-                    </div>
-                    <div className="absolute inset-0 border border-[#C9A96E]/0 group-hover:border-[#C9A96E]/40 transition-all duration-500" />
-                  </div>
-                </Link>
-              </AnimatedSection>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ===== MANIFESTO SECTION ===== */}
       <AnimatedSection>
         <section className="py-20 lg:py-32 bg-[#1C1C1E] relative overflow-hidden">
@@ -450,50 +481,7 @@ export default function Home() {
         </section>
       </AnimatedSection>
 
-
-
-      {/* ===== CUSTOMER REVIEWS ===== */}
-      {reviews.length > 0 && (
-        <AnimatedSection>
-          <section className="py-20 lg:py-28">
-            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-12">
-                <p className="font-body text-xs tracking-[0.2em] uppercase text-[#C9A96E] mb-3">
-                  {getText("Müşteri Yorumları", "Customer Reviews", "تقييمات العملاء")}
-                </p>
-                <h2 className="font-display text-4xl lg:text-5xl text-[#1C1C1E]">
-                  {getText("Onlar Ne Diyor?", "What They Say", "ماذا يقولون؟")}
-                </h2>
-              </div>
-              <div className="grid lg:grid-cols-3 gap-6">
-                {reviews.map((review, i) => (
-                  <AnimatedSection key={i} delay={i * 100}>
-                    <div className="bg-white p-8 border border-[#C9A96E]/10 hover:border-[#C9A96E]/30 transition-colors duration-300">
-                      <div className="flex items-center gap-1 mb-4">
-                        {[1, 2, 3, 4, 5].map((s) => (
-                          <Star key={s} size={12} className="text-[#C9A96E] fill-[#C9A96E]" />
-                        ))}
-                      </div>
-                      <p className="font-body text-sm text-[#1C1C1E]/70 leading-relaxed mb-6 italic">
-                        "{lang === "TR" ? review.textTR : review.textEN}"
-                      </p>
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-[#C9A96E]/20 rounded-full flex items-center justify-center">
-                          <span className="font-display text-sm text-[#C9A96E]">{review.name[0]}</span>
-                        </div>
-                        <div>
-                          <p className="font-body text-sm font-medium text-[#1C1C1E]">{review.name}</p>
-                          <p className="font-body text-xs text-[#1C1C1E]/40">{review.city}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </AnimatedSection>
-                ))}
-              </div>
-            </div>
-          </section>
-        </AnimatedSection>
-      )}
+      <SilhouetteIndex getText={getText} lang={lang} />
 
       {/* Journal Teaser - gerçek yazılar eklendiğinde buraya eklenecek */}
 
@@ -506,6 +494,15 @@ export default function Home() {
           0% { transform: translateY(-100%); }
           100% { transform: translateY(300%); }
         }
+        @keyframes opacity-pulse {
+          0%, 100% { opacity: 0.35; }
+          50% { opacity: 0.85; }
+        }
+        .silhouette-skeleton-row {
+          animation: opacity-pulse 1.6s ease-in-out infinite;
+        }
+        .silhouette-skeleton-row:nth-child(2) { animation-delay: 0.15s; }
+        .silhouette-skeleton-row:nth-child(3) { animation-delay: 0.3s; }
       `}</style>
     </div>
   );

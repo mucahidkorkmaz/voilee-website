@@ -33,10 +33,14 @@ interface Silhouette {
   completedImages: string[];
 }
 
-function apiSilhouetteToLocal(s: APISilhouette): Silhouette {
+function apiSilhouetteToLocal(s: APISilhouette, lang: SiteLang): Silhouette {
+  const name =
+    lang === "EN" ? s.nameEN :
+    lang === "AR" ? s.nameAR :
+    s.nameTR;
   return {
     id: String(s.id),
-    name: s.name,
+    name,
     tagline: s.slug,
     coverImage: s.imageUrl ?? "",
     categories: [],
@@ -123,7 +127,7 @@ function SilhouettePicker({ current, onSelect, onClose, lang, silhouettes, loadi
         <div className="flex items-center justify-between px-8 py-7 border-b border-[#C9A96E]/20">
           <div>
             <p className="font-body text-[10px] tracking-[0.3em] uppercase text-[#C9A96E] mb-1">
-              {lang === "TR" ? "Koleksiyonlar" : "Collections"}
+              {lang === "TR" ? "Silüetler" : lang === "EN" ? "Silhouettes" : "الصور الظلية"}
             </p>
             <h2 className="font-display text-3xl text-[#1C1C1E]">
               {lang === "TR" ? "Siluet Seçin" : "Choose Silhouette"}
@@ -149,7 +153,7 @@ function SilhouettePicker({ current, onSelect, onClose, lang, silhouettes, loadi
           ) : silhouettes.length === 0 ? (
             <div className="text-center py-20">
               <p className="font-body text-sm text-[#1C1C1E]/40 tracking-widest">
-                {lang === "TR" ? "Henüz silüet bulunmuyor." : "No silhouettes found."}
+                {lang === "TR" ? "Henüz silüet bulunmuyor." : lang === "EN" ? "No silhouettes found." : "لا توجد صور ظلية بعد."}
               </p>
             </div>
           ) : (
@@ -221,13 +225,15 @@ function SilhouettePicker({ current, onSelect, onClose, lang, silhouettes, loadi
           <p className="font-body text-[10px] tracking-[0.15em] uppercase text-[#1C1C1E]/30">
             {lang === "TR"
               ? "Siluet seçerek kombinizi oluşturun"
-              : "Select a silhouette to build your look"}
+              : lang === "EN"
+              ? "Select a silhouette to build your look"
+              : "اختر صورة ظلية لبناء إطلالتك"}
           </p>
           <Link
-            href={sitePaths.collections[lang]}
+            href={sitePaths.silhouettes[lang]}
             className="flex-shrink-0 flex items-center gap-1.5 font-body text-[10px] tracking-[0.15em] uppercase text-[#1C1C1E]/50 hover:text-[#C9A96E] transition-colors duration-300 group"
           >
-            {lang === "TR" ? "Tüm Koleksiyonu Görüntüle" : "View Full Collection"}
+            {lang === "TR" ? "Tüm Silüetleri Görüntüle" : lang === "EN" ? "View All Silhouettes" : "عرض جميع الصور الظلية"}
             <ArrowRight size={11} className="transition-transform duration-300 group-hover:translate-x-0.5" />
           </Link>
         </div>
@@ -383,7 +389,7 @@ export default function SilhouetteBuilder() {
     setSilhouettesLoading(true);
     api.getSilhouettes()
       .then((res) => {
-        const mapped = res.data.map(apiSilhouetteToLocal);
+        const mapped = res.data.map((s) => apiSilhouetteToLocal(s, lang));
         setSilhouettes(mapped);
         if (silhouetteParam) {
           const match = mapped.find((s) => s.id === silhouetteParam);
@@ -395,7 +401,7 @@ export default function SilhouetteBuilder() {
       })
       .catch(console.error)
       .finally(() => setSilhouettesLoading(false));
-  }, []);
+  }, [lang]);
 
   const hasSelections = Object.keys(selections).length > 0;
   const canComplete = hasSelections;
@@ -458,8 +464,10 @@ export default function SilhouetteBuilder() {
     title: lang === "TR" ? "Siluet Oluşturucu" : "Silhouette Builder",
     subtitle:
       lang === "TR"
-        ? "Koleksiyonunuzu seçin, kategorileri tamamlayın ve tüm kombini tek seferde sepete ekleyin."
-        : "Choose your collection, complete the categories and add the whole look to your cart.",
+        ? "Silüetinizi seçin, kategorileri tamamlayın ve tüm kombini tek seferde sepete ekleyin."
+        : lang === "AR"
+        ? "اختر صورتك الظلية، أكمل الفئات وأضف الإطلالة كاملة إلى السلة دفعة واحدة."
+        : "Choose your silhouette, complete the categories and add the whole look to your cart.",
     changeSilhouette: lang === "TR" ? "Siluet Değiştir" : "Change Silhouette",
     complete: lang === "TR" ? "Silüeti Tamamla" : "Complete Silhouette",
     reset: lang === "TR" ? "Yeniden Oluştur" : "Create New",
@@ -478,7 +486,7 @@ export default function SilhouetteBuilder() {
       {/* Hero */}
       <div className="pt-20 lg:pt-28 pb-10 px-4 sm:px-6 lg:px-8 max-w-[1400px] mx-auto text-center">
         <p className="font-body text-[10px] tracking-[0.3em] uppercase text-[#C9A96E] mb-4">
-          {lang === "TR" ? "Koleksiyonlar" : "Collections"}
+          {lang === "TR" ? "Silüetler" : lang === "EN" ? "Silhouettes" : "الصور الظلية"}
         </p>
         <h1 className="font-display text-5xl lg:text-6xl text-[#1C1C1E] mb-4">{t.title}</h1>
         <p className="font-body text-sm text-[#1C1C1E]/50 max-w-lg mx-auto leading-relaxed">
@@ -658,7 +666,7 @@ export default function SilhouetteBuilder() {
         {/* View All Products Banner */}
         <div className="mt-16 sm:mt-20 flex justify-center">
           <Link
-            href={sitePaths.collections[lang]}
+            href={sitePaths.silhouettes[lang]}
             className="group inline-flex flex-col items-center"
           >
             <div className="w-12 h-px bg-[#1C1C1E]/20 mb-5 group-hover:bg-[#C9A96E] group-hover:w-16 transition-all duration-500" />
@@ -666,7 +674,7 @@ export default function SilhouetteBuilder() {
               {t.viewAll}
             </h3>
             <span className="inline-flex items-center gap-2 font-body text-[11px] tracking-[0.25em] uppercase text-[#1C1C1E]/60 group-hover:text-[#1C1C1E] transition-colors duration-300">
-              {lang === "TR" ? "Tüm Koleksiyonu Gör" : lang === "EN" ? "Browse All" : "استعرض الكل"}
+              {lang === "TR" ? "Tüm Silüetleri Gör" : lang === "EN" ? "Browse Silhouettes" : "تصفح الصور الظلية"}
               <ArrowRight size={12} className="transition-transform duration-300 group-hover:translate-x-1" />
             </span>
           </Link>

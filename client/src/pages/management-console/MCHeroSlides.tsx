@@ -95,12 +95,12 @@ const emptyForm: HeroSlideForm = {
   subtitleTR: "",
   subtitleEN: "",
   subtitleAR: "",
-  ctaLabelTR: "Koleksiyonu Keşfet",
-  ctaLabelEN: "Explore Collection",
-  ctaLabelAR: "استكشف المجموعة",
-  ctaHrefTR: "/koleksiyonlar",
-  ctaHrefEN: "/en/collections",
-  ctaHrefAR: "/ar/collections",
+  ctaLabelTR: "Silüetleri Keşfet",
+  ctaLabelEN: "Explore Silhouettes",
+  ctaLabelAR: "استكشف الصور الظلية",
+  ctaHrefTR: "/siluetler",
+  ctaHrefEN: "/en/silhouettes",
+  ctaHrefAR: "/ar/silhouettes",
   ctaVisible: true,
   secLabelTR: "Hikayemiz",
   secLabelEN: "Our Story",
@@ -337,7 +337,7 @@ export default function MCHeroSlides() {
               <Input
                 value={form.linkUrl ?? ""}
                 onChange={e => setForm(f => ({ ...f, linkUrl: e.target.value }))}
-                placeholder="/koleksiyonlar"
+                placeholder="/siluetler"
               />
               <p className="text-xs text-muted-foreground">
                 Görselin herhangi bir yerine tıklanınca bu adrese yönlendirir.
@@ -405,7 +405,7 @@ export default function MCHeroSlides() {
                   <TabsContent key={lang} value={lang} className="space-y-4 mt-4">
                     <div className="space-y-1.5">
                       <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">Tag ({lang})</Label>
-                      <Input value={form[`tag${lang}` as keyof HeroSlideForm] as string} onChange={e => set(`tag${lang}` as keyof HeroSlideForm, e.target.value)} placeholder="Yeni Koleksiyon" />
+                      <Input value={form[`tag${lang}` as keyof HeroSlideForm] as string} onChange={e => set(`tag${lang}` as keyof HeroSlideForm, e.target.value)} placeholder="Yeni Sezon" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">Başlık ({lang})</Label>
@@ -422,13 +422,13 @@ export default function MCHeroSlides() {
                       <Input
                         value={form[`ctaLabel${lang}` as keyof HeroSlideForm] as string}
                         onChange={e => set(`ctaLabel${lang}` as keyof HeroSlideForm, e.target.value)}
-                        placeholder={lang === "TR" ? "Koleksiyonu Kesfet" : lang === "EN" ? "Explore Collection" : "استكشف المجموعة"}
+                        placeholder={lang === "TR" ? "Silüetleri Keşfet" : lang === "EN" ? "Explore Silhouettes" : "استكشف الصور الظلية"}
                         disabled={!form.ctaVisible}
                       />
                       <Input
                         value={form[`ctaHref${lang}` as keyof HeroSlideForm] as string}
                         onChange={e => set(`ctaHref${lang}` as keyof HeroSlideForm, e.target.value)}
-                        placeholder={lang === "TR" ? "/koleksiyonlar" : lang === "EN" ? "/en/collections" : "/ar/collections"}
+                        placeholder={lang === "TR" ? "/siluetler" : lang === "EN" ? "/en/silhouettes" : "/ar/silhouettes"}
                         disabled={!form.ctaVisible}
                       />
                     </div>

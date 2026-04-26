@@ -108,7 +108,7 @@ const ui = {
     palette: "PALET",
     production: "ÜRETİM",
     next: "SİLÜET",
-    notFound: "Koleksiyon bulunamadı.",
+    notFound: "Silüet bulunamadı.",
     backLink: "Lookbook'a dön",
   },
   EN: {
@@ -118,7 +118,7 @@ const ui = {
     palette: "PALETTE",
     production: "PRODUCTION",
     next: "SILHOUETTE",
-    notFound: "Collection not found.",
+    notFound: "Silhouette not found.",
     backLink: "Back to Lookbook",
   },
   AR: {
@@ -128,7 +128,7 @@ const ui = {
     palette: "اللوحة",
     production: "الإنتاج",
     next: "صورة ظلية",
-    notFound: "المجموعة غير موجودة.",
+    notFound: "الصورة الظلية غير موجودة.",
     backLink: "العودة إلى Lookbook",
   },
 };

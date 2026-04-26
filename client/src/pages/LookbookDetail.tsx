@@ -6,6 +6,10 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { api, type Collection } from "@/lib/api";
 
+function collectionLabel(col: Collection, lang: "TR" | "EN" | "AR") {
+  return lang === "EN" ? col.nameEN : lang === "AR" ? col.nameAR : col.nameTR;
+}
+
 // ─── Per-koleksiyon içerik ────────────────────────────────────────────────────
 
 const SEASON = "AW / 26";
@@ -210,7 +214,7 @@ export default function LookbookDetail() {
           {/* ── Görsel %58 ── */}
           <div className="relative overflow-hidden lg:w-[58%] min-h-[60vh] lg:min-h-[85vh]">
             {current.imageUrl ? (
-              <img src={current.imageUrl} alt={current.name} className="w-full h-full object-cover" />
+              <img src={current.imageUrl} alt={collectionLabel(current, lang)} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-[#E8E0D5]" />
             )}
@@ -225,7 +229,7 @@ export default function LookbookDetail() {
               </p>
 
               {/* Koleksiyon adı */}
-              <p className="font-body text-xs tracking-[0.4em] uppercase text-[#1C1C1E] mb-5">{current.name}</p>
+              <p className="font-body text-xs tracking-[0.4em] uppercase text-[#1C1C1E] mb-5">{collectionLabel(current, lang)}</p>
 
               {/* Tagline — büyük italic */}
               {tag && (
@@ -284,7 +288,7 @@ export default function LookbookDetail() {
                 <div className="border-t border-[#1C1C1E]/10 pt-5">
                   <Link href={`${lookbookRoot[lang]}/${next.slug}`}>
                     <span className="inline-flex items-center gap-2 font-body text-[10px] tracking-[0.25em] uppercase text-[#1C1C1E]/50 hover:text-[#C9A96E] transition-colors duration-300 cursor-pointer group">
-                      {t.next} {String(currentIndex + 2).padStart(2, "0")} — {next.name}
+                      {t.next} {String(currentIndex + 2).padStart(2, "0")} — {collectionLabel(next, lang)}
                       <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
                     </span>
                   </Link>

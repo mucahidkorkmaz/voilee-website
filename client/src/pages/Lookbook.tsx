@@ -6,6 +6,10 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { api, type Collection } from "@/lib/api";
 
+function collectionLabel(col: Collection, lang: "TR" | "EN" | "AR") {
+  return lang === "EN" ? col.nameEN : lang === "AR" ? col.nameAR : col.nameTR;
+}
+
 function toWordTR(n: number): string {
   const words: Record<number, string> = {
     1: "Bir", 2: "İki", 3: "Üç", 4: "Dört", 5: "Beş",
@@ -130,7 +134,8 @@ function CollectionRow({ col, index, lang, exploreLabel, ctaHref }: {
   col: Collection; index: number; lang: "TR" | "EN" | "AR"; exploreLabel: string; ctaHref: string;
 }) {
   const isReversed = index % 2 !== 0;
-  const copy = collectionCopy[col.slug] ?? { tagTR: col.name, tagEN: col.name, bodyTR: "", bodyEN: "" };
+  const fallbackName = collectionLabel(col, lang);
+  const copy = collectionCopy[col.slug] ?? { tagTR: fallbackName, tagEN: fallbackName, bodyTR: "", bodyEN: "" };
   const tag = lang === "TR" ? copy.tagTR : copy.tagEN;
   const body = lang === "TR" ? copy.bodyTR : copy.bodyEN;
 
@@ -140,7 +145,7 @@ function CollectionRow({ col, index, lang, exploreLabel, ctaHref }: {
         {/* Görsel — %58 genişlik */}
         <div className="relative overflow-hidden lg:w-[58%] aspect-[4/5] lg:aspect-[4/3] group">
           {col.imageUrl
-            ? <img src={col.imageUrl} alt={col.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
+            ? <img src={col.imageUrl} alt={collectionLabel(col, lang)} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
             : <div className="w-full h-full bg-[#E8E0D5]" />}
           <div className={`absolute top-6 ${isReversed ? "right-6" : "left-6"} font-body text-[10px] tracking-[0.3em] uppercase text-white/50`}>
             {String(index + 1).padStart(2, "0")}
@@ -151,7 +156,7 @@ function CollectionRow({ col, index, lang, exploreLabel, ctaHref }: {
         <div className={`lg:w-[42%] bg-[#F7F3EC] flex items-center ${isReversed ? "lg:justify-end" : "lg:justify-start"}`}>
           <div className="p-8 lg:p-14 xl:p-20 max-w-sm w-full">
             <p className="font-body text-[10px] tracking-[0.35em] uppercase text-[#C9A96E] mb-4">
-              {col.name}
+              {collectionLabel(col, lang)}
             </p>
             <h2 className="font-display text-3xl lg:text-4xl italic text-[#1C1C1E] leading-tight mb-5">
               {tag}

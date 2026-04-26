@@ -417,10 +417,11 @@ VOILÉE`,
   customerPasswordReset: {
     label: "Şifre Sıfırlama",
     description:
-      "Müşteri şifre sıfırlama talebinde bulunduğunda gönderilir. Hitap satırı otomatik eklenir; aşağıdaki metin butondan önce gösterilir (düz metin, satır sonları paragrafa dönüşür).",
+      "Müşteri şifre sıfırlama talebinde bulunduğunda gönderilir. Aşağıdaki metin şifre sıfırlama butonundan önce gösterilir (düz metin, satır sonları paragrafa dönüşür).",
     defaultSubject: "Şifre Sıfırlama Talebi — {{site_name}}",
-    defaultBody: `Hesabınız için bir şifre sıfırlama talebinde bulunuldu.
-Aşağıdaki bağlantı 30 dakika geçerlidir.
+    defaultBody: `Sayın {{customer_name}},
+
+Hesabınız için bir şifre sıfırlama talebinde bulunuldu. Aşağıdaki bağlantı 30 dakika geçerlidir.
 
 Bu isteği siz yapmadıysanız bu e-postayı görmezden gelebilirsiniz.`,
     variables: [

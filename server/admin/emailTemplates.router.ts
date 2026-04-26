@@ -1,6 +1,11 @@
 import { z } from "zod";
+import { EMAIL_TEMPLATE_KEYS, type EmailTemplateKey } from "@shared/const";
 import { getAllEmailTemplates, resetEmailTemplate, upsertEmailTemplate } from "../db";
 import { adminProcedure, router } from "../_core/trpc";
+
+const emailTemplateKeySchema = z.enum(
+  EMAIL_TEMPLATE_KEYS as unknown as [EmailTemplateKey, ...EmailTemplateKey[]],
+);
 
 export const emailTemplatesRouter = router({
   list: adminProcedure.query(async () => {
@@ -9,7 +14,7 @@ export const emailTemplatesRouter = router({
   upsert: adminProcedure
     .input(
       z.object({
-        key: z.string().min(1),
+        key: emailTemplateKeySchema,
         subject: z.string(),
         body: z.string(),
       }),
@@ -18,7 +23,7 @@ export const emailTemplatesRouter = router({
       return await upsertEmailTemplate(input.key, input.subject, input.body);
     }),
   reset: adminProcedure
-    .input(z.object({ key: z.string().min(1) }))
+    .input(z.object({ key: emailTemplateKeySchema }))
     .mutation(async ({ input }) => {
       return await resetEmailTemplate(input.key);
     }),

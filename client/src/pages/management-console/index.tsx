@@ -123,13 +123,15 @@ const menuSections: MenuSection[] = [
   },
   {
     title: "YAPILANDIRMA",
-    items: [
-      { icon: Settings, label: "Mağaza Ayarları", path: `${MC_BASE}/settings` },
-    ],
+    items: [{ icon: Settings, label: "Mağaza Ayarları", path: `${MC_BASE}/settings` }],
   },
 ];
 
 const allItems = menuSections.flatMap(s => s.items);
+
+function navItemIsActive(path: string, location: string): boolean {
+  return location === path;
+}
 
 const DEFAULT_WIDTH = 240;
 const MIN_WIDTH = 200;
@@ -251,7 +253,7 @@ function MCLayout() {
     };
   }, [isResizing]);
 
-  const activeItem = allItems.find(item => item.path === location);
+  const activeItem = allItems.find(item => navItemIsActive(item.path, location));
 
   const sidebar = (
     <div
@@ -294,7 +296,7 @@ function MCLayout() {
               <div className="my-1 mx-1 border-t border-border/30" />
             )}
             {section.items.map(item => {
-              const isActive = location === item.path;
+              const isActive = navItemIsActive(item.path, location);
               return (
                 <button
                   key={item.path}
@@ -391,7 +393,7 @@ function MCLayout() {
                   <div key={si} className="py-1">
                     {section.title && <p className="text-[9px] tracking-[0.2em] uppercase text-muted-foreground/50 font-medium px-2 py-1.5 mt-1">{section.title}</p>}
                     {section.items.map(item => {
-                      const isActive = location === item.path;
+                      const isActive = navItemIsActive(item.path, location);
                       return (
                         <button key={item.path} onClick={() => { setLocation(item.path); setCollapsed(true); }}
                           className={`w-full flex items-center gap-2.5 rounded px-2 py-2 text-sm transition-colors mb-0.5 ${isActive ? "bg-primary text-primary-foreground" : "text-foreground/70 hover:bg-accent/30 hover:text-foreground"}`}>

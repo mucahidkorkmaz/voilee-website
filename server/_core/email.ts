@@ -112,11 +112,16 @@ export async function buildLayout({
               <tr>
                 <td style="padding-top:16px;text-align:center">
                   <a href="${orderInfo.orderUrl}"
-                     style="display:inline-block;background-color:#0f0f0f;
-                            color:#C9A96E !important;text-decoration:none;
-                            font-size:11px;letter-spacing:3px;
-                            text-transform:uppercase;padding:12px 32px;
-                            font-family:Georgia,serif;border:1px solid #C9A96E">
+                     style="display:inline-block;
+                            background-color:transparent;
+                            color:#1a1a1a;
+                            text-decoration:none;
+                            font-size:10px;
+                            letter-spacing:4px;
+                            text-transform:uppercase;
+                            padding:14px 40px;
+                            font-family:Georgia,'Times New Roman',serif;
+                            border:1px solid #1a1a1a;">
                     SİPARİŞİMİ GÖRÜNTÜLE
                   </a>
                 </td>

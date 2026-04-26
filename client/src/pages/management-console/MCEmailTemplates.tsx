@@ -121,8 +121,6 @@ export default function MCEmailTemplates() {
 
   const hasOrderBlock =
     activeMeta?.variables.some((v) => v.key === "order_number") ?? false;
-  const hasResetButton =
-    activeMeta?.variables.some((v) => v.key === "reset_url") ?? false;
   const hasTrackingInfo =
     activeMeta?.variables.some((v) => v.key === "tracking_number") ?? false;
 
@@ -329,158 +327,185 @@ export default function MCEmailTemplates() {
                   )}
                 </div>
               ) : (
-                /* Önizleme */
-                <div className="h-full bg-[#F7F3EC] flex items-start justify-center px-6 py-8 overflow-y-auto">
-                  <div className="w-full max-w-[560px]">
+                /* Önizleme — buildLayout() ile aynı kabuk */
+                <div
+                  className="h-full overflow-y-auto"
+                  style={{ backgroundColor: "#FAF8F5", padding: "24px 16px" }}
+                >
+                  <p className="text-xs text-center mb-4" style={{ color: "#6b7280" }}>
+                    Konu:{" "}
+                    <span className="font-medium" style={{ color: "#131313" }}>
+                      {applyPreviewVars(active.subject)}
+                    </span>
+                  </p>
+                  <div
+                    style={{
+                      backgroundColor: "#ffffff",
+                      maxWidth: "560px",
+                      margin: "0 auto",
+                    }}
+                  >
+                    <div
+                      style={{
+                        backgroundColor: "#ffffff",
+                        padding: "44px 40px 36px",
+                        textAlign: "center",
+                      }}
+                    >
+                      <p
+                        style={{
+                          margin: 0,
+                          padding: 0,
+                          fontFamily: "'The Seasons', Georgia, 'Times New Roman', serif",
+                          fontSize: "42px",
+                          fontWeight: 400,
+                          letterSpacing: 0,
+                          color: "#131313",
+                          lineHeight: 1,
+                          textAlign: "center",
+                        }}
+                      >
+                        VOILÉE
+                      </p>
+                    </div>
 
-                    {/* Konu satırı */}
-                    <p className="text-xs text-center mb-4" style={{ color: "#8B7355" }}>
-                      Konu:{" "}
-                      <span className="font-medium" style={{ color: "#1C1C1E" }}>
-                        {applyPreviewVars(active.subject)}
-                      </span>
-                    </p>
+                    <div style={{ borderTop: "1px solid #e8e0d5", margin: "0 40px" }} />
 
-                    {/* E-posta kartı */}
-                    <div className="overflow-hidden" style={{
-                      background: "#FAFAF8",
-                      boxShadow: "0 2px 12px rgba(28,28,30,0.08)"
-                    }}>
+                    <div
+                      style={{
+                        padding: "32px 52px 40px",
+                        color: "#374151",
+                        fontSize: "15px",
+                        lineHeight: 1.8,
+                        fontFamily: "Georgia, 'Times New Roman', serif",
+                      }}
+                    >
+                      <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>
+                        {applyPreviewVars(active.body || activeMeta.defaultBody)}
+                      </p>
 
-                      {/* Header */}
-                      <div className="px-10 py-7 text-center" style={{
-                        background: "#FAFAF8",
-                        borderBottom: "1px solid #E8E2D9"
-                      }}>
-                        <img
-                          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_logo_2e68b438.webp"
-                          alt="VOILÉE"
+                      {active.key === "customerPasswordReset" && (
+                        <div style={{ textAlign: "center", padding: "8px 0 24px" }}>
+                          <span
+                            style={{
+                              display: "inline-block",
+                              backgroundColor: "#0f0f0f",
+                              color: "#C9A96E",
+                              textDecoration: "none",
+                              fontSize: "11px",
+                              letterSpacing: "4px",
+                              textTransform: "uppercase",
+                              padding: "16px 48px",
+                              fontFamily: "Georgia, serif",
+                              border: "1px solid #C9A96E",
+                            }}
+                          >
+                            ŞİFREMİ SIFIRLA
+                          </span>
+                        </div>
+                      )}
+
+                      {hasOrderBlock && (
+                        <div
                           style={{
-                            display: "block",
-                            margin: "0 auto",
-                            maxWidth: 140,
-                            height: "auto",
+                            border: "1px solid #e8e0d5",
+                            margin: "24px 0 0",
+                            backgroundColor: "#fafaf9",
                           }}
-                          onError={(e) => {
-                            // Logo yüklenemezse yazıya düş
-                            (e.currentTarget as HTMLImageElement).style.display = "none";
-                            const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                            if (fallback) fallback.style.display = "block";
-                          }}
-                        />
-                        <span style={{
-                          display: "none",
-                          fontFamily: "Georgia, 'Times New Roman', serif",
-                          fontSize: 18,
-                          fontWeight: 300,
-                          letterSpacing: 6,
-                          textTransform: "uppercase" as const,
-                          color: "#C9A96E",
-                        }}>
-                          VOILÉE
-                        </span>
-                      </div>
-
-                      {/* Gövde */}
-                      <div className="px-10 py-9 space-y-4">
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap"
-                          style={{ color: "#1C1C1E", fontWeight: 300, lineHeight: 1.85 }}>
-                          {applyPreviewVars(active.body || activeMeta.defaultBody)}
-                        </p>
-
-                        {/* Sipariş tablosu — sadece order_number içeren şablonlarda */}
-                        {hasOrderBlock && (
-                          <div style={{ border: "1px solid #E8E2D9", marginTop: 24 }}>
-                            {[
-                              { label: "Sipariş No", value: `#${PREVIEW_VARS.order_number}` },
-                              { label: "Tarih", value: PREVIEW_VARS.order_date },
-                              { label: "Tutar", value: PREVIEW_VARS.order_total },
-                            ].map((row, i, arr) => (
-                              <div key={row.label} className="flex justify-between" style={{
-                                padding: "12px 18px",
-                                borderBottom: i < arr.length - 1 ? "1px solid #E8E2D9" : undefined,
-                                background: i === 0 ? "#F7F3EC" : undefined,
-                              }}>
-                                <span style={{
-                                  fontSize: 10, letterSpacing: 2,
-                                  textTransform: "uppercase" as const, color: "#8B7355"
-                                }}>
-                                  {row.label}
-                                </span>
-                                <span style={{ fontSize: 13, color: "#1C1C1E", fontWeight: 500 }}>
-                                  {row.value}
-                                </span>
-                              </div>
-                            ))}
+                        >
+                          <div style={{ padding: "16px 20px" }}>
+                            <p
+                              style={{
+                                margin: "4px 0",
+                                fontSize: "13px",
+                                color: "#374151",
+                                fontFamily: "Arial, Helvetica, sans-serif",
+                              }}
+                            >
+                              Sipariş No:{" "}
+                              <strong>#{PREVIEW_VARS.order_number}</strong>
+                            </p>
+                            <p
+                              style={{
+                                margin: "4px 0",
+                                fontSize: "13px",
+                                color: "#374151",
+                                fontFamily: "Arial, Helvetica, sans-serif",
+                              }}
+                            >
+                              Tarih: {PREVIEW_VARS.order_date}
+                            </p>
+                            <p
+                              style={{
+                                margin: "4px 0",
+                                fontSize: "13px",
+                                color: "#374151",
+                                fontFamily: "Arial, Helvetica, sans-serif",
+                              }}
+                            >
+                              Tutar: <strong>{PREVIEW_VARS.order_total}</strong>
+                            </p>
+                            <div style={{ paddingTop: 16, textAlign: "center" }}>
+                              <span
+                                style={{
+                                  display: "inline-block",
+                                  backgroundColor: "#0f0f0f",
+                                  color: "#C9A96E",
+                                  fontSize: "11px",
+                                  letterSpacing: "3px",
+                                  textTransform: "uppercase",
+                                  padding: "12px 32px",
+                                  fontFamily: "Georgia, serif",
+                                  border: "1px solid #C9A96E",
+                                }}
+                              >
+                                SİPARİŞİMİ GÖRÜNTÜLE
+                              </span>
+                            </div>
                           </div>
-                        )}
+                        </div>
+                      )}
 
-                        {/* Kargo takip bilgisi */}
-                        {hasTrackingInfo && (
-                          <div style={{
-                            border: "1px solid #E8E2D9",
+                      {hasTrackingInfo && (
+                        <div
+                          style={{
+                            border: "1px solid #e8e0d5",
                             padding: "12px 18px",
                             marginTop: 16,
-                            background: "#F7F3EC"
-                          }}>
-                            <p style={{ fontSize: 11, color: "#8B7355", margin: 0 }}>
-                              Takip No:{" "}
-                              <span style={{ color: "#1C1C1E", fontWeight: 500 }}>
-                                {PREVIEW_VARS.tracking_number}
-                              </span>
-                              {" — "}{PREVIEW_VARS.cargo_company}
-                            </p>
-                          </div>
-                        )}
+                            backgroundColor: "#fafaf9",
+                          }}
+                        >
+                          <p
+                            style={{
+                              fontSize: "13px",
+                              color: "#374151",
+                              margin: 0,
+                              fontFamily: "Arial, Helvetica, sans-serif",
+                            }}
+                          >
+                            Takip No:{" "}
+                            <strong>{PREVIEW_VARS.tracking_number}</strong>
+                            {" — "}
+                            {PREVIEW_VARS.cargo_company}
+                          </p>
+                        </div>
+                      )}
+                    </div>
 
-                        {/* Sipariş butonu */}
-                        {hasOrderBlock && (
-                          <div className="text-center pt-2">
-                            <div className="inline-block" style={{
-                              background: "#1C1C1E",
-                              color: "#C9A96E",
-                              padding: "13px 40px",
-                              fontSize: 10,
-                              letterSpacing: 3,
-                              textTransform: "uppercase" as const,
-                              border: "1px solid #C9A96E",
-                            }}>
-                              SİPARİŞİ GÖRÜNTÜLE
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Şifre sıfırlama butonu */}
-                        {hasResetButton && (
-                          <div className="text-center pt-2">
-                            <div className="inline-block" style={{
-                              background: "#1C1C1E",
-                              color: "#C9A96E",
-                              padding: "13px 40px",
-                              fontSize: 10,
-                              letterSpacing: 3,
-                              textTransform: "uppercase" as const,
-                              border: "1px solid #C9A96E",
-                            }}>
-                              ŞİFREMİ SIFIRLA
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Ayraç */}
-                      <div style={{ height: 1, background: "#E8E2D9", margin: "0 32px" }} />
-
-                      {/* Footer */}
-                      <div className="px-10 py-5 text-center" style={{ background: "#1C1C1E" }}>
-                        <p style={{
-                          margin: 0, fontSize: 10, letterSpacing: 2,
-                          textTransform: "uppercase" as const, color: "#8B7355"
-                        }}>
-                          © VOILÉE — Bu e-posta bildirim sistemi tarafından gönderilmiştir.
-                        </p>
-                      </div>
-
+                    <div
+                      style={{
+                        backgroundColor: "#F5F0EB",
+                        padding: "20px 40px",
+                        borderTop: "1px solid #e8e0d5",
+                        textAlign: "center",
+                        color: "#9ca3af",
+                        fontSize: "10px",
+                        letterSpacing: "2px",
+                        textTransform: "uppercase",
+                        fontFamily: "Arial, Helvetica, sans-serif",
+                      }}
+                    >
+                      © VOILÉE — BU E-POSTA MAĞAZA BİLDİRİM SİSTEMİ TARAFINDAN GÖNDERİLMİŞTİR.
                     </div>
                   </div>
                 </div>

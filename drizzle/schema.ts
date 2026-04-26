@@ -107,7 +107,8 @@ export type InsertProduct = typeof products.$inferInsert;
 
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
-  userId: integer("userId").notNull(),
+  /** Null when the customer account was removed; sipariş kaydı korunur. */
+  userId: integer("userId"),
   orderNumber: varchar("orderNumber", { length: 50 }).notNull().unique(),
   totalPrice: decimal("totalPrice", { precision: 12, scale: 2 }).notNull(),
   status: orderStatusEnum("status").default("pending"),

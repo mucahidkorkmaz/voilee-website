@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { AlertCircle, ImageIcon, Loader2, Save, Settings, Upload, Wifi, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { MCSettingsUsersTab } from "./MCSettingsUsersTab";
 
 const TABS = [
   { id: "general", label: "Genel" },
@@ -12,6 +14,7 @@ const TABS = [
   { id: "email", label: "E-posta" },
   { id: "legal", label: "Yasal" },
   { id: "integrations", label: "Entegrasyonlar" },
+  { id: "users", label: "Kullanıcılar" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -646,7 +649,12 @@ export default function MCSettings() {
     : "";
 
   return (
-    <div className="p-6 md:p-8 max-w-3xl space-y-6">
+    <div
+      className={cn(
+        "p-6 md:p-8 space-y-6",
+        activeTab === "users" ? "max-w-6xl" : "max-w-3xl",
+      )}
+    >
       <div className="flex items-end justify-between">
         <div>
           <p className="text-xs tracking-[0.25em] uppercase text-muted-foreground font-light">Yapılandırma</p>
@@ -655,7 +663,7 @@ export default function MCSettings() {
         <Settings className="h-5 w-5 text-muted-foreground/40" />
       </div>
 
-      {error && <ErrorBanner message={errorMessage} />}
+      {error && activeTab !== "users" && <ErrorBanner message={errorMessage} />}
 
       <div className="flex gap-0.5 border-b border-border/40 overflow-x-auto">
         {TABS.map(tab => (
@@ -674,7 +682,9 @@ export default function MCSettings() {
         ))}
       </div>
 
-      {isLoading ? (
+      {activeTab === "users" ? (
+        <MCSettingsUsersTab />
+      ) : isLoading ? (
         <LoadingSkeleton />
       ) : (
         <div className="space-y-10">

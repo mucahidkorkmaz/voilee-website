@@ -1,6 +1,12 @@
 const BASE = import.meta.env.VITE_STOREFRONT_BASE_URL ?? "/api/v1";
 const API_KEY = import.meta.env.VITE_STOREFRONT_API_KEY ?? "";
 
+function withLang(path: string, lang?: string) {
+  if (!lang) return path;
+  const sep = path.includes("?") ? "&" : "?";
+  return `${path}${sep}lang=${encodeURIComponent(lang)}`;
+}
+
 async function storefrontFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     ...options,
@@ -44,6 +50,19 @@ export interface AuthUser {
   emailVerified: boolean;
 }
 
+export interface ProductVariant {
+  id: number;
+  name: string;
+  nameTR: string;
+  nameEN: string;
+  nameAR: string;
+  sku: string | null;
+  price: string | null;
+  stock: number;
+  imageUrl: string | null;
+  colorHex: string | null;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -53,8 +72,12 @@ export interface Product {
   compareAtPrice?: string | null;
   imageUrls: string[];
   categoryId?: number | null;
+  silhouetteId?: number | null;
   isActive: boolean;
   metadata?: Record<string, unknown> | null;
+  variants?: ProductVariant[];
+  hasVariants?: boolean;
+  effectiveStock?: number;
 }
 
 export interface Category {
@@ -87,8 +110,60 @@ export interface Silhouette {
   sortOrder?: number | null;
 }
 
+export interface CombinationItem {
+  productId: number;
+  categoryId: number;
+  variantId: number | null;
+  productName: string | null;
+  productPrice: string | null;
+  productImage: string | null;
+  categoryName: string | null;
+  variantName: string | null;
+  variantPrice: string | null;
+  variantImage: string | null;
+  variantColorHex: string | null;
+}
+
+export interface Combination {
+  id: number;
+  silhouetteId: number;
+  slug: string;
+  name: string;
+  nameTR: string;
+  nameEN: string;
+  nameAR: string;
+  description: string | null;
+  descriptionEN?: string | null;
+  descriptionAR?: string | null;
+  price: string;
+  imageUrl: string | null;
+  galleryUrls: string[];
+  stock: number;
+  inStock: boolean;
+  items: CombinationItem[];
+}
+
+export interface CombinationDetail {
+  kind: "combination";
+  id: number;
+  slug: string;
+  silhouetteId: number;
+  name: string;
+  nameTR: string;
+  nameEN: string;
+  nameAR: string;
+  description: string | null | undefined;
+  price: string;
+  imageUrl: string | null;
+  galleryUrls: string[];
+  stock: number;
+  inStock: boolean;
+  items: CombinationItem[];
+}
+
 export interface OrderItem {
   productId?: number;
+  combinationId?: number;
   productName: string;
   quantity: number;
   price: string;
@@ -136,8 +211,13 @@ export const api = {
     return storefrontFetch<{ data: Product[] }>(`/products${qs ? `?${qs}` : ""}`);
   },
 
-  getProduct: (slug: string) =>
-    storefrontFetch<{ data: Product }>(`/products/${slug}`),
+  getProduct: (slug: string, lang?: "TR" | "EN" | "AR") =>
+    storefrontFetch<{ data: Product }>(withLang(`/products/${encodeURIComponent(slug)}`, lang)),
+
+  getCombination: (slug: string, lang?: "TR" | "EN" | "AR") =>
+    storefrontFetch<{ data: CombinationDetail }>(
+      withLang(`/combinations/${encodeURIComponent(slug)}`, lang),
+    ),
 
   getCategories: () =>
     storefrontFetch<{ data: Category[] }>("/categories"),
@@ -147,6 +227,13 @@ export const api = {
 
   getSilhouettes: () =>
     storefrontFetch<{ data: Silhouette[] }>("/silhouettes"),
+
+  getCombinations: (params?: { silhouetteId?: number }) => {
+    const query = new URLSearchParams();
+    if (params?.silhouetteId != null) query.set("silhouetteId", String(params.silhouetteId));
+    const qs = query.toString();
+    return storefrontFetch<{ data: Combination[] }>(`/combinations${qs ? `?${qs}` : ""}`);
+  },
 
   createOrder: (payload: CreateOrderPayload) =>
     storefrontFetch<{ data: OrderResult }>("/orders", {

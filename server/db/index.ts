@@ -18,3 +18,5 @@ export * from "./verifications";
 export * from "./settings";
 export * from "./stats";
 export * from "./abandonedCarts";
+export * from "./combinations";
+export * from "./variants";

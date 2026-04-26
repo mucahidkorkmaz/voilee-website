@@ -243,7 +243,8 @@ export default function Checkout() {
         paymentMethod,
         deliveryMethod: "shipping",
         items: cartItems.map((item) => ({
-          productId: item.id,
+          productId: item.combinationId != null ? undefined : item.id,
+          combinationId: item.combinationId,
           productName: item.nameTR,
           quantity: item.quantity,
           price: String(item.price),
@@ -263,7 +264,8 @@ export default function Checkout() {
         shippingCity: form.city,
         paymentMethod,
         items: cartItems.map((item) => ({
-          productId: item.id,
+          productId: item.combinationId != null ? undefined : item.id,
+          combinationId: item.combinationId,
           productName: lang === "TR" ? item.nameTR : lang === "EN" ? item.nameEN : item.nameAR,
           quantity: item.quantity,
           price: item.price,

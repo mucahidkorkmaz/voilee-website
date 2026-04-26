@@ -92,6 +92,20 @@
       "when": 1777600000000,
       "tag": "0012_order_customer_cargo_bank",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1777244667563,
+      "tag": "0013_daily_changeling",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1777245344009,
+      "tag": "0014_product_variants",
+      "breakpoints": true
     }
   ]
 }

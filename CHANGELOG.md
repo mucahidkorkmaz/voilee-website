@@ -1,5 +1,22 @@
 # Changelog
 
+## 3.3.0 — 2026-04-27
+
+### Faz 2: Varyant sistemi, kombin stokları ve vitrinin kombin bazlı refaktörü
+
+- **Ürün varyantları:** `productVariants` tablosu eklendi; ürünlere renk/beden benzeri varyant tanımlama, varyant bazlı stok/fiyat/görsel yönetimi ve admin CRUD (router + DB katmanı) tamamlandı.
+- **Kombin üretimi:** `regenerateCombinations` varyant destekli hale getirildi; varyantlı ürünlerde her aktif varyant ayrı seçenek olarak kartezyen çarpıma giriyor, `combinationItems.variantId` ile eşleştirme tutuluyor.
+- **Kombin stok/fiyat hesapları:** Kombin stokları bileşenlerin minimum stoğundan (`MIN`) türetiliyor; fiyat hesaplama varyant fiyat override desteği ile güncellendi.
+- **Storefront API:** Ürün detay endpoint’i varyantları ve `effectiveStock` bilgisini dönüyor; kombin endpoint’leri varyant item alanları, `stock` / `inStock` ve kombin detay slug endpoint’i ile genişletildi.
+- **Vitrin refaktörü:** `Collections` sayfası ürün yerine kombin listeliyor; stok badge, kategori chip’leri, placeholder görsel ve kombin bazlı sepete ekleme davranışı eklendi.
+- **Product Detail:** Hardcoded renk/beden yapısı kaldırıldı; varyantlı ürünlerde dinamik varyant seçici, kombin slug’larında kombin detay görünümü ve sepette `variantId` / `combinationId` taşıyan yeni akış devreye alındı.
+- **Yönetim konsolu:** `MCProducts` içine inline varyant yönetimi (listeleme, ekleme, düzenleme, silme), efektif stok göstergesi ve varyantlı ürünlerde stok alanı davranışı eklendi; `MCCombinations` stok sütunu eklendi.
+
+### Ek notlar
+
+- Bu sürümde migration seti `0013` ve `0014` ile birlikte güncellendi; deploy sırasında ilgili migration’ların uygulanması gerekir.
+- Kombin anahtar formatı varyant desteği için değiştiği için canlıda bir kez kombin regenerate çalıştırılması önerilir.
+
 ## 3.2.0 — 2026-04-27
 
 ### Mağaza ayarları ve kalıcılık

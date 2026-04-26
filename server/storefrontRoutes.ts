@@ -1,8 +1,19 @@
 import type { Express, Request, Response } from "express";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, asc } from "drizzle-orm";
 import { getDb } from "./db";
 import { getStoreSettings } from "./db";
-import { products, collections, silhouettes, categories, orders, orderItems } from "../drizzle/schema";
+import { getCombinationBySlugPublished, getCombinationStock } from "./db/combinations";
+import {
+  products,
+  collections,
+  silhouettes,
+  categories,
+  orders,
+  orderItems,
+  combinations,
+  combinationItems,
+  productVariants,
+} from "../drizzle/schema";
 import { ayrıstırKdv } from "./finance";
 import { ENV } from "./_core/env";
 import {
@@ -93,6 +104,21 @@ export function registerStorefrontRoutes(app: Express) {
 
       if (!product) return res.status(404).json({ error: "Product not found" });
 
+      const variants = await db
+        .select()
+        .from(productVariants)
+        .where(and(eq(productVariants.productId, product.id), eq(productVariants.isActive, true)))
+        .orderBy(asc(productVariants.sortOrder), asc(productVariants.id));
+
+      const effectiveStock =
+        variants.length > 0
+          ? variants.reduce((sum, v) => sum + (v.stock ?? 0), 0)
+          : (product.stock ?? 0);
+
+      const lang = typeof req.query.lang === "string" ? req.query.lang.toUpperCase() : "TR";
+      const variantName = (v: (typeof variants)[number]) =>
+        lang === "EN" ? v.nameEN : lang === "AR" ? v.nameAR : v.nameTR;
+
       return res.json({
         data: {
           id: product.id,
@@ -106,6 +132,20 @@ export function registerStorefrontRoutes(app: Express) {
           silhouetteId: product.silhouetteId,
           isActive: product.isActive,
           metadata: { collection: product.collection, stock: product.stock },
+          variants: variants.map(v => ({
+            id: v.id,
+            name: variantName(v),
+            nameTR: v.nameTR,
+            nameEN: v.nameEN,
+            nameAR: v.nameAR,
+            sku: v.sku,
+            price: v.price,
+            stock: v.stock,
+            imageUrl: v.imageUrl,
+            colorHex: v.colorHex,
+          })),
+          hasVariants: variants.length > 0,
+          effectiveStock,
         },
       });
     } catch (error) {
@@ -211,6 +251,143 @@ export function registerStorefrontRoutes(app: Express) {
     }
   });
 
+  // ─── Combinations (public) ───────────────────────────────────────────────────
+  app.get("/api/v1/combinations", async (req: Request, res: Response) => {
+    if (!authenticateApiKey(req, res)) return;
+    try {
+      const db = await getDb();
+      if (!db) return res.status(503).json({ error: "Database not available" });
+
+      const silhouetteId = req.query.silhouetteId as string | undefined;
+      const conditions = [eq(combinations.status, "published"), eq(combinations.isActive, true)];
+      if (silhouetteId) {
+        conditions.push(eq(combinations.silhouetteId, parseInt(silhouetteId, 10)));
+      }
+
+      const rows = await db
+        .select()
+        .from(combinations)
+        .where(and(...conditions))
+        .orderBy(combinations.sortOrder, combinations.createdAt);
+
+      const mapped = await Promise.all(
+        rows.map(async c => {
+          const items = await db
+            .select({
+              productId: combinationItems.productId,
+              categoryId: combinationItems.categoryId,
+              variantId: combinationItems.variantId,
+              productName: products.nameTR,
+              productPrice: products.price,
+              productImage: products.imageUrl,
+              categoryName: categories.nameTR,
+              variantName: productVariants.nameTR,
+              variantPrice: productVariants.price,
+              variantImage: productVariants.imageUrl,
+              variantColorHex: productVariants.colorHex,
+            })
+            .from(combinationItems)
+            .leftJoin(products, eq(combinationItems.productId, products.id))
+            .leftJoin(categories, eq(combinationItems.categoryId, categories.id))
+            .leftJoin(productVariants, eq(combinationItems.variantId, productVariants.id))
+            .where(eq(combinationItems.combinationId, c.id));
+
+          let galleryUrls: string[] = [];
+          if (c.galleryUrls) {
+            try {
+              const parsed = JSON.parse(c.galleryUrls) as unknown;
+              if (Array.isArray(parsed)) {
+                galleryUrls = parsed.filter((x): x is string => typeof x === "string");
+              }
+            } catch {
+              galleryUrls = [];
+            }
+          }
+
+          const stock = await getCombinationStock(c.id);
+
+          return {
+            id: c.id,
+            silhouetteId: c.silhouetteId,
+            slug: c.slug,
+            name: c.nameTR,
+            nameTR: c.nameTR,
+            nameEN: c.nameEN,
+            nameAR: c.nameAR,
+            description: c.descriptionTR,
+            descriptionEN: c.descriptionEN,
+            descriptionAR: c.descriptionAR,
+            price: c.price,
+            imageUrl: c.imageUrl,
+            galleryUrls,
+            stock,
+            inStock: stock > 0,
+            items,
+          };
+        }),
+      );
+
+      return res.json({ data: mapped });
+    } catch (error) {
+      console.error("[Storefront] Combinations error:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/v1/combinations/:slug", async (req: Request, res: Response) => {
+    if (!authenticateApiKey(req, res)) return;
+    try {
+      const db = await getDb();
+      if (!db) return res.status(503).json({ error: "Database not available" });
+
+      const combo = await getCombinationBySlugPublished(req.params.slug);
+      if (!combo) return res.status(404).json({ error: "Combination not found" });
+
+      let galleryUrls: string[] = [];
+      if (combo.galleryUrls) {
+        try {
+          const parsed = JSON.parse(combo.galleryUrls) as unknown;
+          if (Array.isArray(parsed)) {
+            galleryUrls = parsed.filter((x): x is string => typeof x === "string");
+          }
+        } catch {
+          galleryUrls = [];
+        }
+      }
+
+      const lang = typeof req.query.lang === "string" ? req.query.lang.toUpperCase() : "TR";
+      const name =
+        lang === "EN" ? combo.nameEN : lang === "AR" ? combo.nameAR : combo.nameTR;
+      const description =
+        lang === "EN" ? combo.descriptionEN : lang === "AR" ? combo.descriptionAR : combo.descriptionTR;
+
+      const stock = typeof combo.stock === "number" ? combo.stock : await getCombinationStock(combo.id);
+
+      return res.json({
+        data: {
+          kind: "combination" as const,
+          id: combo.id,
+          slug: combo.slug,
+          silhouetteId: combo.silhouetteId,
+          name,
+          nameTR: combo.nameTR,
+          nameEN: combo.nameEN,
+          nameAR: combo.nameAR,
+          description,
+          price: combo.price,
+          imageUrl: combo.imageUrl,
+          galleryUrls,
+          stock,
+          inStock: stock > 0,
+          items: combo.items,
+        },
+      });
+    } catch (error) {
+      console.error("[Storefront] Combination detail error:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // ─── Orders ──────────────────────────────────────────────────────────────────
   app.post("/api/v1/orders", async (req: Request, res: Response) => {
     if (!authenticateApiKey(req, res)) return;
@@ -275,11 +452,40 @@ export function registerStorefrontRoutes(app: Express) {
         .returning();
 
       for (const item of items) {
+        const it = item as Record<string, unknown>;
+        const quantity =
+          typeof it.quantity === "number" ? it.quantity : parseInt(String(it.quantity ?? 1), 10) || 1;
+        const price = typeof it.price === "string" ? it.price : String(it.price ?? "0");
+
+        let productId = 0;
+        if (typeof it.productId === "number") productId = it.productId;
+        else if (it.productId != null && it.productId !== "") {
+          productId = parseInt(String(it.productId), 10) || 0;
+        }
+
+        let combinationId: number | null = null;
+        if (typeof it.combinationId === "number") combinationId = it.combinationId;
+        else if (it.combinationId != null && it.combinationId !== "") {
+          const n = parseInt(String(it.combinationId), 10);
+          combinationId = Number.isNaN(n) ? null : n;
+        }
+
+        if (combinationId != null && productId === 0) {
+          const [row] = await db
+            .select({ productId: combinationItems.productId })
+            .from(combinationItems)
+            .where(eq(combinationItems.combinationId, combinationId))
+            .orderBy(asc(combinationItems.categoryId))
+            .limit(1);
+          productId = row?.productId ?? 0;
+        }
+
         await db.insert(orderItems).values({
           orderId: order.id,
-          productId: item.productId ?? 0,
-          quantity: item.quantity || 1,
-          price: item.price || "0",
+          productId,
+          combinationId: combinationId ?? null,
+          quantity,
+          price,
         });
       }
 

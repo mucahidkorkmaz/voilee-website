@@ -35,6 +35,7 @@ import {
   ShieldCheck,
   GalleryHorizontal,
   BookImage,
+  Combine,
 } from "lucide-react";
 import { CSSProperties, FormEvent, useEffect, useRef, useState } from "react";
 import { Route, Switch, useLocation } from "wouter";
@@ -62,6 +63,7 @@ import MCReturns from "./MCReturns";
 import MCExpenses from "./MCExpenses";
 import MCVerifications from "./MCVerifications";
 import MCHeroSlides from "./MCHeroSlides";
+import MCCombinations from "./MCCombinations";
 
 const MC_BASE = "/management-console";
 
@@ -81,6 +83,7 @@ const menuSections: MenuSection[] = [
       { icon: Package, label: "Ürünler", path: `${MC_BASE}/products` },
       { icon: Shapes, label: "Silüetler", path: `${MC_BASE}/silhouettes` },
       { icon: FolderOpen, label: "Kategoriler", path: `${MC_BASE}/categories` },
+      { icon: Combine, label: "Kombinler", path: `${MC_BASE}/combinations` },
       { icon: BookImage, label: "Lookbook Görselleri", path: `${MC_BASE}/collections` },
       { icon: GalleryHorizontal, label: "Hero Slaytlar", path: `${MC_BASE}/hero-slides` },
       { icon: Image, label: "Medya", path: `${MC_BASE}/media` },
@@ -415,6 +418,7 @@ function MCLayout() {
             <Route path={`${MC_BASE}/products`} component={MCProducts} />
             <Route path={`${MC_BASE}/silhouettes`} component={MCSilhouettes} />
             <Route path={`${MC_BASE}/categories`} component={MCCategories} />
+            <Route path={`${MC_BASE}/combinations`} component={MCCombinations} />
             <Route path={`${MC_BASE}/collections`} component={MCCollections} />
             <Route path={`${MC_BASE}/hero-slides`} component={MCHeroSlides} />
             <Route path={`${MC_BASE}/media`} component={MCMedia} />

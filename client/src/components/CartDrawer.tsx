@@ -145,7 +145,7 @@ export default function CartDrawer() {
                 const name = lang === "TR" ? item.nameTR : lang === "EN" ? item.nameEN : item.nameAR;
                 return (
                   <div
-                    key={item.id}
+                    key={item.lineId}
                     className="flex gap-4 py-4 border-b border-[#C9A96E]/10 last:border-0"
                   >
                     {/* Image */}
@@ -178,7 +178,7 @@ export default function CartDrawer() {
                       {/* Quantity Controls */}
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          onClick={() => updateQuantity(item.lineId, item.quantity - 1)}
                           className="w-6 h-6 border border-[#C9A96E]/30 flex items-center justify-center text-[#1C1C1E]/60 hover:border-[#C9A96E] hover:text-[#1C1C1E] transition-colors"
                         >
                           <Minus size={10} />
@@ -187,13 +187,13 @@ export default function CartDrawer() {
                           {item.quantity}
                         </span>
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.lineId, item.quantity + 1)}
                           className="w-6 h-6 border border-[#C9A96E]/30 flex items-center justify-center text-[#1C1C1E]/60 hover:border-[#C9A96E] hover:text-[#1C1C1E] transition-colors"
                         >
                           <Plus size={10} />
                         </button>
                         <button
-                          onClick={() => removeFromCart(item.id)}
+                          onClick={() => removeFromCart(item.lineId)}
                           className="ml-auto text-[#1C1C1E]/30 hover:text-red-400 transition-colors"
                           aria-label={tx.remove}
                         >

@@ -18,6 +18,8 @@ import { verificationsRouter } from "./verifications.router";
 import { settingsRouter } from "./settings.router";
 import { heroSlidesRouter } from "./heroSlides.router";
 import { abandonedCartsAdminRouter } from "./abandonedCarts.router";
+import { combinationsRouter } from "./combinations.router";
+import { variantsRouter } from "./variants.router";
 import { getAdminStats } from "../db";
 
 export const adminRouter = router({
@@ -28,6 +30,8 @@ export const adminRouter = router({
   products: productsRouter,
   categories: categoriesRouter,
   silhouettes: silhouettesRouter,
+  combinations: combinationsRouter,
+  variants: variantsRouter,
   collections: collectionsRouter,
   media: mediaRouter,
   orders: ordersRouter,

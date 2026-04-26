@@ -17,7 +17,18 @@ function getOrCreateCartSessionId(): string {
   }
 }
 
+export function buildCartLineId(input: {
+  id: number;
+  combinationId?: number | null;
+  variantId?: number | null;
+}): string {
+  if (input.combinationId != null) return `c:${input.combinationId}`;
+  if (input.variantId != null) return `p:${input.id}:v:${input.variantId}`;
+  return `p:${input.id}`;
+}
+
 export interface CartItem {
+  lineId: string;
   id: number;
   nameTR: string;
   nameEN: string;
@@ -26,13 +37,15 @@ export interface CartItem {
   quantity: number;
   collection: string;
   imageUrl?: string;
+  combinationId?: number;
+  variantId?: number;
 }
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (item: CartItem) => void;
-  removeFromCart: (id: number) => void;
-  updateQuantity: (id: number, quantity: number) => void;
+  addToCart: (item: Omit<CartItem, "lineId"> & { lineId?: string }) => void;
+  removeFromCart: (lineId: string) => void;
+  updateQuantity: (lineId: string, quantity: number) => void;
   clearCart: () => void;
   cartCount: number;
   cartTotal: number;
@@ -42,6 +55,11 @@ interface CartContextType {
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+
+function normalizeCartItem(raw: CartItem): CartItem {
+  const lineId = raw.lineId ?? buildCartLineId(raw);
+  return { ...raw, lineId };
+}
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isLoading: authLoading } = useAuth();
@@ -68,13 +86,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     [authLoading, syncAbandoned],
   );
 
-  // localStorage'dan cart'ı yükle; terk sepet oturum anahtarı
   useEffect(() => {
     sessionIdRef.current = getOrCreateCartSessionId();
     const savedCart = localStorage.getItem("voilee_cart");
     if (savedCart) {
       try {
-        setCartItems(JSON.parse(savedCart));
+        const parsed = JSON.parse(savedCart) as CartItem[];
+        if (Array.isArray(parsed)) {
+          setCartItems(parsed.map(normalizeCartItem));
+        }
       } catch (error) {
         console.error("Failed to load cart from localStorage:", error);
       }
@@ -82,14 +102,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoaded(true);
   }, []);
 
-  // Cart değiştiğinde localStorage'a kaydet
   useEffect(() => {
     if (isLoaded) {
-      localStorage.setItem('voilee_cart', JSON.stringify(cartItems));
+      localStorage.setItem("voilee_cart", JSON.stringify(cartItems));
     }
   }, [cartItems, isLoaded]);
 
-  // Sepet snapshot'ını sunucuya yaz (terk sepet listesi; boş sepet satırı siler)
   useEffect(() => {
     if (!isLoaded || authLoading) return;
     if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
@@ -103,31 +121,31 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [cartItems, isLoaded, authLoading, flushAbandonedSync]);
 
-  const addToCart = (item: CartItem) => {
-    setCartItems((prevItems) => {
-      const existingItem = prevItems.find((i) => i.id === item.id);
+  const addToCart = (item: Omit<CartItem, "lineId"> & { lineId?: string }) => {
+    const lineId = item.lineId ?? buildCartLineId(item);
+    const full: CartItem = { ...item, lineId };
+    setCartItems(prevItems => {
+      const existingItem = prevItems.find(i => i.lineId === lineId);
       if (existingItem) {
-        return prevItems.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
+        return prevItems.map(i =>
+          i.lineId === lineId ? { ...i, quantity: i.quantity + full.quantity } : i,
         );
       }
-      return [...prevItems, item];
+      return [...prevItems, full];
     });
   };
 
-  const removeFromCart = (id: number) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+  const removeFromCart = (lineId: string) => {
+    setCartItems(prevItems => prevItems.filter(item => item.lineId !== lineId));
   };
 
-  const updateQuantity = (id: number, quantity: number) => {
+  const updateQuantity = (lineId: string, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(id);
+      removeFromCart(lineId);
       return;
     }
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id ? { ...item, quantity } : item
-      )
+    setCartItems(prevItems =>
+      prevItems.map(item => (item.lineId === lineId ? { ...item, quantity } : item)),
     );
   };
 
@@ -166,7 +184,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useCart = () => {
   const context = useContext(CartContext);
   if (context === undefined) {
-    throw new Error('useCart must be used within a CartProvider');
+    throw new Error("useCart must be used within a CartProvider");
   }
   return context;
 };

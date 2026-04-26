@@ -103,6 +103,28 @@ export const products = pgTable("products", {
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = typeof products.$inferInsert;
 
+// ─── Product Variants ─────────────────────────────────────────────────────────
+
+export const productVariants = pgTable("productVariants", {
+  id: serial("id").primaryKey(),
+  productId: integer("productId").notNull(),
+  nameTR: varchar("nameTR", { length: 255 }).notNull(),
+  nameEN: varchar("nameEN", { length: 255 }).notNull(),
+  nameAR: varchar("nameAR", { length: 255 }).notNull(),
+  sku: varchar("sku", { length: 100 }),
+  price: decimal("price", { precision: 10, scale: 2 }),
+  stock: integer("stock").default(0).notNull(),
+  imageUrl: varchar("imageUrl", { length: 500 }),
+  colorHex: varchar("colorHex", { length: 7 }),
+  sortOrder: integer("sortOrder").default(0),
+  isActive: boolean("isActive").default(true),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type ProductVariant = typeof productVariants.$inferSelect;
+export type InsertProductVariant = typeof productVariants.$inferInsert;
+
 // ─── Orders ───────────────────────────────────────────────────────────────────
 
 export const orders = pgTable("orders", {
@@ -154,6 +176,7 @@ export const orderItems = pgTable("orderItems", {
   id: serial("id").primaryKey(),
   orderId: integer("orderId").notNull(),
   productId: integer("productId").notNull(),
+  combinationId: integer("combinationId"),
   quantity: integer("quantity").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   kdvRate: decimal("kdvRate", { precision: 5, scale: 2 }).default("20.00"),
@@ -552,3 +575,53 @@ export const passwordResetTokens = pgTable("passwordResetTokens", {
 
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
+
+// ─── Combination Status Enum ──────────────────────────────────────────────────
+
+export const combinationStatusEnum = pgEnum("combination_status", [
+  "draft",
+  "published",
+  "archived",
+]);
+
+// ─── Combinations ─────────────────────────────────────────────────────────────
+
+export const combinations = pgTable("combinations", {
+  id: serial("id").primaryKey(),
+  silhouetteId: integer("silhouetteId").notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  nameTR: varchar("nameTR", { length: 255 }).notNull(),
+  nameEN: varchar("nameEN", { length: 255 }).notNull(),
+  nameAR: varchar("nameAR", { length: 255 }).notNull(),
+  descriptionTR: text("descriptionTR"),
+  descriptionEN: text("descriptionEN"),
+  descriptionAR: text("descriptionAR"),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  autoPrice: decimal("autoPrice", { precision: 10, scale: 2 }).notNull(),
+  priceOverridden: boolean("priceOverridden").default(false),
+  imageUrl: varchar("imageUrl", { length: 500 }),
+  galleryUrls: text("galleryUrls"),
+  status: combinationStatusEnum("status").default("draft").notNull(),
+  sortOrder: integer("sortOrder").default(0),
+  isActive: boolean("isActive").default(true),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Combination = typeof combinations.$inferSelect;
+export type InsertCombination = typeof combinations.$inferInsert;
+
+// ─── Combination Items (Junction) ─────────────────────────────────────────────
+
+export const combinationItems = pgTable("combinationItems", {
+  id: serial("id").primaryKey(),
+  combinationId: integer("combinationId").notNull(),
+  productId: integer("productId").notNull(),
+  categoryId: integer("categoryId").notNull(),
+  /** Null = varyantsız ürün satırı */
+  variantId: integer("variantId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CombinationItem = typeof combinationItems.$inferSelect;
+export type InsertCombinationItem = typeof combinationItems.$inferInsert;

@@ -42,6 +42,32 @@ type ProductFormData = {
   isActive: boolean;
 };
 
+type VariantFormData = {
+  nameTR: string;
+  nameEN: string;
+  nameAR: string;
+  sku: string;
+  price: string;
+  stock: number;
+  imageUrl: string;
+  colorHex: string;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+const emptyVariantForm: VariantFormData = {
+  nameTR: "",
+  nameEN: "",
+  nameAR: "",
+  sku: "",
+  price: "",
+  stock: 0,
+  imageUrl: "",
+  colorHex: "",
+  sortOrder: 0,
+  isActive: true,
+};
+
 const emptyForm: ProductFormData = {
   nameTR: "",
   nameEN: "",
@@ -63,6 +89,12 @@ export default function MCProducts() {
   const { data: products, isLoading, error } = trpc.admin.products.list.useQuery(undefined, { retry: false });
   const { data: silhouettes } = trpc.admin.silhouettes.list.useQuery(undefined, { retry: false });
   const { data: categories } = trpc.admin.categories.list.useQuery(undefined, { retry: false });
+  const productIds = products?.map(p => p.id) ?? [];
+  const { data: variantSummaries } = trpc.admin.variants.summariesForProducts.useQuery(
+    { productIds },
+    { enabled: productIds.length > 0, retry: false },
+  );
+  const summaryByProductId = new Map(variantSummaries?.map(s => [s.productId, s]) ?? []);
   const createMutation = trpc.admin.products.create.useMutation({
     onSuccess: () => {
       utils.admin.products.list.invalidate();
@@ -81,6 +113,40 @@ export default function MCProducts() {
     },
     onError: e => toast.error(e.message),
   });
+
+  const createVariantMutation = trpc.admin.variants.create.useMutation({
+    onSuccess: () => {
+      utils.admin.variants.list.invalidate();
+      utils.admin.variants.summariesForProducts.invalidate();
+      utils.admin.combinations.list.invalidate();
+      toast.success("Varyant eklendi.");
+      setVariantDialogOpen(false);
+      setVariantEditingId(null);
+      setVariantForm(emptyVariantForm);
+    },
+    onError: e => toast.error(e.message),
+  });
+  const updateVariantMutation = trpc.admin.variants.update.useMutation({
+    onSuccess: () => {
+      utils.admin.variants.list.invalidate();
+      utils.admin.variants.summariesForProducts.invalidate();
+      utils.admin.combinations.list.invalidate();
+      toast.success("Varyant güncellendi.");
+      setVariantDialogOpen(false);
+      setVariantEditingId(null);
+    },
+    onError: e => toast.error(e.message),
+  });
+  const deleteVariantMutation = trpc.admin.variants.delete.useMutation({
+    onSuccess: () => {
+      utils.admin.variants.list.invalidate();
+      utils.admin.variants.summariesForProducts.invalidate();
+      utils.admin.combinations.list.invalidate();
+      toast.success("Varyant silindi.");
+    },
+    onError: e => toast.error(e.message),
+  });
+
   const deleteMutation = trpc.admin.products.delete.useMutation({
     onSuccess: () => {
       utils.admin.products.list.invalidate();
@@ -110,11 +176,73 @@ export default function MCProducts() {
   const [serialBatch, setSerialBatch] = useState("");
   const [serialMaterial, setSerialMaterial] = useState("");
   const [serialProduction, setSerialProduction] = useState("");
+  const [variantDialogOpen, setVariantDialogOpen] = useState(false);
+  const [variantEditingId, setVariantEditingId] = useState<number | null>(null);
+  const [variantForm, setVariantForm] = useState<VariantFormData>(emptyVariantForm);
+
+  const { data: variantsForEdit } = trpc.admin.variants.list.useQuery(
+    { productId: editingId! },
+    { enabled: dialogOpen && editingId !== null, retry: false },
+  );
 
   const openCreate = () => {
     setEditingId(null);
     setForm(emptyForm);
     setDialogOpen(true);
+  };
+
+  const variantCountForEdit = variantsForEdit?.length ?? 0;
+  const effectiveStockDisplay =
+    editingId != null && variantCountForEdit > 0
+      ? (variantsForEdit ?? []).filter(v => v.isActive).reduce((s, v) => s + (v.stock ?? 0), 0)
+      : null;
+
+  const openVariantCreate = () => {
+    setVariantEditingId(null);
+    setVariantForm(emptyVariantForm);
+    setVariantDialogOpen(true);
+  };
+
+  const openVariantEdit = (v: NonNullable<typeof variantsForEdit>[number]) => {
+    setVariantEditingId(v.id);
+    setVariantForm({
+      nameTR: v.nameTR,
+      nameEN: v.nameEN,
+      nameAR: v.nameAR,
+      sku: v.sku ?? "",
+      price: v.price != null ? String(v.price) : "",
+      stock: v.stock ?? 0,
+      imageUrl: v.imageUrl ?? "",
+      colorHex: v.colorHex ?? "",
+      sortOrder: v.sortOrder ?? 0,
+      isActive: v.isActive ?? true,
+    });
+    setVariantDialogOpen(true);
+  };
+
+  const saveVariant = () => {
+    if (editingId === null) return;
+    if (!variantForm.nameTR || !variantForm.nameEN || !variantForm.nameAR) {
+      toast.error("Varyant için üç dilde isim zorunludur.");
+      return;
+    }
+    const payload = {
+      nameTR: variantForm.nameTR,
+      nameEN: variantForm.nameEN,
+      nameAR: variantForm.nameAR,
+      sku: variantForm.sku || undefined,
+      price: variantForm.price.trim() === "" ? null : variantForm.price,
+      stock: variantForm.stock,
+      imageUrl: variantForm.imageUrl || undefined,
+      colorHex: variantForm.colorHex || undefined,
+      sortOrder: variantForm.sortOrder,
+      isActive: variantForm.isActive,
+    };
+    if (variantEditingId === null) {
+      createVariantMutation.mutate({ productId: editingId, ...payload });
+    } else {
+      updateVariantMutation.mutate({ id: variantEditingId, ...payload });
+    }
   };
 
   const openEdit = (product: NonNullable<typeof products>[number]) => {
@@ -232,7 +360,20 @@ export default function MCProducts() {
                       {categories?.find(c => c.id === p.categoryId)?.nameTR ?? "—"}
                     </td>
                     <td className="px-5 py-3.5">₺{Number(p.price).toFixed(2)}</td>
-                    <td className="px-5 py-3.5">{p.stock}</td>
+                    <td className="px-5 py-3.5">
+                      {(() => {
+                        const s = summaryByProductId.get(p.id);
+                        if (s && s.count > 0) {
+                          return (
+                            <span className="tabular-nums" title="Efektif stok = aktif varyantların toplamı">
+                              {s.totalStock}{" "}
+                              <span className="text-muted-foreground text-xs">({s.count}v)</span>
+                            </span>
+                          );
+                        }
+                        return <span className="tabular-nums">{p.stock ?? 0}</span>;
+                      })()}
+                    </td>
                     <td className="px-5 py-3.5">
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
@@ -372,14 +513,106 @@ export default function MCProducts() {
             <div className="space-y-1.5">
               <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
                 Stok
+                {editingId !== null && variantCountForEdit > 0 ? (
+                  <span className="ml-2 font-normal normal-case text-muted-foreground">
+                    (varyantlı — ürün stoğu kullanılmaz)
+                  </span>
+                ) : null}
               </Label>
               <Input
                 value={form.stock}
                 onChange={e => setForm(f => ({ ...f, stock: parseInt(e.target.value) || 0 }))}
                 type="number"
                 min="0"
+                disabled={editingId !== null && variantCountForEdit > 0}
+                className={editingId !== null && variantCountForEdit > 0 ? "opacity-50" : ""}
               />
             </div>
+
+            {editingId !== null ? (
+              <div className="md:col-span-2 space-y-3 border border-border/40 rounded-md p-4 bg-muted/10">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-normal">
+                    Varyantlar
+                  </p>
+                  <Button type="button" size="sm" variant="outline" className="h-8 text-xs" onClick={openVariantCreate}>
+                    + Yeni Varyant
+                  </Button>
+                </div>
+                {effectiveStockDisplay != null ? (
+                  <p className="text-xs text-muted-foreground">
+                    Efektif stok: <span className="font-medium text-foreground">{effectiveStockDisplay}</span>{" "}
+                    (aktif varyantların toplamı)
+                  </p>
+                ) : null}
+                <div className="rounded border border-border/30 overflow-hidden">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-muted/30 border-b border-border/40">
+                        <th className="text-left p-2 font-normal text-muted-foreground">Görsel</th>
+                        <th className="text-left p-2 font-normal text-muted-foreground">İsim (TR)</th>
+                        <th className="text-left p-2 font-normal text-muted-foreground w-10">Renk</th>
+                        <th className="text-right p-2 font-normal text-muted-foreground">Stok</th>
+                        <th className="text-right p-2 w-20" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(variantsForEdit ?? []).length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="p-3 text-muted-foreground text-center">
+                            Henüz varyant yok.
+                          </td>
+                        </tr>
+                      ) : (
+                        (variantsForEdit ?? []).map(v => (
+                          <tr key={v.id} className="border-b border-border/20 last:border-0">
+                            <td className="p-2 w-12">
+                              {v.imageUrl ? (
+                                <img src={v.imageUrl} alt="" className="h-9 w-9 rounded object-cover border" />
+                              ) : (
+                                <div className="h-9 w-9 rounded bg-muted border" />
+                              )}
+                            </td>
+                            <td className="p-2 max-w-[140px] truncate">{v.nameTR}</td>
+                            <td className="p-2">
+                              {v.colorHex ? (
+                                <span
+                                  className="inline-block h-6 w-6 rounded-full border border-border"
+                                  style={{ backgroundColor: v.colorHex }}
+                                />
+                              ) : (
+                                "—"
+                              )}
+                            </td>
+                            <td className="p-2 text-right tabular-nums">{v.stock}</td>
+                            <td className="p-2 text-right">
+                              <button
+                                type="button"
+                                className="p-1 hover:bg-muted rounded text-muted-foreground"
+                                onClick={() => openVariantEdit(v)}
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                className="p-1 hover:bg-destructive/10 rounded text-destructive"
+                                onClick={() => {
+                                  if (confirm("Bu varyantı silmek istediğinize emin misiniz?")) {
+                                    deleteVariantMutation.mutate({ id: v.id });
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : null}
 
             <div className="md:col-span-2">
               <ImageUpload
@@ -422,6 +655,109 @@ export default function MCProducts() {
             </Button>
             <Button onClick={handleSubmit} disabled={isPending}>
               {isPending ? "Kaydediliyor…" : editingId !== null ? "Güncelle" : "Oluştur"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={variantDialogOpen} onOpenChange={setVariantDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-['Cormorant_Garamond'] text-2xl font-light">
+              {variantEditingId === null ? "Yeni Varyant" : "Varyantı Düzenle"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-3 py-2">
+            {(["TR", "EN", "AR"] as const).map(lang => (
+              <div key={`v-${lang}`}>
+                <Label>İsim ({lang}) *</Label>
+                <Input
+                  className="mt-1"
+                  value={variantForm[`name${lang}` as keyof VariantFormData] as string}
+                  onChange={e =>
+                    setVariantForm(f => ({ ...f, [`name${lang}`]: e.target.value } as VariantFormData))
+                  }
+                />
+              </div>
+            ))}
+            <div>
+              <Label>SKU</Label>
+              <Input
+                className="mt-1"
+                value={variantForm.sku}
+                onChange={e => setVariantForm(f => ({ ...f, sku: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label>Fiyat (₺) — boş bırakılırsa ürün fiyatı</Label>
+              <Input
+                className="mt-1"
+                value={variantForm.price}
+                onChange={e => setVariantForm(f => ({ ...f, price: e.target.value }))}
+                placeholder="Ürün fiyatı"
+              />
+            </div>
+            <div>
+              <Label>Stok</Label>
+              <Input
+                className="mt-1"
+                type="number"
+                min={0}
+                value={variantForm.stock}
+                onChange={e => setVariantForm(f => ({ ...f, stock: parseInt(e.target.value, 10) || 0 }))}
+              />
+            </div>
+            <div>
+              <Label>Sıra</Label>
+              <Input
+                className="mt-1"
+                type="number"
+                value={variantForm.sortOrder}
+                onChange={e => setVariantForm(f => ({ ...f, sortOrder: parseInt(e.target.value, 10) || 0 }))}
+              />
+            </div>
+            <div>
+              <Label>Renk (hex)</Label>
+              <div className="flex gap-2 mt-1">
+                <Input
+                  value={variantForm.colorHex}
+                  onChange={e => setVariantForm(f => ({ ...f, colorHex: e.target.value }))}
+                  placeholder="#1C1C1E"
+                  className="flex-1"
+                />
+                <input
+                  type="color"
+                  aria-label="Renk seç"
+                  className="h-9 w-12 cursor-pointer rounded border bg-transparent p-0"
+                  value={variantForm.colorHex?.match(/^#[0-9A-Fa-f]{6}$/) ? variantForm.colorHex : "#1C1C1E"}
+                  onChange={e => setVariantForm(f => ({ ...f, colorHex: e.target.value }))}
+                />
+              </div>
+            </div>
+            <ImageUpload
+              value={variantForm.imageUrl}
+              onChange={url => setVariantForm(f => ({ ...f, imageUrl: url }))}
+              label="Görsel"
+            />
+            <div className="flex items-center gap-2">
+              <Switch
+                id="v-active"
+                checked={variantForm.isActive}
+                onCheckedChange={v => setVariantForm(f => ({ ...f, isActive: v }))}
+              />
+              <Label htmlFor="v-active">Aktif</Label>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" type="button" onClick={() => setVariantDialogOpen(false)}>
+              İptal
+            </Button>
+            <Button
+              type="button"
+              onClick={saveVariant}
+              disabled={createVariantMutation.isPending || updateVariantMutation.isPending}
+            >
+              Kaydet
             </Button>
           </DialogFooter>
         </DialogContent>

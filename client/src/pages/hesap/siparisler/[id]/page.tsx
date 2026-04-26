@@ -260,7 +260,7 @@ export default function SiparisDetayPage() {
     <AccountLayout>
       {/* Back */}
       <Link
-        href={u.siparisler}
+        href={u.orders}
         className={`inline-flex items-center gap-2 font-body text-[11px] tracking-[0.2em] uppercase text-[#1C1C1E]/50 hover:text-[#C9A96E] transition-colors mb-7 ${
           isRTL ? "flex-row-reverse" : ""
         }`}
@@ -403,7 +403,7 @@ export default function SiparisDetayPage() {
               {/* Return CTA — only for delivered orders */}
               {order.status === "delivered" && (
                 <Link
-                  href={u.iade}
+                  href={u.returns}
                   className={`flex items-center gap-2 w-full font-body text-[11px] tracking-[0.2em] uppercase border border-[#1C1C1E]/20 text-[#1C1C1E]/60 hover:border-[#C9A96E] hover:text-[#C9A96E] transition-colors px-5 py-3.5 ${
                     isRTL ? "flex-row-reverse justify-center" : "justify-center"
                   }`}

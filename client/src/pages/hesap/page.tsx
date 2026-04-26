@@ -31,31 +31,31 @@ const t = {
     logout: "Çıkış",
     loggedOut: "Çıkış yapıldı.",
     cards: {
-      siparisler: {
+      orders: {
         title: "Siparişlerim",
         mobileTitle: "Siparişlerim",
         desc: "Sipariş geçmişinizi görüntüleyin ve teslimat durumunu takip edin.",
         countOne: "sipariş",
         countMany: "sipariş",
       },
-      iade: {
+      returns: {
         title: "İadelerim",
         mobileTitle: "İade & Değişim",
         desc: "İade taleplerini başlatın ve mevcut iadelerinizi takip edin.",
       },
-      adresler: {
+      addresses: {
         title: "Adreslerim",
         mobileTitle: "Adreslerim",
         desc: "Kayıtlı teslimat adreslerinizi yönetin.",
       },
-      liste: {
+      wishlist: {
         title: "Listem",
         mobileTitle: "Listem",
         desc: "Beğendiğiniz ürünleri listeleyin ve daha sonra sipariş edin.",
         countOne: "ürün",
         countMany: "ürün",
       },
-      bilgiler: {
+      settings: {
         title: "Bilgilerim",
         mobileTitle: "Bilgilerim",
         desc: "Kişisel bilgilerinizi, KVKK tercihlerinizi ve şifrenizi yönetin.",
@@ -78,31 +78,31 @@ const t = {
     logout: "Sign Out",
     loggedOut: "Signed out.",
     cards: {
-      siparisler: {
+      orders: {
         title: "My Orders",
         mobileTitle: "My Orders",
         desc: "View your order history and track delivery status.",
         countOne: "order",
         countMany: "orders",
       },
-      iade: {
+      returns: {
         title: "My Returns",
         mobileTitle: "Returns & Exchange",
         desc: "Initiate return requests and track existing returns.",
       },
-      adresler: {
+      addresses: {
         title: "My Addresses",
         mobileTitle: "My Addresses",
         desc: "Manage your saved delivery addresses.",
       },
-      liste: {
+      wishlist: {
         title: "My Wishlist",
         mobileTitle: "My Wishlist",
         desc: "Save the pieces you love and order them later.",
         countOne: "item",
         countMany: "items",
       },
-      bilgiler: {
+      settings: {
         title: "My Details",
         mobileTitle: "My Details",
         desc: "Manage your personal info, privacy preferences and password.",
@@ -125,31 +125,31 @@ const t = {
     logout: "خروج",
     loggedOut: "تم تسجيل الخروج.",
     cards: {
-      siparisler: {
+      orders: {
         title: "طلباتي",
         mobileTitle: "طلباتي",
         desc: "اعرض سجل طلباتك وتابع حالة التوصيل.",
         countOne: "طلب",
         countMany: "طلبات",
       },
-      iade: {
+      returns: {
         title: "مرتجعاتي",
         mobileTitle: "الإرجاع والتبادل",
         desc: "ابدأ طلبات الإرجاع وتابع المرتجعات الحالية.",
       },
-      adresler: {
+      addresses: {
         title: "عناويني",
         mobileTitle: "عناويني",
         desc: "أدر عناوين التوصيل المحفوظة.",
       },
-      liste: {
+      wishlist: {
         title: "قائمتي",
         mobileTitle: "قائمتي",
         desc: "احفظ القطع التي تحبها واطلبها لاحقاً.",
         countOne: "منتج",
         countMany: "منتجات",
       },
-      bilgiler: {
+      settings: {
         title: "معلوماتي",
         mobileTitle: "معلوماتي",
         desc: "أدر بياناتك الشخصية وتفضيلات الخصوصية وكلمة المرور.",
@@ -228,55 +228,55 @@ export default function HesapPage() {
   };
 
   const mobileNavItems = [
-    { key: "siparisler" as const, href: u.siparisler, Icon: Package },
-    { key: "iade" as const, href: u.iade, Icon: RotateCcw },
-    { key: "adresler" as const, href: u.adresler, Icon: MapPin },
-    { key: "liste" as const, href: u.liste, Icon: Heart },
-    { key: "bilgiler" as const, href: u.bilgiler, Icon: Settings },
+    { key: "orders" as const, href: u.orders, Icon: Package },
+    { key: "returns" as const, href: u.returns, Icon: RotateCcw },
+    { key: "addresses" as const, href: u.addresses, Icon: MapPin },
+    { key: "wishlist" as const, href: u.wishlist, Icon: Heart },
+    { key: "settings" as const, href: u.settings, Icon: Settings },
   ];
 
   const cards = [
     {
-      key: "siparisler" as const,
-      href: u.siparisler,
+      key: "orders" as const,
+      href: u.orders,
       Icon: Package,
       countLabel:
         ordersCount > 0
           ? `${ordersCount} ${
               ordersCount === 1
-                ? tx.cards.siparisler.countOne
-                : tx.cards.siparisler.countMany
+                ? tx.cards.orders.countOne
+                : tx.cards.orders.countMany
             }`
           : null,
     },
     {
-      key: "iade" as const,
-      href: u.iade,
+      key: "returns" as const,
+      href: u.returns,
       Icon: RotateCcw,
       countLabel: null,
     },
     {
-      key: "adresler" as const,
-      href: u.adresler,
+      key: "addresses" as const,
+      href: u.addresses,
       Icon: MapPin,
       countLabel: null,
     },
     {
-      key: "liste" as const,
-      href: u.liste,
+      key: "wishlist" as const,
+      href: u.wishlist,
       Icon: Heart,
       countLabel:
         favoritesCount > 0
           ? `${favoritesCount} ${
               favoritesCount === 1
-                ? tx.cards.liste.countOne
-                : tx.cards.liste.countMany
+                ? tx.cards.wishlist.countOne
+                : tx.cards.wishlist.countMany
             }`
           : null,
     },
     {
-      key: "bilgiler" as const,
-      href: u.bilgiler,
+      key: "settings" as const,
+      href: u.settings,
       Icon: Settings,
       countLabel: null,
     },

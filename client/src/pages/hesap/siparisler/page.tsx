@@ -187,7 +187,7 @@ export default function SiparislerPage() {
             {tx.emptyDesc}
           </p>
           <Link
-            href={u.siluetler}
+            href={u.silhouettes}
             className="font-body text-[11px] tracking-[0.25em] uppercase bg-[#1C1C1E] text-[#F7F3EC] px-8 py-3.5 hover:bg-[#C9A96E] transition-colors duration-300"
           >
             {tx.explore}
@@ -207,7 +207,7 @@ export default function SiparislerPage() {
                   cur === order.orderNumber ? null : order.orderNumber
                 )
               }
-              detailHref={u.siparis(order.orderNumber)}
+              detailHref={u.order(order.orderNumber)}
               tx={tx}
             />
           ))}

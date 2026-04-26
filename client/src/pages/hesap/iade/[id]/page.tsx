@@ -144,7 +144,7 @@ export default function IadeDetayPage() {
     <AccountLayout>
       {/* Back */}
       <Link
-        href={u.iade}
+        href={u.returns}
         className={`inline-flex items-center gap-2 font-body text-[11px] tracking-[0.2em] uppercase text-[#1C1C1E]/50 hover:text-[#C9A96E] transition-colors mb-7 ${
           isRTL ? "flex-row-reverse" : ""
         }`}

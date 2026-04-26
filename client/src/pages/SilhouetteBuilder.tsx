@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { sitePaths, type SiteLang } from "@/lib/sitePaths";
+import { sitePaths, type Lang } from "@/lib/sitePaths";
 import { api, type Silhouette as APISilhouette } from "@/lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -33,7 +33,7 @@ interface Silhouette {
   completedImages: string[];
 }
 
-function apiSilhouetteToLocal(s: APISilhouette, lang: SiteLang): Silhouette {
+function apiSilhouetteToLocal(s: APISilhouette, lang: Lang): Silhouette {
   const name =
     lang === "EN" ? s.nameEN :
     lang === "AR" ? s.nameAR :
@@ -84,7 +84,7 @@ interface SilhouettePickerProps {
   current: Silhouette | null;
   onSelect: (s: Silhouette) => void;
   onClose: () => void;
-  lang: SiteLang;
+  lang: Lang;
   silhouettes: Silhouette[];
   loading?: boolean;
 }
@@ -250,7 +250,7 @@ interface ProductModalProps {
   selected: string | undefined;
   onSelect: (product: Product) => void;
   onClose: () => void;
-  lang: SiteLang;
+  lang: Lang;
 }
 
 function ProductModal({ silhouette, categoryId, selected, onSelect, onClose, lang }: ProductModalProps) {

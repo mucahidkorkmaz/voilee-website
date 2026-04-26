@@ -15,7 +15,7 @@ import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
-import { sitePaths, productPath, type SiteLang } from "@/lib/sitePaths";
+import { sitePaths, productPath, orderDetailPath, returnDetailPath, type Lang } from "@/lib/sitePaths";
 
 // ─── Translations ───────────────────────────────────────────────────────────────
 
@@ -26,12 +26,12 @@ const t = {
     loginRequired: "Bu sayfayı görüntülemek için giriş yapmanız gerekir.",
     member: "Voilée Üyesi",
     nav: {
-      hesap: "Hesabım",
-      siparisler: "Siparişlerim",
-      iade: "İadelerim",
-      adresler: "Adreslerim",
-      liste: "Listem",
-      bilgiler: "Bilgilerim",
+      account: "Hesabım",
+      orders: "Siparişlerim",
+      returns: "İadelerim",
+      addresses: "Adreslerim",
+      wishlist: "Listem",
+      settings: "Bilgilerim",
     },
     styliste: {
       overline: "Özel Stiliste",
@@ -46,12 +46,12 @@ const t = {
     loginRequired: "Please sign in to view this page.",
     member: "Voilée Member",
     nav: {
-      hesap: "My Account",
-      siparisler: "Orders",
-      iade: "Returns",
-      adresler: "Addresses",
-      liste: "Wishlist",
-      bilgiler: "Settings",
+      account: "My Account",
+      orders: "Orders",
+      returns: "Returns",
+      addresses: "Addresses",
+      wishlist: "Wishlist",
+      settings: "Settings",
     },
     styliste: {
       overline: "Personal Stylist",
@@ -66,12 +66,12 @@ const t = {
     loginRequired: "يرجى تسجيل الدخول لعرض هذه الصفحة.",
     member: "عضو فوالييه",
     nav: {
-      hesap: "حسابي",
-      siparisler: "طلباتي",
-      iade: "مرتجعاتي",
-      adresler: "عناويني",
-      liste: "قائمتي",
-      bilgiler: "معلوماتي",
+      account: "حسابي",
+      orders: "طلباتي",
+      returns: "مرتجعاتي",
+      addresses: "عناويني",
+      wishlist: "قائمتي",
+      settings: "معلوماتي",
     },
     styliste: {
       overline: "المصمم الخاص",
@@ -84,21 +84,20 @@ const t = {
 
 // ─── URL Map ────────────────────────────────────────────────────────────────────
 
-function accountUrls(lang: SiteLang) {
-  const a = sitePaths.account[lang];
+function accountUrls(lang: Lang) {
   return {
-    giris: sitePaths.login[lang],
+    login: sitePaths.login[lang],
     home: sitePaths.home[lang],
-    hesap: a,
-    siparisler: sitePaths.accountOrders[lang],
-    siparis: (id: string) => `${sitePaths.accountOrders[lang]}/${encodeURIComponent(id)}`,
-    iade: sitePaths.accountReturns[lang],
-    iadeDetay: (id: string) => `${sitePaths.accountReturns[lang]}/${encodeURIComponent(id)}`,
-    adresler: sitePaths.accountAddresses[lang],
-    liste: sitePaths.accountWishlist[lang],
-    bilgiler: sitePaths.accountProfile[lang],
-    siluetler: sitePaths.silhouettes[lang],
-    urun: (slug: string) => productPath(lang, slug),
+    account: sitePaths.account[lang],
+    orders: sitePaths.orders[lang],
+    order: (id: string) => orderDetailPath(lang, id),
+    returns: sitePaths.returns[lang],
+    returnDetail: (id: string) => returnDetailPath(lang, id),
+    addresses: sitePaths.addresses[lang],
+    wishlist: sitePaths.wishlist[lang],
+    settings: sitePaths.accountSettings[lang],
+    silhouettes: sitePaths.silhouettes[lang],
+    product: (slug: string) => productPath(lang, slug),
   };
 }
 
@@ -111,12 +110,12 @@ export const hesapUrls = {
 // ─── Nav Items ──────────────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-  { key: "hesap" as const, Icon: User },
-  { key: "siparisler" as const, Icon: Package },
-  { key: "iade" as const, Icon: RotateCcw },
-  { key: "adresler" as const, Icon: MapPin },
-  { key: "liste" as const, Icon: Heart },
-  { key: "bilgiler" as const, Icon: Settings },
+  { key: "account" as const, Icon: User },
+  { key: "orders" as const, Icon: Package },
+  { key: "returns" as const, Icon: RotateCcw },
+  { key: "addresses" as const, Icon: MapPin },
+  { key: "wishlist" as const, Icon: Heart },
+  { key: "settings" as const, Icon: Settings },
 ];
 
 // ─── Layout ─────────────────────────────────────────────────────────────────────
@@ -134,9 +133,9 @@ export default function AccountLayout({
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      setLocation(`${u.giris}?redirect=${encodeURIComponent(location)}`);
+      setLocation(`${u.login}?redirect=${encodeURIComponent(location)}`);
     }
-  }, [isLoading, isAuthenticated, location, setLocation, u.giris]);
+  }, [isLoading, isAuthenticated, location, setLocation, u.login]);
 
   if (isLoading || !isAuthenticated || !user) {
     return (
@@ -166,7 +165,7 @@ export default function AccountLayout({
   const isActive = (key: keyof (typeof hesapUrls)["TR"]) => {
     if (typeof u[key] !== "string") return false;
     const href = u[key] as string;
-    if (key === "hesap") return location === href;
+    if (key === "account") return location === href;
     return location === href || location.startsWith(href + "/");
   };
 
@@ -180,8 +179,7 @@ export default function AccountLayout({
       {/* Spacer for fixed Navbar (h-16 mobile / h-20 desktop) */}
       <div className="h-16 lg:h-20 flex-shrink-0" />
 
-      {/* Mobile horizontal tab bar — hidden on the main /hesap page (it's its own nav) */}
-      {!isActive("hesap") && (
+      {!isActive("account") && (
         <div className="lg:hidden border-b border-[#C9A96E]/15 bg-[#F7F3EC]">
           <div className="flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {NAV_ITEMS.map(({ key, Icon }) => {
@@ -212,9 +210,7 @@ export default function AccountLayout({
               isRTL ? "flex-row-reverse" : ""
             }`}
           >
-            {/* Sidebar — desktop only */}
             <aside className="hidden lg:flex flex-col w-52 xl:w-60 flex-shrink-0">
-              {/* User card */}
               <div className="mb-7 pb-6 border-b border-[#C9A96E]/15">
                 <div className="min-w-0">
                   <p
@@ -236,7 +232,6 @@ export default function AccountLayout({
                 </div>
               </div>
 
-              {/* Nav links */}
               <nav className="flex-1 space-y-0.5">
                 {NAV_ITEMS.map(({ key, Icon }) => {
                   const active = isActive(key);
@@ -263,7 +258,6 @@ export default function AccountLayout({
                 })}
               </nav>
 
-              {/* Styliste card */}
               <div className="mt-8">
                 <a
                   href="https://wa.me/905000000000"
@@ -299,7 +293,6 @@ export default function AccountLayout({
                 </a>
               </div>
 
-              {/* Logout */}
               <button
                 type="button"
                 onClick={handleLogout}
@@ -312,7 +305,6 @@ export default function AccountLayout({
               </button>
             </aside>
 
-            {/* Page content */}
             <div className="flex-1 min-w-0">{children}</div>
           </div>
         </div>

@@ -96,7 +96,10 @@ export default function Navbar() {
   const handleLanguageChange = (newLang: "TR" | "EN" | "AR") => {
     isLangSwitch.current = true;
     setLang(newLang);
-    const dest = sitePaths.home[newLang];
+    const prefix = newLang === "TR" ? "tr" : newLang === "EN" ? "en" : "ar";
+    const withoutPrefix = location.replace(/^\/(tr|en|ar)(?=\/|$)/, "");
+    const dest =
+      withoutPrefix === "" ? `/${prefix}` : `/${prefix}${withoutPrefix}`;
     setLocationNav(dest);
   };
 
@@ -348,7 +351,7 @@ function MobileLangRow({ lang, onSelect }: { lang: "TR" | "EN" | "AR"; onSelect:
 function FavoritesIcon({ isTransparent, mobile = false }: { isTransparent: boolean; mobile?: boolean }) {
   const { lang } = useLanguage();
   const { favoritesCount } = useFavorites();
-  const href = sitePaths.accountWishlist[lang];
+  const href = sitePaths.wishlist[lang];
   const label = lang === "TR" ? "Favorilerim" : lang === "EN" ? "My Favorites" : "مفضلاتي";
 
   return (
@@ -387,8 +390,8 @@ function UserMenu({ isTransparent, mobile = false }: { isTransparent: boolean; m
 
   const loginHref = sitePaths.login[lang];
   const accountHref = sitePaths.account[lang];
-  const favoritesHref = sitePaths.accountWishlist[lang];
-  const ordersHref = sitePaths.accountOrders[lang];
+  const favoritesHref = sitePaths.wishlist[lang];
+  const ordersHref = sitePaths.orders[lang];
 
   const labels = {
     TR: {

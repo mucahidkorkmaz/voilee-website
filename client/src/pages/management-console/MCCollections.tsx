@@ -31,15 +31,15 @@ export default function MCCollections() {
   const utils = trpc.useUtils();
   const { data, isLoading, error } = trpc.admin.collections.list.useQuery(undefined, { retry: false });
   const createMutation = trpc.admin.collections.create.useMutation({
-    onSuccess: () => { utils.admin.collections.list.invalidate(); toast.success("Koleksiyon oluşturuldu."); setOpen(false); setForm(emptyForm); },
+    onSuccess: () => { utils.admin.collections.list.invalidate(); toast.success("Lookbook bölümü oluşturuldu."); setOpen(false); setForm(emptyForm); },
     onError: e => toast.error(e.message),
   });
   const updateMutation = trpc.admin.collections.update.useMutation({
-    onSuccess: () => { utils.admin.collections.list.invalidate(); toast.success("Koleksiyon güncellendi."); setOpen(false); setEditId(null); },
+    onSuccess: () => { utils.admin.collections.list.invalidate(); toast.success("Lookbook bölümü güncellendi."); setOpen(false); setEditId(null); },
     onError: e => toast.error(e.message),
   });
   const deleteMutation = trpc.admin.collections.delete.useMutation({
-    onSuccess: () => { utils.admin.collections.list.invalidate(); toast.success("Koleksiyon silindi."); setDeleteId(null); },
+    onSuccess: () => { utils.admin.collections.list.invalidate(); toast.success("Lookbook bölümü silindi."); setDeleteId(null); },
     onError: e => toast.error(e.message),
   });
 
@@ -73,26 +73,22 @@ export default function MCCollections() {
 
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-5xl">
-      <div className="flex items-start gap-3 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 mb-4">
-        <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-        <p>
-          Bu bölüm eski &quot;Koleksiyon&quot; yapısına aittir ve artık kullanılmamaktadır.
-          Ürün gruplandırması için <strong>Silüetler</strong> bölümünü kullanın.
-        </p>
-      </div>
       <div className="flex items-end justify-between">
         <div>
           <p className="text-xs tracking-[0.25em] uppercase text-muted-foreground font-light">Katalog</p>
-          <h1 className="font-['Cormorant_Garamond'] text-3xl font-light tracking-wide mt-1">Koleksiyonlar (Eski)</h1>
+          <h1 className="font-['Cormorant_Garamond'] text-3xl font-light tracking-wide mt-1">Lookbook Görselleri</h1>
+          <p className="text-sm text-muted-foreground mt-2 max-w-xl">
+            Lookbook sayfasında gösterilecek görselleri ve bölümleri yönetin.
+          </p>
         </div>
-        <Button onClick={openCreate} size="sm" className="gap-1.5"><Plus className="h-4 w-4" />Yeni Koleksiyon (Eski Yapı)</Button>
+        <Button onClick={openCreate} size="sm" className="gap-1.5"><Plus className="h-4 w-4" />Yeni Lookbook Bölümü</Button>
       </div>
 
       {error && <ErrorAlert message={error.message} />}
 
       <div className="bg-card border border-border/50 rounded overflow-hidden">
         {isLoading ? <LoadingSkeleton /> : !data?.length ? (
-          <div className="p-12 text-center text-sm text-muted-foreground">Henüz kayıt yok. (Eski yapı — kullanılmıyor)</div>
+          <div className="p-12 text-center text-sm text-muted-foreground">Henüz lookbook bölümü bulunmuyor. Yeni bölüm ekleyerek başlayın.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -135,17 +131,17 @@ export default function MCCollections() {
       <Dialog open={open} onOpenChange={v => { setOpen(v); if (!v) { setEditId(null); setForm(emptyForm); } }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-['Cormorant_Garamond'] text-2xl font-light">{editId !== null ? "Koleksiyonu Düzenle (Eski)" : "Yeni Koleksiyon (Eski Yapı)"}</DialogTitle>
+            <DialogTitle className="font-['Cormorant_Garamond'] text-2xl font-light">{editId !== null ? "Lookbook Bölümünü Düzenle" : "Yeni Lookbook Bölümü"}</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
             <div className="space-y-1.5 md:col-span-2">
               <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">Slug (URL) *</Label>
-              <Input value={form.slug} onChange={e => set("slug", e.target.value.toLowerCase().replace(/\s+/g, "-"))} placeholder="ornek-koleksiyon" />
+              <Input value={form.slug} onChange={e => set("slug", e.target.value.toLowerCase().replace(/\s+/g, "-"))} placeholder="ornek-bolum" />
             </div>
             {(["TR", "EN", "AR"] as const).map(lang => (
               <div key={lang} className="space-y-1.5">
-                <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">İsim ({lang}) *</Label>
-                <Input value={form[`name${lang}` as keyof CollectionForm] as string} onChange={e => set(`name${lang}` as keyof CollectionForm, e.target.value)} placeholder={`Koleksiyon adı (${lang})`} />
+                <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">Bölüm adı ({lang}) *</Label>
+                <Input value={form[`name${lang}` as keyof CollectionForm] as string} onChange={e => set(`name${lang}` as keyof CollectionForm, e.target.value)} placeholder={`Bölüm adı (${lang})`} />
               </div>
             ))}
             <div className="space-y-1.5">
@@ -181,8 +177,8 @@ export default function MCCollections() {
       <AlertDialog open={deleteId !== null} onOpenChange={v => !v && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Koleksiyonu Sil (Eski yapı)</AlertDialogTitle>
-            <AlertDialogDescription>Bu eski yapı kaydını kalıcı olarak silmek istiyor musunuz?</AlertDialogDescription>
+            <AlertDialogTitle>Lookbook Bölümünü Sil</AlertDialogTitle>
+            <AlertDialogDescription>Bu lookbook bölümünü sildiğinizde kayıt kalıcı olarak kaldırılır. Emin misiniz?</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>İptal</AlertDialogCancel>

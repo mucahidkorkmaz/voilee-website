@@ -7,6 +7,7 @@ function langFromPathSegment(firstSegment: string | undefined): Language {
   const s = firstSegment?.toLowerCase();
   if (s === "en") return "EN";
   if (s === "ar") return "AR";
+  if (s === "tr") return "TR";
   return "TR";
 }
 

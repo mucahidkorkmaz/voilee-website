@@ -123,7 +123,9 @@ export function registerStorefrontRoutes(app: Express) {
 
       const mapped = rows.map(s => ({
         id: s.id,
-        name: s.nameTR,
+        nameTR: s.nameTR,
+        nameEN: s.nameEN,
+        nameAR: s.nameAR,
         slug: s.slug,
         imageUrl: s.imageUrl,
         sortOrder: s.sortOrder,
@@ -151,9 +153,13 @@ export function registerStorefrontRoutes(app: Express) {
 
       const mapped = rows.map(c => ({
         id: c.id,
-        name: c.nameTR,
+        nameTR: c.nameTR,
+        nameEN: c.nameEN,
+        nameAR: c.nameAR,
         slug: c.slug,
-        description: c.descriptionTR,
+        descriptionTR: c.descriptionTR,
+        descriptionEN: c.descriptionEN,
+        descriptionAR: c.descriptionAR,
         imageUrl: c.imageUrl,
         sortOrder: c.sortOrder,
       }));

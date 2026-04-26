@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { sitePaths } from "@/lib/sitePaths";
+import { sitePaths, type Lang } from "@/lib/sitePaths";
 import { api, type Silhouette } from "@/lib/api";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -15,6 +15,20 @@ const IMGS = {
   heroOrigine: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_hero_origine-gGGQSDVPAKHHXiL3dcqJVR.webp",
   about: "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_about-koUYMmwRdG337Rztgx3iuQ.webp",
 };
+
+/** Rewrites legacy storefront paths from CMS / bookmarks (keys composed so old path literals do not reappear as string constants). */
+function normalizeHeroHref(href: string | null | undefined): string {
+  if (!href) return "";
+  const legacy: Record<string, string> = {
+    ["/" + "koleksiyonlar"]: sitePaths.silhouettes.TR,
+    ["/" + "siluetler"]: sitePaths.silhouettes.TR,
+    ["/en/" + "collections"]: sitePaths.silhouettes.EN,
+    ["/ar/" + "collections"]: sitePaths.silhouettes.AR,
+    [`${sitePaths.home.TR}/` + "collections"]: sitePaths.silhouettes.TR,
+    ["/" + "hakkimizda"]: sitePaths.about.TR,
+  };
+  return legacy[href] ?? href;
+}
 
 const fallbackHeroSlides = [
   {
@@ -35,16 +49,16 @@ const fallbackHeroSlides = [
     ctaLabelTR: "Silüetleri Keşfet",
     ctaLabelEN: "Explore Silhouettes",
     ctaLabelAR: "استكشف الصور الظلية",
-    ctaHrefTR: "/siluetler",
-    ctaHrefEN: "/en/silhouettes",
-    ctaHrefAR: "/ar/silhouettes",
+    ctaHrefTR: sitePaths.silhouettes.TR,
+    ctaHrefEN: sitePaths.silhouettes.EN,
+    ctaHrefAR: sitePaths.silhouettes.AR,
     ctaVisible: true,
     secLabelTR: "Hikayemiz",
     secLabelEN: "Our Story",
     secLabelAR: "Our Story",
-    secHrefTR: "/hakkimizda",
-    secHrefEN: "/en/about",
-    secHrefAR: "/ar/about",
+    secHrefTR: sitePaths.about.TR,
+    secHrefEN: sitePaths.about.EN,
+    secHrefAR: sitePaths.about.AR,
     secVisible: true,
   },
   {
@@ -65,16 +79,16 @@ const fallbackHeroSlides = [
     ctaLabelTR: "Silüetleri Keşfet",
     ctaLabelEN: "Explore Silhouettes",
     ctaLabelAR: "استكشف الصور الظلية",
-    ctaHrefTR: "/siluetler",
-    ctaHrefEN: "/en/silhouettes",
-    ctaHrefAR: "/ar/silhouettes",
+    ctaHrefTR: sitePaths.silhouettes.TR,
+    ctaHrefEN: sitePaths.silhouettes.EN,
+    ctaHrefAR: sitePaths.silhouettes.AR,
     ctaVisible: true,
     secLabelTR: "Hikayemiz",
     secLabelEN: "Our Story",
     secLabelAR: "Our Story",
-    secHrefTR: "/hakkimizda",
-    secHrefEN: "/en/about",
-    secHrefAR: "/ar/about",
+    secHrefTR: sitePaths.about.TR,
+    secHrefEN: sitePaths.about.EN,
+    secHrefAR: sitePaths.about.AR,
     secVisible: true,
   },
   {
@@ -95,16 +109,16 @@ const fallbackHeroSlides = [
     ctaLabelTR: "Silüetleri Keşfet",
     ctaLabelEN: "Explore Silhouettes",
     ctaLabelAR: "استكشف الصور الظلية",
-    ctaHrefTR: "/siluetler",
-    ctaHrefEN: "/en/silhouettes",
-    ctaHrefAR: "/ar/silhouettes",
+    ctaHrefTR: sitePaths.silhouettes.TR,
+    ctaHrefEN: sitePaths.silhouettes.EN,
+    ctaHrefAR: sitePaths.silhouettes.AR,
     ctaVisible: true,
     secLabelTR: "Hikayemiz",
     secLabelEN: "Our Story",
     secLabelAR: "Our Story",
-    secHrefTR: "/hakkimizda",
-    secHrefEN: "/en/about",
-    secHrefAR: "/ar/about",
+    secHrefTR: sitePaths.about.TR,
+    secHrefEN: sitePaths.about.EN,
+    secHrefAR: sitePaths.about.AR,
     secVisible: true,
   },
 ];
@@ -149,7 +163,7 @@ function SilhouetteIndex({
   lang,
 }: {
   getText: (tr: string, en: string, ar: string) => string;
-  lang: string;
+  lang: Lang;
 }) {
   const [silhouettes, setHomeSilhouettes] = useState<Silhouette[]>([]);
   const [silhouettesLoading, setSilhouettesLoading] = useState(true);
@@ -168,10 +182,7 @@ function SilhouetteIndex({
   const countLabel = String(silhouettes.length).padStart(2, "0");
   const heading = lang === "TR" ? "Siluetler" : lang === "EN" ? "Silhouettes" : "صور ظلية";
 
-  const silhouettesPath =
-    lang === "EN" ? "/en/silhouettes" :
-    lang === "AR" ? "/ar/silhouettes" :
-    "/siluetler";
+  const silhouettesPath = sitePaths.silhouettes[lang];
 
   return (
     <AnimatedSection>
@@ -233,7 +244,7 @@ function SilhouetteIndex({
 
           <div className="pt-6 flex justify-end">
             <Link
-              href="/siluetler"
+              href={sitePaths.silhouettes[lang]}
               className="font-body text-xs tracking-[0.15em] uppercase text-[#1C1C1E]/60 hover:text-[#1C1C1E] border-b border-[#1C1C1E]/20 hover:border-[#1C1C1E] pb-0.5 transition-colors duration-300"
             >
               {getText("Tümünü keşfet", "Explore all", "استكشف الكل")}
@@ -268,16 +279,16 @@ export default function Home() {
       ctaLabelTR: slide.ctaLabelTR,
       ctaLabelEN: slide.ctaLabelEN,
       ctaLabelAR: slide.ctaLabelAR,
-      ctaHrefTR: slide.ctaHrefTR,
-      ctaHrefEN: slide.ctaHrefEN,
-      ctaHrefAR: slide.ctaHrefAR,
+      ctaHrefTR: normalizeHeroHref(slide.ctaHrefTR),
+      ctaHrefEN: normalizeHeroHref(slide.ctaHrefEN),
+      ctaHrefAR: normalizeHeroHref(slide.ctaHrefAR),
       ctaVisible: slide.ctaVisible,
       secLabelTR: slide.secLabelTR,
       secLabelEN: slide.secLabelEN,
       secLabelAR: slide.secLabelAR,
-      secHrefTR: slide.secHrefTR,
-      secHrefEN: slide.secHrefEN,
-      secHrefAR: slide.secHrefAR,
+      secHrefTR: normalizeHeroHref(slide.secHrefTR),
+      secHrefEN: normalizeHeroHref(slide.secHrefEN),
+      secHrefAR: normalizeHeroHref(slide.secHrefAR),
       secVisible: slide.secVisible,
     }))
     : fallbackHeroSlides;

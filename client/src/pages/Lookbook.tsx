@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { sitePaths } from "@/lib/sitePaths";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { api, type Collection } from "@/lib/api";
@@ -79,7 +80,6 @@ const ui = {
     editorText: "2026 sezonu, ışığın bir günde nasıl değiştiğini anlatır. Her silüet ayrı bir an değil — aynı kadının içinden geçtiği farklı bir hâl. Bir parçayı giymek, o hâle adım atmaktır.",
     editorSign: "— VOILÉE Atelier",
     exploreLink: "Keşfet",
-    ctaHref: "/siluetler",
     closingCta: "Tüm Silüetleri Gör",
   },
   EN: {
@@ -89,7 +89,6 @@ const ui = {
     editorText: "The 2026 season tells the story of how light shifts across a single day. Each silhouette is not a separate moment — it is a different state the same woman moves through. To wear a piece is to step into that state.",
     editorSign: "— VOILÉE Atelier",
     exploreLink: "Explore",
-    ctaHref: "/en/silhouettes",
     closingCta: "View All Silhouettes",
   },
   AR: {
@@ -99,7 +98,6 @@ const ui = {
     editorText: "تحكي موسم 2026 كيف يتغير الضوء خلال يوم واحد. كل صورة ظلية ليست لحظة منفصلة — بل هي حالة مختلفة تمر بها نفس المرأة. ارتداء قطعة يعني الدخول في تلك الحالة.",
     editorSign: "— أتيليه VOILÉE",
     exploreLink: "استكشف",
-    ctaHref: "/ar/silhouettes",
     closingCta: "عرض جميع الصور الظلية",
   },
 };
@@ -275,9 +273,7 @@ export default function Lookbook() {
           : collections.map((col, i) => (
               <CollectionRow key={col.id} col={col} index={i} lang={lang}
                 exploreLabel={t.exploreLink}
-                ctaHref={`${
-                  lang === "TR" ? "/lookbook" : lang === "EN" ? "/en/lookbook" : "/ar/lookbook"
-                }/${col.slug}`} />
+                ctaHref={`${sitePaths.lookbook[lang]}/${col.slug}`} />
             ))}
       </section>
 
@@ -293,7 +289,7 @@ export default function Lookbook() {
                   ? `${toWordEN(collections.length)} states. One woman. A silhouette for every day.`
                   : `${collections.length} حالات. امرأة واحدة. صورة ظلية لكل يوم.`}
               </p>
-              <Link href={t.ctaHref}>
+              <Link href={sitePaths.silhouettes[lang]}>
                 <span className="inline-flex items-center gap-3 font-body text-[10px] tracking-[0.3em] uppercase text-[#C9A96E] border-b border-[#C9A96E]/40 pb-1 hover:border-[#C9A96E] transition-colors duration-300 cursor-pointer">
                   {t.closingCta} <ArrowRight size={11} />
                 </span>

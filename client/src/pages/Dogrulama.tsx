@@ -28,12 +28,10 @@ export default function Dogrulama() {
   const { lang } = useLanguage();
   const { user } = useAuth();
   const [, trMatch] = useRoute<{ serial: string }>("/tr/verify/:serial");
-  const [, detailMatch] = useRoute<{ serial: string }>("/dogrulama/:serial");
   const [, enMatch] = useRoute<{ serial: string }>("/en/verify/:serial");
   const [, arMatch] = useRoute<{ serial: string }>("/ar/verify/:serial");
   const serialFromUrl =
     (trMatch as { serial?: string } | null)?.serial ??
-    (detailMatch as { serial?: string } | null)?.serial ??
     (enMatch as { serial?: string } | null)?.serial ??
     (arMatch as { serial?: string } | null)?.serial ??
     null;

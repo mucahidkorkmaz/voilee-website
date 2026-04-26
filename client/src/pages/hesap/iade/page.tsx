@@ -230,7 +230,7 @@ export default function IadePage() {
   const submitReturn = trpc.returns.submit.useMutation({
     onSuccess: (data) => {
       toast.success(tx.success);
-      setLocation(u.iadeDetay(String(data.id)));
+      setLocation(u.returnDetail(String(data.id)));
     },
     onError: (err) => {
       toast.error(err.message || "Bir hata oluştu. Lütfen tekrar deneyin.");
@@ -313,7 +313,7 @@ export default function IadePage() {
               return (
                 <Link
                   key={ret.id}
-                  href={u.iadeDetay(String(ret.id))}
+                  href={u.returnDetail(String(ret.id))}
                   className={`flex items-center gap-4 bg-white border border-[#C9A96E]/15 px-5 py-4 hover:border-[#C9A96E]/40 transition-colors group ${
                     isRTL ? "flex-row-reverse" : ""
                   }`}
@@ -371,7 +371,7 @@ export default function IadePage() {
               {tx.noOrdersDesc}
             </p>
             <Link
-              href={u.siparisler}
+              href={u.orders}
               className={`inline-flex items-center gap-1.5 font-body text-[11px] tracking-[0.2em] uppercase text-[#1C1C1E]/60 hover:text-[#C9A96E] transition-colors ${
                 isRTL ? "flex-row-reverse" : ""
               }`}

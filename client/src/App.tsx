@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { useEffect } from "react";
-import { Route, Switch, useLocation, useParams } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import CartDrawer from "./components/CartDrawer";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -33,7 +33,7 @@ import ProductDetail from "./pages/ProductDetail";
 import Dogrulama from "./pages/Dogrulama";
 import ManagementConsolePage from "./pages/management-console";
 
-// Account pages — new architecture
+// Account pages
 import HesapPage from "./pages/hesap/page";
 import SiparislerPage from "./pages/hesap/siparisler/page";
 import SiparisDetayPage from "./pages/hesap/siparisler/[id]/page";
@@ -54,91 +54,10 @@ function ScrollToTop() {
   return null;
 }
 
-function RootLangRedirect() {
+function RootRedirectToTr() {
   useEffect(() => {
-    const browserLang = navigator.language.slice(0, 2).toLowerCase();
-    if (browserLang === "ar") window.location.replace("/ar");
-    else if (browserLang === "en") window.location.replace("/en");
-    else window.location.replace("/tr");
+    window.location.replace("/tr");
   }, []);
-  return null;
-}
-
-function replaceWith(href: string) {
-  return () => {
-    window.location.replace(href);
-    return null;
-  };
-}
-
-function replaceWithSearch(base: string) {
-  return () => {
-    window.location.replace(`${base}${window.location.search}`);
-    return null;
-  };
-}
-
-function LegacyUrunRedirect() {
-  const { slug } = useParams<{ slug: string }>();
-  useEffect(() => {
-    if (slug) window.location.replace(`/tr/product/${encodeURIComponent(slug)}`);
-  }, [slug]);
-  return null;
-}
-
-function LegacyEnProductRedirect() {
-  const { slug } = useParams<{ slug: string }>();
-  useEffect(() => {
-    if (slug) window.location.replace(`/en/product/${encodeURIComponent(slug)}`);
-  }, [slug]);
-  return null;
-}
-
-function LegacyArProductRedirect() {
-  const { slug } = useParams<{ slug: string }>();
-  useEffect(() => {
-    if (slug) window.location.replace(`/ar/product/${encodeURIComponent(slug)}`);
-  }, [slug]);
-  return null;
-}
-
-function LegacyHesapSiparisId({ prefix }: { prefix: "tr" | "en" | "ar" }) {
-  const { id } = useParams<{ id: string }>();
-  useEffect(() => {
-    if (id) window.location.replace(`/${prefix}/account/orders/${encodeURIComponent(id)}`);
-  }, [id, prefix]);
-  return null;
-}
-
-function LegacyHesapIadeId({ prefix }: { prefix: "tr" | "en" | "ar" }) {
-  const { id } = useParams<{ id: string }>();
-  useEffect(() => {
-    if (id) window.location.replace(`/${prefix}/account/returns/${encodeURIComponent(id)}`);
-  }, [id, prefix]);
-  return null;
-}
-
-function LegacyDogtrulamaSerial() {
-  const { serial } = useParams<{ serial: string }>();
-  useEffect(() => {
-    if (serial) window.location.replace(`/tr/verify/${encodeURIComponent(serial)}`);
-  }, [serial]);
-  return null;
-}
-
-function LegacyEnDogtrulamaSerial() {
-  const { serial } = useParams<{ serial: string }>();
-  useEffect(() => {
-    if (serial) window.location.replace(`/en/verify/${encodeURIComponent(serial)}`);
-  }, [serial]);
-  return null;
-}
-
-function LegacyArDogtrulamaSerial() {
-  const { serial } = useParams<{ serial: string }>();
-  useEffect(() => {
-    if (serial) window.location.replace(`/ar/verify/${encodeURIComponent(serial)}`);
-  }, [serial]);
   return null;
 }
 
@@ -148,15 +67,13 @@ function Router() {
       <ScrollToTop />
       <LangPathSync />
       <Switch>
-        {/* Management Console */}
         <Route path="/management-console" component={ManagementConsolePage} />
         <Route path="/management-console/:rest*" component={ManagementConsolePage} />
 
-        <Route path="/" component={RootLangRedirect} />
+        <Route path="/" component={RootRedirectToTr} />
 
-        {/* ── Turkish (/tr) ── */}
+        {/* Turkish */}
         <Route path="/tr" component={Home} />
-        <Route path="/siluetler" component={Collections} />
         <Route path="/tr/silhouettes" component={Collections} />
         <Route path="/tr/product/:slug" component={ProductDetail} />
         <Route path="/tr/builder" component={SilhouetteBuilder} />
@@ -176,17 +93,16 @@ function Router() {
         <Route path="/tr/register" component={Register} />
         <Route path="/tr/verify" component={Dogrulama} />
         <Route path="/tr/verify/:serial" component={Dogrulama} />
-
         <Route path="/tr/account/orders/:id" component={SiparisDetayPage} />
         <Route path="/tr/account/orders" component={SiparislerPage} />
         <Route path="/tr/account/returns/:id" component={IadeDetayPage} />
         <Route path="/tr/account/returns" component={IadePage} />
         <Route path="/tr/account/addresses" component={AdreslerPage} />
         <Route path="/tr/account/wishlist" component={ListePage} />
-        <Route path="/tr/account/profile" component={BilgilerPage} />
+        <Route path="/tr/account/settings" component={BilgilerPage} />
         <Route path="/tr/account" component={HesapPage} />
 
-        {/* ── English (/en) ── */}
+        {/* English */}
         <Route path="/en" component={Home} />
         <Route path="/en/silhouettes" component={Collections} />
         <Route path="/en/product/:slug" component={ProductDetail} />
@@ -202,22 +118,21 @@ function Router() {
         <Route path="/en/size-guide" component={SizeGuide} />
         <Route path="/en/checkout" component={Checkout} />
         <Route path="/en/login" component={Login} />
-        <Route path="/en/register" component={Register} />
-        <Route path="/en/verify" component={Dogrulama} />
         <Route path="/en/forgot-password" component={ForgotPassword} />
         <Route path="/en/reset-password" component={ResetPassword} />
+        <Route path="/en/register" component={Register} />
+        <Route path="/en/verify" component={Dogrulama} />
         <Route path="/en/verify/:serial" component={Dogrulama} />
-
         <Route path="/en/account/orders/:id" component={SiparisDetayPage} />
         <Route path="/en/account/orders" component={SiparislerPage} />
         <Route path="/en/account/returns/:id" component={IadeDetayPage} />
         <Route path="/en/account/returns" component={IadePage} />
         <Route path="/en/account/addresses" component={AdreslerPage} />
         <Route path="/en/account/wishlist" component={ListePage} />
-        <Route path="/en/account/profile" component={BilgilerPage} />
+        <Route path="/en/account/settings" component={BilgilerPage} />
         <Route path="/en/account" component={HesapPage} />
 
-        {/* ── Arabic (/ar) ── */}
+        {/* Arabic */}
         <Route path="/ar" component={Home} />
         <Route path="/ar/silhouettes" component={Collections} />
         <Route path="/ar/product/:slug" component={ProductDetail} />
@@ -233,93 +148,19 @@ function Router() {
         <Route path="/ar/size-guide" component={SizeGuide} />
         <Route path="/ar/checkout" component={Checkout} />
         <Route path="/ar/login" component={Login} />
+        <Route path="/ar/forgot-password" component={ForgotPassword} />
+        <Route path="/ar/reset-password" component={ResetPassword} />
         <Route path="/ar/register" component={Register} />
         <Route path="/ar/verify" component={Dogrulama} />
         <Route path="/ar/verify/:serial" component={Dogrulama} />
-
-        <Route path="/ar/forgot-password" component={ForgotPassword} />
-        <Route path="/ar/reset-password" component={ResetPassword} />
-
         <Route path="/ar/account/orders/:id" component={SiparisDetayPage} />
         <Route path="/ar/account/orders" component={SiparislerPage} />
         <Route path="/ar/account/returns/:id" component={IadeDetayPage} />
         <Route path="/ar/account/returns" component={IadePage} />
         <Route path="/ar/account/addresses" component={AdreslerPage} />
         <Route path="/ar/account/wishlist" component={ListePage} />
-        <Route path="/ar/account/profile" component={BilgilerPage} />
+        <Route path="/ar/account/settings" component={BilgilerPage} />
         <Route path="/ar/account" component={HesapPage} />
-
-        {/* ── Legacy: Turkish slug → /tr/... ── */}
-        <Route path="/koleksiyonlar" component={replaceWith("/siluetler")} />
-        <Route path="/tr/collections" component={replaceWith("/siluetler")} />
-        <Route path="/en/collections" component={replaceWith("/en/silhouettes")} />
-        <Route path="/ar/collections" component={replaceWith("/ar/silhouettes")} />
-        <Route path="/urun/:slug" component={LegacyUrunRedirect} />
-        <Route path="/olustur" component={replaceWithSearch("/tr/builder")} />
-        <Route path="/hakkimizda" component={replaceWith("/tr/about")} />
-        <Route path="/hikayemiz" component={replaceWith("/tr/story")} />
-        <Route path="/lookbook" component={replaceWith("/tr/lookbook")} />
-        <Route path="/lookbook/:slug" component={({ params }: any) => { 
-  window.location.replace(`/tr/lookbook/${params.slug}`); 
-  return null; 
-}} />
-        <Route path="/surdurulebilirlik" component={replaceWith("/tr/sustainability")} />
-        <Route path="/iletisim" component={replaceWith("/tr/contact")} />
-        <Route path="/journal" component={replaceWith("/tr/journal")} />
-        <Route path="/kargo-iade" component={replaceWith("/tr/shipping-returns")} />
-        <Route path="/beden-rehberi" component={replaceWith("/tr/size-guide")} />
-        <Route path="/odeme" component={replaceWithSearch("/tr/checkout")} />
-        <Route path="/giris" component={replaceWithSearch("/tr/login")} />
-        <Route path="/sifremi-unuttum" component={replaceWith("/tr/forgot-password")} />
-        <Route path="/sifremi-sifirla" component={replaceWithSearch("/tr/reset-password")} />
-        <Route path="/uye-ol" component={replaceWithSearch("/tr/register")} />
-        <Route path="/dogrulama/:serial" component={LegacyDogtrulamaSerial} />
-        <Route path="/dogrulama" component={replaceWithSearch("/tr/verify")} />
-
-        <Route path="/hesap/siparisler/:id" component={() => <LegacyHesapSiparisId prefix="tr" />} />
-        <Route path="/hesap/siparisler" component={replaceWith("/tr/account/orders")} />
-        <Route path="/hesap/iade/:id" component={() => <LegacyHesapIadeId prefix="tr" />} />
-        <Route path="/hesap/iade" component={replaceWith("/tr/account/returns")} />
-        <Route path="/hesap/adresler" component={replaceWith("/tr/account/addresses")} />
-        <Route path="/hesap/liste" component={replaceWith("/tr/account/wishlist")} />
-        <Route path="/hesap/bilgiler" component={replaceWith("/tr/account/profile")} />
-        <Route path="/hesap" component={replaceWith("/tr/account")} />
-
-        <Route path="/hesabim" component={replaceWith("/tr/account")} />
-        <Route path="/siparislerim" component={replaceWith("/tr/account/orders")} />
-        <Route path="/favorilerim" component={replaceWith("/tr/account/wishlist")} />
-
-        {/* ── Legacy: EN / AR old paths ── */}
-        <Route path="/en/urun/:slug" component={LegacyEnProductRedirect} />
-        <Route path="/ar/urun/:slug" component={LegacyArProductRedirect} />
-
-        <Route path="/en/hesap/siparisler/:id" component={() => <LegacyHesapSiparisId prefix="en" />} />
-        <Route path="/en/hesap/siparisler" component={replaceWith("/en/account/orders")} />
-        <Route path="/en/hesap/iade/:id" component={() => <LegacyHesapIadeId prefix="en" />} />
-        <Route path="/en/hesap/iade" component={replaceWith("/en/account/returns")} />
-        <Route path="/en/hesap/adresler" component={replaceWith("/en/account/addresses")} />
-        <Route path="/en/hesap/liste" component={replaceWith("/en/account/wishlist")} />
-        <Route path="/en/hesap/bilgiler" component={replaceWith("/en/account/profile")} />
-        <Route path="/en/hesap" component={replaceWith("/en/account")} />
-
-        <Route path="/ar/hesap/siparisler/:id" component={() => <LegacyHesapSiparisId prefix="ar" />} />
-        <Route path="/ar/hesap/siparisler" component={replaceWith("/ar/account/orders")} />
-        <Route path="/ar/hesap/iade/:id" component={() => <LegacyHesapIadeId prefix="ar" />} />
-        <Route path="/ar/hesap/iade" component={replaceWith("/ar/account/returns")} />
-        <Route path="/ar/hesap/adresler" component={replaceWith("/ar/account/addresses")} />
-        <Route path="/ar/hesap/liste" component={replaceWith("/ar/account/wishlist")} />
-        <Route path="/ar/hesap/bilgiler" component={replaceWith("/ar/account/profile")} />
-        <Route path="/ar/hesap" component={replaceWith("/ar/account")} />
-
-        <Route path="/en/dogrulama/:serial" component={LegacyEnDogtrulamaSerial} />
-        <Route path="/en/dogrulama" component={replaceWithSearch("/en/verify")} />
-        <Route path="/ar/dogrulama/:serial" component={LegacyArDogtrulamaSerial} />
-        <Route path="/ar/dogrulama" component={replaceWithSearch("/ar/verify")} />
-
-        <Route path="/en/orders" component={replaceWith("/en/account/orders")} />
-        <Route path="/en/favorites" component={replaceWith("/en/account/wishlist")} />
-        <Route path="/ar/orders" component={replaceWith("/ar/account/orders")} />
-        <Route path="/ar/favorites" component={replaceWith("/ar/account/wishlist")} />
 
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />

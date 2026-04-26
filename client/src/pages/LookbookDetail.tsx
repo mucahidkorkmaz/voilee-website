@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "wouter";
 import { ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { sitePaths } from "@/lib/sitePaths";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { api, type Collection } from "@/lib/api";
@@ -137,14 +138,13 @@ const ui = {
   },
 };
 
-const lookbookRoot = { TR: "/lookbook", EN: "/en/lookbook", AR: "/ar/lookbook" };
-
 // ─── Sayfa ────────────────────────────────────────────────────────────────────
 
 export default function LookbookDetail() {
   const { slug } = useParams<{ slug: string }>();
   const { lang, isRTL } = useLanguage();
   const t = ui[lang];
+  const lookbookRoot = sitePaths.lookbook[lang];
 
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
@@ -178,7 +178,7 @@ export default function LookbookDetail() {
       {/* ── Breadcrumb ── */}
       <div className="max-w-[1400px] mx-auto px-6 lg:px-12 pt-8">
         <nav className="flex items-center gap-2 font-body text-[10px] tracking-[0.25em] uppercase text-[#1C1C1E]/40">
-          <Link href={lookbookRoot[lang]} className="hover:text-[#C9A96E] transition-colors">
+          <Link href={lookbookRoot} className="hover:text-[#C9A96E] transition-colors">
             {t.breadcrumbParent}
           </Link>
           <span>/</span>
@@ -202,7 +202,7 @@ export default function LookbookDetail() {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <p className="font-body text-sm text-[#1C1C1E]/50 mb-6">{t.notFound}</p>
-            <Link href={lookbookRoot[lang]}>
+            <Link href={lookbookRoot}>
               <span className="font-body text-xs tracking-[0.2em] uppercase text-[#C9A96E] border-b border-[#C9A96E]/40 pb-0.5 cursor-pointer">
                 {t.backLink}
               </span>
@@ -286,7 +286,7 @@ export default function LookbookDetail() {
               {/* Sonraki koleksiyon */}
               {next && (
                 <div className="border-t border-[#1C1C1E]/10 pt-5">
-                  <Link href={`${lookbookRoot[lang]}/${next.slug}`}>
+                  <Link href={`${lookbookRoot}/${next.slug}`}>
                     <span className="inline-flex items-center gap-2 font-body text-[10px] tracking-[0.25em] uppercase text-[#1C1C1E]/50 hover:text-[#C9A96E] transition-colors duration-300 cursor-pointer group">
                       {t.next} {String(currentIndex + 2).padStart(2, "0")} — {collectionLabel(next, lang)}
                       <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />

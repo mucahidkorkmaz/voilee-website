@@ -121,7 +121,7 @@ export default function ListePage() {
             {tx.emptyDesc}
           </p>
           <Link
-            href={u.siluetler}
+            href={u.silhouettes}
             className="font-body text-[11px] tracking-[0.25em] uppercase bg-[#1C1C1E] text-[#F7F3EC] px-8 py-3.5 hover:bg-[#C9A96E] transition-colors duration-300"
           >
             {tx.explore}
@@ -130,7 +130,7 @@ export default function ListePage() {
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-5">
           {favorites.map((item) => {
-            const detailHref = u.urun(item.slug);
+            const detailHref = u.product(item.slug);
             const price = parseFloat(item.price);
             return (
               <div key={item.id} className="group">

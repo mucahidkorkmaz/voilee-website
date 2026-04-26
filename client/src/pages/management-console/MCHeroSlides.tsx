@@ -16,6 +16,7 @@ import { AlertCircle, GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
+import { sitePaths } from "@/lib/sitePaths";
 
 type HeroSlideForm = {
   imgUrl: string;
@@ -98,16 +99,16 @@ const emptyForm: HeroSlideForm = {
   ctaLabelTR: "Silüetleri Keşfet",
   ctaLabelEN: "Explore Silhouettes",
   ctaLabelAR: "استكشف الصور الظلية",
-  ctaHrefTR: "/siluetler",
-  ctaHrefEN: "/en/silhouettes",
-  ctaHrefAR: "/ar/silhouettes",
+  ctaHrefTR: sitePaths.silhouettes.TR,
+  ctaHrefEN: sitePaths.silhouettes.EN,
+  ctaHrefAR: sitePaths.silhouettes.AR,
   ctaVisible: true,
   secLabelTR: "Hikayemiz",
   secLabelEN: "Our Story",
   secLabelAR: "Our Story",
-  secHrefTR: "/hakkimizda",
-  secHrefEN: "/en/about",
-  secHrefAR: "/ar/about",
+  secHrefTR: sitePaths.about.TR,
+  secHrefEN: sitePaths.about.EN,
+  secHrefAR: sitePaths.about.AR,
   secVisible: true,
   sortOrder: 0,
   isActive: true,
@@ -337,7 +338,7 @@ export default function MCHeroSlides() {
               <Input
                 value={form.linkUrl ?? ""}
                 onChange={e => setForm(f => ({ ...f, linkUrl: e.target.value }))}
-                placeholder="/siluetler"
+                placeholder={sitePaths.silhouettes.TR}
               />
               <p className="text-xs text-muted-foreground">
                 Görselin herhangi bir yerine tıklanınca bu adrese yönlendirir.
@@ -428,7 +429,7 @@ export default function MCHeroSlides() {
                       <Input
                         value={form[`ctaHref${lang}` as keyof HeroSlideForm] as string}
                         onChange={e => set(`ctaHref${lang}` as keyof HeroSlideForm, e.target.value)}
-                        placeholder={lang === "TR" ? "/siluetler" : lang === "EN" ? "/en/silhouettes" : "/ar/silhouettes"}
+                        placeholder={lang === "TR" ? sitePaths.silhouettes.TR : lang === "EN" ? sitePaths.silhouettes.EN : sitePaths.silhouettes.AR}
                         disabled={!form.ctaVisible}
                       />
                     </div>
@@ -443,7 +444,7 @@ export default function MCHeroSlides() {
                       <Input
                         value={form[`secHref${lang}` as keyof HeroSlideForm] as string}
                         onChange={e => set(`secHref${lang}` as keyof HeroSlideForm, e.target.value)}
-                        placeholder={lang === "TR" ? "/hakkimizda" : lang === "EN" ? "/en/about" : "/ar/about"}
+                        placeholder={lang === "TR" ? sitePaths.about.TR : lang === "EN" ? sitePaths.about.EN : sitePaths.about.AR}
                         disabled={!form.secVisible}
                       />
                     </div>

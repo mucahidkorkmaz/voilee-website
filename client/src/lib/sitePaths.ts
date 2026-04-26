@@ -1,12 +1,13 @@
-/** Canonical localized URLs: English slugs, /tr | /en | /ar prefix. */
+/** Canonical localized storefront URLs: `/tr`, `/en`, `/ar` + English slugs. */
 
-export type SiteLang = "TR" | "EN" | "AR";
+export type Lang = "TR" | "EN" | "AR";
 
 const P = { TR: "/tr", EN: "/en", AR: "/ar" } as const;
 
 export const sitePaths = {
   home: { TR: "/tr", EN: "/en", AR: "/ar" },
-  silhouettes: { TR: "/siluetler", EN: "/en/silhouettes", AR: "/ar/silhouettes" },
+  silhouettes: { TR: "/tr/silhouettes", EN: "/en/silhouettes", AR: "/ar/silhouettes" },
+  product: { TR: "/tr/product", EN: "/en/product", AR: "/ar/product" },
   builder: { TR: "/tr/builder", EN: "/en/builder", AR: "/ar/builder" },
   about: { TR: "/tr/about", EN: "/en/about", AR: "/ar/about" },
   story: { TR: "/tr/story", EN: "/en/story", AR: "/ar/story" },
@@ -18,30 +19,33 @@ export const sitePaths = {
   sizeGuide: { TR: "/tr/size-guide", EN: "/en/size-guide", AR: "/ar/size-guide" },
   checkout: { TR: "/tr/checkout", EN: "/en/checkout", AR: "/ar/checkout" },
   login: { TR: "/tr/login", EN: "/en/login", AR: "/ar/login" },
+  register: { TR: "/tr/register", EN: "/en/register", AR: "/ar/register" },
   forgotPassword: { TR: "/tr/forgot-password", EN: "/en/forgot-password", AR: "/ar/forgot-password" },
   resetPassword: { TR: "/tr/reset-password", EN: "/en/reset-password", AR: "/ar/reset-password" },
-  register: { TR: "/tr/register", EN: "/en/register", AR: "/ar/register" },
   verify: { TR: "/tr/verify", EN: "/en/verify", AR: "/ar/verify" },
   account: { TR: "/tr/account", EN: "/en/account", AR: "/ar/account" },
-  accountOrders: { TR: "/tr/account/orders", EN: "/en/account/orders", AR: "/ar/account/orders" },
-  accountReturns: { TR: "/tr/account/returns", EN: "/en/account/returns", AR: "/ar/account/returns" },
-  accountAddresses: { TR: "/tr/account/addresses", EN: "/en/account/addresses", AR: "/ar/account/addresses" },
-  accountWishlist: { TR: "/tr/account/wishlist", EN: "/en/account/wishlist", AR: "/ar/account/wishlist" },
-  accountProfile: { TR: "/tr/account/profile", EN: "/en/account/profile", AR: "/ar/account/profile" },
+  orders: { TR: "/tr/account/orders", EN: "/en/account/orders", AR: "/ar/account/orders" },
+  returns: { TR: "/tr/account/returns", EN: "/en/account/returns", AR: "/ar/account/returns" },
+  addresses: { TR: "/tr/account/addresses", EN: "/en/account/addresses", AR: "/ar/account/addresses" },
+  wishlist: { TR: "/tr/account/wishlist", EN: "/en/account/wishlist", AR: "/ar/account/wishlist" },
+  accountSettings: { TR: "/tr/account/settings", EN: "/en/account/settings", AR: "/ar/account/settings" },
 } as const;
 
-export function productPath(lang: SiteLang, slug: string) {
-  return `${P[lang]}/product/${encodeURIComponent(slug)}`;
+export function productPath(lang: Lang, slug: string) {
+  return `${sitePaths.product[lang]}/${encodeURIComponent(slug)}`;
 }
 
-export function verifySerialPath(lang: SiteLang, serial: string) {
-  return `${P[lang]}/verify/${encodeURIComponent(serial)}`;
+export function verifySerialPath(lang: Lang, serial: string) {
+  return `${sitePaths.verify[lang]}/${encodeURIComponent(serial)}`;
 }
 
-export function orderDetailPath(lang: SiteLang, id: string) {
-  return `${P[lang]}/account/orders/${encodeURIComponent(id)}`;
+export function orderDetailPath(lang: Lang, id: string) {
+  return `${sitePaths.orders[lang]}/${encodeURIComponent(id)}`;
 }
 
-export function returnDetailPath(lang: SiteLang, id: string) {
-  return `${P[lang]}/account/returns/${encodeURIComponent(id)}`;
+export function returnDetailPath(lang: Lang, id: string) {
+  return `${sitePaths.returns[lang]}/${encodeURIComponent(id)}`;
 }
+
+/** @deprecated Use `Lang` */
+export type SiteLang = Lang;

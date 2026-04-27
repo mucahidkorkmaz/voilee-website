@@ -141,7 +141,7 @@ export default function Collections() {
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder={getText("Kombin ara...", "Search looks...", "بحث...")}
+            placeholder={getText("Silüet ara...", "Search looks...", "بحث...")}
             className="font-body text-xs border border-[#1C1C1E]/20 px-4 py-2 bg-transparent placeholder:text-[#1C1C1E]/40 focus:outline-none focus:border-[#C9A96E] w-64"
           />
 
@@ -184,7 +184,7 @@ export default function Collections() {
               )}
             </div>
             <span className="font-body text-xs text-[#1C1C1E]/40">
-              {filtered.length} {getText("kombin", "looks", "تنسيق")}
+              {filtered.length} {getText("silüet", "looks", "تنسيق")}
             </span>
           </div>
         </div>
@@ -192,7 +192,7 @@ export default function Collections() {
         {loading ? (
           <div className="text-center py-20">
             <p className="font-body text-sm text-[#1C1C1E]/40 tracking-widest animate-pulse">
-              {getText("Kombinler yükleniyor...", "Loading looks...", "جارٍ التحميل...")}
+              {getText("Silüetler yükleniyor...", "Loading looks...", "جارٍ التحميل...")}
             </p>
           </div>
         ) : (
@@ -274,7 +274,7 @@ export default function Collections() {
         {!loading && filtered.length === 0 && (
           <div className="text-center py-20">
             <p className="font-display text-2xl text-[#1C1C1E]/30">
-              {getText("Kombin bulunamadı.", "No looks found.", "لا توجد تنسيقات.")}
+              {getText("Silüet bulunamadı.", "No looks found.", "لا توجد تنسيقات.")}
             </p>
           </div>
         )}

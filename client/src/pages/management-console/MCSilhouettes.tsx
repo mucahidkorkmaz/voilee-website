@@ -39,15 +39,15 @@ export default function MCSilhouettes() {
   const utils = trpc.useUtils();
   const { data, isLoading, error } = trpc.admin.silhouettes.list.useQuery(undefined, { retry: false });
   const createMutation = trpc.admin.silhouettes.create.useMutation({
-    onSuccess: () => { utils.admin.silhouettes.list.invalidate(); toast.success("Silüet oluşturuldu."); setOpen(false); setForm(emptyForm); },
+    onSuccess: () => { utils.admin.silhouettes.list.invalidate(); toast.success("Alt marka oluşturuldu."); setOpen(false); setForm(emptyForm); },
     onError: e => toast.error(e.message),
   });
   const updateMutation = trpc.admin.silhouettes.update.useMutation({
-    onSuccess: () => { utils.admin.silhouettes.list.invalidate(); toast.success("Silüet güncellendi."); setOpen(false); setEditId(null); },
+    onSuccess: () => { utils.admin.silhouettes.list.invalidate(); toast.success("Alt marka güncellendi."); setOpen(false); setEditId(null); },
     onError: e => toast.error(e.message),
   });
   const deleteMutation = trpc.admin.silhouettes.delete.useMutation({
-    onSuccess: () => { utils.admin.silhouettes.list.invalidate(); toast.success("Silüet silindi."); setDeleteId(null); },
+    onSuccess: () => { utils.admin.silhouettes.list.invalidate(); toast.success("Alt marka silindi."); setDeleteId(null); },
     onError: e => toast.error(e.message),
   });
 
@@ -93,14 +93,14 @@ export default function MCSilhouettes() {
             Katalog
           </p>
           <h1 className="font-['Cormorant_Garamond'] text-3xl font-light tracking-wide mt-1">
-            Silüetler
+            Alt Markalar
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
-            Ürünleri gruplamak için silüet kategorileri oluşturun (Eşarp, Abaya, Çanta, Ayakkabı vb.)
+            Koleksiyonun alt markalarını yönetin (Origine, Mouvement, Epure vb.)
           </p>
         </div>
         <Button onClick={openCreate} size="sm" className="gap-1.5">
-          <Plus className="h-4 w-4" />Yeni Silüet
+          <Plus className="h-4 w-4" />Yeni Alt Marka
         </Button>
       </div>
 
@@ -126,7 +126,7 @@ export default function MCSilhouettes() {
           </div>
         ) : !data?.length ? (
           <div className="p-12 text-center text-sm text-muted-foreground">
-            Henüz silüet bulunmuyor. İlk silüetinizi oluşturun.
+            Henüz alt marka bulunmuyor. İlk alt markanızı oluşturun.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -181,7 +181,7 @@ export default function MCSilhouettes() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-['Cormorant_Garamond'] text-2xl font-light">
-              {editId !== null ? "Silüeti Düzenle" : "Yeni Silüet"}
+              {editId !== null ? "Alt Markayı Düzenle" : "Yeni Alt Marka"}
             </DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
@@ -203,7 +203,7 @@ export default function MCSilhouettes() {
                 <Input
                   value={form[`name${lang}` as keyof SilhouetteForm] as string}
                   onChange={e => set(`name${lang}` as keyof SilhouetteForm, e.target.value)}
-                  placeholder={`Silüet adı (${lang})`}
+                  placeholder={`Alt marka adı (${lang})`}
                 />
               </div>
             ))}
@@ -248,9 +248,9 @@ export default function MCSilhouettes() {
       <AlertDialog open={deleteId !== null} onOpenChange={v => !v && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Silüeti Sil</AlertDialogTitle>
+            <AlertDialogTitle>Alt markayı sil?</AlertDialogTitle>
             <AlertDialogDescription>
-              Bu silüeti sildiğinizde, bu silüete atanmış ürünlerin silüet bağlantısı kaldırılacaktır. Devam etmek istiyor musunuz?
+              Bu alt markayı sildiğinizde, bu alt markaya atanmış ürünlerin bağlantısı kaldırılacaktır. Devam etmek istiyor musunuz?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

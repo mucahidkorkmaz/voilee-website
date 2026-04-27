@@ -224,7 +224,7 @@ function SilhouettePicker({ current, onSelect, onClose, lang, silhouettes, loadi
         <div className="px-8 py-5 border-t border-[#C9A96E]/20 flex items-center justify-between gap-4">
           <p className="font-body text-[10px] tracking-[0.15em] uppercase text-[#1C1C1E]/30">
             {lang === "TR"
-              ? "Siluet seçerek kombinizi oluşturun"
+              ? "Siluet seçerek silüetinizi oluşturun"
               : lang === "EN"
               ? "Select a silhouette to build your look"
               : "اختر صورة ظلية لبناء إطلالتك"}
@@ -464,7 +464,7 @@ export default function SilhouetteBuilder() {
     title: lang === "TR" ? "Siluet Oluşturucu" : "Silhouette Builder",
     subtitle:
       lang === "TR"
-        ? "Silüetinizi seçin, kategorileri tamamlayın ve tüm kombini tek seferde sepete ekleyin."
+        ? "Silüetinizi seçin, kategorileri tamamlayın ve tüm silüeti tek seferde sepete ekleyin."
         : lang === "AR"
         ? "اختر صورتك الظلية، أكمل الفئات وأضف الإطلالة كاملة إلى السلة دفعة واحدة."
         : "Choose your silhouette, complete the categories and add the whole look to your cart.",
@@ -473,8 +473,8 @@ export default function SilhouetteBuilder() {
     reset: lang === "TR" ? "Yeniden Oluştur" : "Create New",
     addToCart: lang === "TR" ? "Sepete Ekle" : "Add to Cart",
     viewAll: lang === "TR" ? "Tüm Ürünleri Görüntüle" : "View All Products",
-    yourLook: lang === "TR" ? "Kombiniz" : "Your Look",
-    lookReady: lang === "TR" ? "Kombiniz hazır" : "Your look is ready",
+    yourLook: lang === "TR" ? "Silüetiniz" : "Your Look",
+    lookReady: lang === "TR" ? "Silüetiniz hazır" : "Your look is ready",
     total: lang === "TR" ? "Toplam" : "Total",
     selectCategory: lang === "TR" ? "Kategori seçin" : "Select a category",
   };

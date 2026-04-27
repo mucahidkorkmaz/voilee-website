@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertCircle, Info, Pencil, RefreshCw, RotateCcw, Trash2 } from "lucide-react";
+import { AlertCircle, Info, Pencil, RefreshCw, RotateCcw, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -41,7 +41,6 @@ type EditForm = {
   descriptionEN: string;
   descriptionAR: string;
   imageUrl: string;
-  galleryJson: string;
   price: string;
   status: "draft" | "published" | "archived";
   sortOrder: number;
@@ -57,15 +56,6 @@ function formatGalleryForEditor(galleryUrls: string | null): string {
     /* fallthrough */
   }
   return galleryUrls;
-}
-
-function serializeGalleryJson(input: string): string {
-  const trimmed = input.trim();
-  if (!trimmed) return "[]";
-  const parsed = JSON.parse(trimmed) as unknown;
-  if (!Array.isArray(parsed)) throw new Error("Galeri alanı bir JSON dizi olmalıdır.");
-  const urls = parsed.map(x => String(x));
-  return JSON.stringify(urls);
 }
 
 export default function MCCombinations() {
@@ -87,7 +77,7 @@ export default function MCCombinations() {
   const updateMutation = trpc.admin.combinations.update.useMutation({
     onSuccess: () => {
       utils.admin.combinations.list.invalidate();
-      toast.success("Kombin güncellendi.");
+      toast.success("Silüet güncellendi.");
       setDialogOpen(false);
       setEditingId(null);
     },
@@ -96,7 +86,7 @@ export default function MCCombinations() {
   const deleteMutation = trpc.admin.combinations.delete.useMutation({
     onSuccess: () => {
       utils.admin.combinations.list.invalidate();
-      toast.success("Kombin silindi.");
+      toast.success("Silüet silindi.");
       setDeleteId(null);
     },
     onError: e => toast.error(e.message),
@@ -123,8 +113,20 @@ export default function MCCombinations() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [form, setForm] = useState<EditForm | null>(null);
+  const [galleries, setGalleries] = useState<string[]>([]);
 
   const openEdit = (row: NonNullable<typeof combos>[number]) => {
+    let parsed: string[] = [];
+    try {
+      const raw = formatGalleryForEditor(row.galleryUrls);
+      const maybeList = JSON.parse(raw) as unknown;
+      if (Array.isArray(maybeList)) {
+        parsed = maybeList.map(item => String(item)).filter(Boolean);
+      }
+    } catch {
+      parsed = [];
+    }
+    setGalleries(parsed);
     setEditingId(row.id);
     setForm({
       nameTR: row.nameTR,
@@ -134,7 +136,6 @@ export default function MCCombinations() {
       descriptionEN: row.descriptionEN ?? "",
       descriptionAR: row.descriptionAR ?? "",
       imageUrl: row.imageUrl ?? "",
-      galleryJson: formatGalleryForEditor(row.galleryUrls),
       price: row.price,
       status: row.status,
       sortOrder: row.sortOrder ?? 0,
@@ -149,13 +150,7 @@ export default function MCCombinations() {
       toast.error("İsim ve fiyat alanları zorunludur.");
       return;
     }
-    let galleryUrls: string;
-    try {
-      galleryUrls = serializeGalleryJson(form.galleryJson);
-    } catch {
-      toast.error("Galeri JSON formatı geçersiz.");
-      return;
-    }
+    const galleryUrls = JSON.stringify(galleries.filter(Boolean));
     const row = combos?.find(c => c.id === editingId);
     const payload: Parameters<typeof updateMutation.mutate>[0] = {
       id: editingId,
@@ -192,10 +187,10 @@ export default function MCCombinations() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs tracking-[0.25em] uppercase text-muted-foreground font-light">Katalog</p>
-          <h1 className="font-['Cormorant_Garamond'] text-3xl font-light tracking-wide mt-1">Kombinler</h1>
+          <h1 className="font-['Cormorant_Garamond'] text-3xl font-light tracking-wide mt-1">Silüetler</h1>
           <p className="text-xs text-muted-foreground mt-1 max-w-xl">
-            Silüet başına ürün kartezyen çarpımından oluşan satılabilir kombinler. Ürün eklediğinizde veya
-            sildiğinizde kombinler otomatik güncellenir.
+            Silüet başına ürün kartezyen çarpımından oluşan satılabilir silüetler. Ürün eklediğinizde veya
+            sildiğinizde silüetler otomatik güncellenir.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -223,7 +218,7 @@ export default function MCCombinations() {
             onClick={() => selectedSilhouetteId != null && regenerateMutation.mutate({ silhouetteId: selectedSilhouetteId })}
           >
             <RefreshCw className={`h-4 w-4 ${regenerateMutation.isPending ? "animate-spin" : ""}`} />
-            Kombinleri yenile
+            Silüetleri yenile
           </Button>
         </div>
       </div>
@@ -247,7 +242,7 @@ export default function MCCombinations() {
           </div>
         ) : !combos?.length ? (
           <div className="p-8 text-center text-sm text-muted-foreground">
-            Bu silüet için kombin yok. En az iki farklı kategoride aktif ürün ekleyin veya &quot;Kombinleri
+            Bu silüet için sonuç yok. En az iki farklı kategoride aktif ürün ekleyin veya &quot;Silüetleri
             yenile&quot; ile hesaplatın.
           </div>
         ) : (
@@ -356,7 +351,7 @@ export default function MCCombinations() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-['Cormorant_Garamond'] text-2xl font-light">Kombini düzenle</DialogTitle>
+            <DialogTitle className="font-['Cormorant_Garamond'] text-2xl font-light">Silüeti düzenle</DialogTitle>
           </DialogHeader>
           {form && editingRow ? (
             <div className="space-y-4 py-2">
@@ -402,13 +397,40 @@ export default function MCCombinations() {
               </div>
               <ImageUpload value={form.imageUrl} onChange={url => setForm({ ...form, imageUrl: url })} label="Kapak görseli" />
               <div>
-                <Label>Galeri (JSON dizi)</Label>
-                <Textarea
-                  value={form.galleryJson}
-                  onChange={e => setForm({ ...form, galleryJson: e.target.value })}
-                  className="mt-1 font-mono text-xs min-h-[80px]"
-                  placeholder='["https://..."]'
-                />
+                <Label>Galeri Görselleri</Label>
+                {galleries.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {galleries.map((url, idx) => (
+                      <div key={`${url}-${idx}`} className="relative group w-20 h-20 shrink-0">
+                        <img
+                          src={url}
+                          alt={`Galeri ${idx + 1}`}
+                          className="w-full h-full object-cover rounded border border-border/40"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setGalleries(g => g.filter((_, i) => i !== idx))}
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          aria-label="Görseli kaldır"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="mt-2">
+                  <ImageUpload
+                    value=""
+                    onChange={url => {
+                      if (url) setGalleries(g => [...g, url]);
+                    }}
+                    label="Galeri görseli ekle"
+                  />
+                </div>
+                {galleries.length === 0 && (
+                  <p className="text-xs text-muted-foreground mt-1.5">Henüz galeri görseli eklenmedi.</p>
+                )}
               </div>
               <div>
                 <div className="flex items-end justify-between gap-2">
@@ -457,7 +479,7 @@ export default function MCCombinations() {
                 </Select>
               </div>
               <div>
-                <Label className="text-muted-foreground">Bu kombindeki ürünler</Label>
+                <Label className="text-muted-foreground">Bu silüetteki ürünler</Label>
                 <ul className="mt-2 space-y-1.5 text-xs text-muted-foreground border border-border/40 rounded p-3 bg-muted/10">
                   {editingRow.items.map(it => (
                     <li key={it.id}>
@@ -487,8 +509,8 @@ export default function MCCombinations() {
       <AlertDialog open={deleteId != null} onOpenChange={open => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Kombini sil?</AlertDialogTitle>
-            <AlertDialogDescription>Bu işlem geri alınamaz.</AlertDialogDescription>
+            <AlertDialogTitle>Silüeti sil?</AlertDialogTitle>
+            <AlertDialogDescription>Bu silüet kalıcı olarak silinecektir. Bu işlem geri alınamaz.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>İptal</AlertDialogCancel>

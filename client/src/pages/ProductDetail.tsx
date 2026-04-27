@@ -1,15 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useRoute } from "wouter";
 import {
-  ChevronLeft,
-  ChevronRight,
   Heart,
   Loader2,
-  Truck,
-  RefreshCcw,
-  Lock,
-  Plus,
-  Minus,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCart } from "@/contexts/CartContext";
@@ -41,7 +34,7 @@ const t = {
     careDefault: "30°C'de hassas yıkama. Ütülemeyiniz. Kuru temizleme önerilir.",
     sizeDefault: "Model 1.78 m boyundadır ve S beden giyer.",
     shippingDefault: "Türkiye içi 2-4 iş günü içinde teslim edilir. Detaylı bilgi için kargo ve iade sayfasını inceleyiniz.",
-    comboIncludes: "Bu kombinde",
+    comboIncludes: "Bu silüette",
   },
   EN: {
     home: "Home",
@@ -100,11 +93,115 @@ function formatTRY(value: number) {
 function comboItemLabel(lang: "TR" | "EN" | "AR", it: CombinationDetail["items"][number]): string {
   const base = it.productName ?? "—";
   if (!it.variantName) return base;
-  if (lang === "EN") return `${base} — ${it.variantName}`;
-  if (lang === "AR") return `${base} — ${it.variantName}`;
   return `${base} — ${it.variantName}`;
 }
 
+// ─── Accordion ─────────────────────────────────────────────────────────────────
+function ProductAccordion({ product, tx }: { product: Product; tx: typeof t.TR }) {
+  const [openSection, setOpenSection] = useState<string | null>("details");
+  const meta = (product.metadata ?? {}) as Record<string, unknown>;
+
+  const sections = [
+    {
+      key: "details",
+      label: tx.tabs.details,
+      content: product.description ?? "—",
+    },
+    {
+      key: "fabric",
+      label: tx.tabs.fabric,
+      content:
+        typeof meta.fabric === "string"
+          ? meta.fabric
+          : `${tx.fabricDefault}\n\n${tx.careDefault}`,
+    },
+    {
+      key: "size",
+      label: tx.tabs.size,
+      content: typeof meta.size === "string" ? meta.size : tx.sizeDefault,
+    },
+    {
+      key: "shipping",
+      label: tx.tabs.shipping,
+      content: tx.shippingDefault,
+    },
+  ];
+
+  return (
+    <div className="mt-6">
+      {sections.map((section) => (
+        <div key={section.key} className="border-t border-[#C9A96E]/15 last:border-b">
+          <button
+            type="button"
+            onClick={() =>
+              setOpenSection((prev) => (prev === section.key ? null : section.key))
+            }
+            className="w-full flex items-center justify-between py-4 font-body text-[11px] tracking-[0.12em] uppercase text-[#1C1C1E] text-left"
+          >
+            {section.label}
+            <span
+              className="text-[#1C1C1E]/30 text-base leading-none"
+              style={{
+                display: "inline-block",
+                transition: "transform 0.3s ease",
+                transform: openSection === section.key ? "rotate(45deg)" : "rotate(0deg)",
+              }}
+            >
+              +
+            </span>
+          </button>
+          {openSection === section.key && (
+            <div className="pb-5 font-body text-xs text-[#1C1C1E]/50 leading-relaxed whitespace-pre-line">
+              {section.content}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Variant Selector (paylaşımlı) ─────────────────────────────────────────────
+function VariantSelector({
+  variants,
+  selectedVariantId,
+  onSelect,
+  label,
+}: {
+  variants: ProductVariant[];
+  selectedVariantId: number | null;
+  onSelect: (id: number) => void;
+  label: string;
+}) {
+  return (
+    <div className="mb-6">
+      <p className="font-body text-[10px] tracking-[0.15em] uppercase text-[#1C1C1E]/50 mb-3">
+        {label}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {variants.map((v) => (
+          <button
+            key={v.id}
+            type="button"
+            onClick={() => onSelect(v.id)}
+            disabled={v.stock <= 0}
+            className={`font-body text-[11px] tracking-[0.05em] px-4 py-2.5 border focus-visible:outline-none ${
+              selectedVariantId === v.id
+                ? "border-primary bg-primary text-primary-foreground"
+                : v.stock <= 0
+                  ? "border-border/50 text-foreground/25 line-through cursor-not-allowed"
+                  : "border-border text-foreground hover:border-foreground/60"
+            }`}
+          >
+            {v.name}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Ana Component ─────────────────────────────────────────────────────────────
 export default function ProductDetail() {
   const { lang, isRTL } = useLanguage();
   const { addToCart } = useCart();
@@ -122,10 +219,8 @@ export default function ProductDetail() {
   const [relatedCombo, setRelatedCombo] = useState<Combination[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-
-  const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [selectedVariantId, setSelectedVariantId] = useState<number | null>(null);
-  const [quantity, setQuantity] = useState(1);
+  const [quantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
 
@@ -136,8 +231,6 @@ export default function ProductDetail() {
     setNotFound(false);
     setProduct(null);
     setCombination(null);
-    setActiveImageIdx(0);
-    setQuantity(1);
     setSelectedVariantId(null);
 
     const langParam = lang as "TR" | "EN" | "AR";
@@ -184,10 +277,63 @@ export default function ProductDetail() {
       }
     })();
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [slug, lang]);
+
+  useEffect(() => {
+    // Select the actual DOM element for the left column
+    const gallery = document.querySelector<HTMLElement>(".custom-gallery-scroll");
+    if (!gallery) return;
+
+    // Helper function to find the actual element that controls the page scroll
+    const getScrollParent = (node: Node | null): Element | null => {
+      if (node == null) return null;
+      if (node instanceof Element) {
+        const style = getComputedStyle(node);
+        if (
+          node.scrollHeight > node.clientHeight &&
+          (style.overflowY === "auto" || style.overflowY === "scroll")
+        ) {
+          return node;
+        }
+      }
+      return getScrollParent(node.parentNode) || document.documentElement;
+    };
+
+    const handleWheel = (e: WheelEvent) => {
+      const isScrollingUp = e.deltaY < 0;
+
+      // Find what is actually scrolling the main page layout
+      const mainScrollContainer = getScrollParent(gallery.parentNode);
+      if (!mainScrollContainer) return;
+
+      // Determine how far down the main page actually is
+      const pageScrollTop =
+        mainScrollContainer === document.documentElement
+          ? window.scrollY || document.documentElement.scrollTop
+          : (mainScrollContainer as HTMLElement).scrollTop;
+
+      // STRICT CONDITION: Scrolling UP while the main page is NOT at the top
+      if (isScrollingUp && pageScrollTop > 0) {
+        e.preventDefault(); // FORCE block the gallery from scrolling
+        e.stopPropagation(); // Stop event bubbling
+
+        // Manually scroll the correct main container up
+        if (mainScrollContainer === document.documentElement) {
+          window.scrollBy({ top: e.deltaY, behavior: "auto" });
+        } else {
+          (mainScrollContainer as HTMLElement).scrollTop += e.deltaY;
+        }
+      }
+    };
+
+    // { passive: false } is absolutely mandatory to make preventDefault work
+    gallery.addEventListener("wheel", handleWheel as EventListener, { passive: false });
+
+    return () => {
+      gallery.removeEventListener("wheel", handleWheel as EventListener);
+    };
+  }, []);
 
   const variants: ProductVariant[] = product?.variants ?? [];
   const hasVariants = variants.length > 0;
@@ -217,7 +363,6 @@ export default function ProductDetail() {
 
   const compareAt = product?.compareAtPrice ? parseFloat(product.compareAtPrice) : null;
   const hasDiscount = compareAt != null && compareAt > effectivePrice;
-  const discountPct = hasDiscount ? Math.round(((compareAt! - effectivePrice) / compareAt!) * 100) : 0;
 
   const metaStock =
     product?.metadata && typeof (product.metadata as { stock?: unknown }).stock === "number"
@@ -232,18 +377,8 @@ export default function ProductDetail() {
         : metaStock ?? 0;
 
   const outOfStockProduct = effectiveStockProduct <= 0;
-
   const comboPrice = combination ? parseFloat(combination.price) : 0;
   const outOfStockCombo = combination ? !combination.inStock : false;
-
-  const handlePrevImage = () => {
-    if (images.length === 0) return;
-    setActiveImageIdx(i => (i - 1 + images.length) % images.length);
-  };
-  const handleNextImage = () => {
-    if (images.length === 0) return;
-    setActiveImageIdx(i => (i + 1) % images.length);
-  };
 
   const handleAddToCart = () => {
     if (combination) {
@@ -278,6 +413,7 @@ export default function ProductDetail() {
     setTimeout(() => setJustAdded(false), 2000);
   };
 
+  // ─── Loading & Not Found ──────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F7F3EC] flex flex-col">
@@ -315,249 +451,212 @@ export default function ProductDetail() {
   const outOfStock = combination ? outOfStockCombo : outOfStockProduct;
   const linePrice = combination ? comboPrice : effectivePrice;
 
+  // ─── Combination items ────────────────────────────────────────────────────────
+  const CombinationItems = () =>
+    combination ? (
+      <div className="mb-6">
+        <p className="font-body text-[10px] tracking-[0.2em] uppercase text-[#1C1C1E]/50 mb-3">
+          {tx.comboIncludes}
+        </p>
+        <ul className="space-y-2">
+          {combination.items.map((item, i) => (
+            <li key={i} className="flex flex-wrap gap-2 text-sm text-[#1C1C1E]/80">
+              <span className="font-body text-[9px] uppercase tracking-wider text-[#1C1C1E]/40 bg-[#1C1C1E]/5 px-2 py-0.5">
+                {item.categoryName ?? "—"}
+              </span>
+              <span>{comboItemLabel(lang, item)}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ) : null;
+
   return (
-    <div className="min-h-screen bg-[#F7F3EC] flex flex-col" dir={isRTL ? "rtl" : "ltr"}>
+    <div className="min-h-screen bg-[#F7F3EC] flex flex-col overflow-visible" dir={isRTL ? "rtl" : "ltr"}>
       <Navbar />
 
-      <main className="flex-1 pt-20 lg:pt-24">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-5">
-          <nav className="flex items-center gap-2 font-body text-[10px] tracking-[0.15em] uppercase text-[#1C1C1E]/40">
-            <Link href={sitePaths.home[lang]} className="hover:text-[#C9A96E] transition-colors">
-              {tx.home}
-            </Link>
-            <ChevronRight size={11} className={isRTL ? "rotate-180" : ""} />
-            <Link href={sitePaths.silhouettes[lang]} className="hover:text-[#C9A96E] transition-colors">
-              {tx.collections}
-            </Link>
-            <ChevronRight size={11} className={isRTL ? "rotate-180" : ""} />
-            <span className="text-[#1C1C1E]/70 truncate max-w-[200px]">{displayName}</span>
-          </nav>
-        </div>
+      <main className="flex-1 pt-20 min-[901px]:pt-24 overflow-visible">
 
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
-            <div className="flex gap-4">
-              {images.length > 1 && (
-                <div className="hidden lg:flex flex-col gap-3 w-20 flex-shrink-0">
-                  {images.map((img, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setActiveImageIdx(idx)}
-                      className={`relative aspect-[3/4] overflow-hidden border transition-all ${
-                        activeImageIdx === idx ? "border-[#C9A96E]" : "border-transparent hover:border-[#1C1C1E]/20"
-                      }`}
-                    >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              )}
+        {/* ════════════════════════════════════════════════════════════════════
+            MOBİL LAYOUT (lg altı)
+        ════════════════════════════════════════════════════════════════════ */}
 
-              <div className="flex-1 relative">
-                <div className="aspect-[3/4] bg-[#E8E0D5] overflow-hidden group">
-                  {images[activeImageIdx] ? (
-                    <img
-                      src={images[activeImageIdx]}
-                      alt={displayName}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center font-body text-[10px] uppercase tracking-wider text-[#1C1C1E]/25">
-                      {combination ? "—" : ""}
-                    </div>
-                  )}
-                  {!combination && hasDiscount && (
-                    <span className="absolute top-4 left-4 bg-[#1C1C1E] text-[#F7F3EC] font-body text-[10px] tracking-[0.2em] uppercase px-3 py-1.5">
-                      −{discountPct}%
-                    </span>
-                  )}
-                </div>
-
-                {images.length > 1 && (
-                  <div className="lg:hidden absolute inset-y-0 inset-x-0 flex items-center justify-between px-2 pointer-events-none">
-                    <button
-                      type="button"
-                      onClick={handlePrevImage}
-                      className="pointer-events-auto w-9 h-9 bg-[#F7F3EC]/90 backdrop-blur-sm flex items-center justify-center text-[#1C1C1E]"
-                      aria-label="prev"
-                    >
-                      <ChevronLeft size={16} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleNextImage}
-                      className="pointer-events-auto w-9 h-9 bg-[#F7F3EC]/90 backdrop-blur-sm flex items-center justify-center text-[#1C1C1E]"
-                      aria-label="next"
-                    >
-                      <ChevronRight size={16} />
-                    </button>
-                  </div>
-                )}
-
-                {images.length > 1 && (
-                  <div className="lg:hidden flex justify-center gap-1.5 mt-3">
-                    {images.map((_, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setActiveImageIdx(idx)}
-                        className={`h-1 transition-all ${
-                          activeImageIdx === idx ? "w-8 bg-[#1C1C1E]" : "w-4 bg-[#1C1C1E]/20"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                )}
+        <div className="min-[901px]:hidden">
+          <div className="flex flex-row flex-nowrap overflow-x-auto snap-x snap-mandatory scrollbar-hide bg-secondary">
+            {images.map((img, idx) => (
+              <div key={idx} className="relative w-screen shrink-0 snap-center aspect-[3/4] overflow-hidden bg-secondary">
+                <img
+                  src={img}
+                  alt={`${displayName} - ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                />
               </div>
-            </div>
-
-            <div className="lg:sticky lg:top-28 lg:self-start">
-              <p className="font-body text-[10px] tracking-[0.25em] uppercase text-[#C9A96E] mb-3">Voilée</p>
-              <h1 className="font-display text-3xl lg:text-4xl text-[#1C1C1E] mb-5 leading-tight">{displayName}</h1>
-
-              <div className="flex items-baseline gap-3 mb-8">
-                <span className="font-display text-2xl text-[#1C1C1E]">{formatTRY(linePrice)}</span>
-                {!combination && hasDiscount && compareAt != null && (
-                  <span className="font-body text-sm text-[#1C1C1E]/40 line-through">{formatTRY(compareAt)}</span>
-                )}
-              </div>
-
-              <span className="block w-12 h-px bg-[#C9A96E] mb-8" />
-
-              {combination && (
-                <div className="mb-8">
-                  <p className="font-body text-[11px] tracking-[0.2em] uppercase text-[#1C1C1E]/60 mb-3">
-                    {tx.comboIncludes}
-                  </p>
-                  <ul className="space-y-2 text-sm text-[#1C1C1E]/80">
-                    {combination.items.map(it => (
-                      <li key={`${it.productId}-${it.categoryId}-${it.variantId ?? "x"}`} className="flex flex-wrap gap-2">
-                        <span className="font-body text-[10px] uppercase tracking-wider text-[#1C1C1E]/40 bg-[#1C1C1E]/5 px-2 py-0.5">
-                          {it.categoryName}
-                        </span>
-                        <span>{comboItemLabel(lang as "TR" | "EN" | "AR", it)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {!combination && hasVariants && (
-                <div className="mb-7">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="font-body text-[11px] tracking-[0.2em] uppercase text-[#1C1C1E]/60">{tx.color}</p>
-                    <p className="font-body text-xs text-[#1C1C1E]/70">{activeVariant?.name ?? ""}</p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    {variants.map(v => (
-                      <button
-                        key={v.id}
-                        type="button"
-                        onClick={() => setSelectedVariantId(v.id)}
-                        className={`relative w-8 h-8 rounded-full transition-all ${
-                          selectedVariantId === v.id
-                            ? "ring-1 ring-[#C9A96E] ring-offset-2 ring-offset-[#F7F3EC]"
-                            : "hover:scale-110"
-                        }`}
-                        aria-label={v.name}
-                      >
-                        <span
-                          className="absolute inset-0 rounded-full border border-[#1C1C1E]/10"
-                          style={{ backgroundColor: v.colorHex || "#ccc" }}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="mb-8">
-                <p className="font-body text-[11px] tracking-[0.2em] uppercase text-[#1C1C1E]/60 mb-3">{tx.quantity}</p>
-                <div className="inline-flex items-center border border-[#1C1C1E]/20">
-                  <button
-                    type="button"
-                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                    className="w-11 h-11 flex items-center justify-center text-[#1C1C1E]/70 hover:text-[#C9A96E] transition-colors"
-                  >
-                    <Minus size={14} />
-                  </button>
-                  <span className="w-12 text-center font-body text-sm text-[#1C1C1E]">{quantity}</span>
-                  <button
-                    type="button"
-                    onClick={() => setQuantity(q => q + 1)}
-                    className="w-11 h-11 flex items-center justify-center text-[#1C1C1E]/70 hover:text-[#C9A96E] transition-colors"
-                  >
-                    <Plus size={14} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-3 mb-8">
-                <button
-                  type="button"
-                  onClick={handleAddToCart}
-                  disabled={outOfStock}
-                  className={`w-full inline-flex items-center justify-center gap-2 font-body text-xs tracking-[0.25em] uppercase py-4 transition-colors duration-300 ${
-                    outOfStock
-                      ? "bg-[#1C1C1E]/20 text-[#1C1C1E]/40 cursor-not-allowed"
-                      : justAdded
-                        ? "bg-[#C9A96E] text-white"
-                        : "bg-[#1C1C1E] text-[#F7F3EC] hover:bg-[#C9A96E]"
-                  }`}
-                >
-                  {outOfStock
-                    ? tx.outOfStock
-                    : justAdded
-                      ? `✓ ${tx.added}`
-                      : `${tx.addToCart} — ${formatTRY(linePrice * quantity)}`}
-                </button>
-
-                {!combination && (
-                  <button
-                    type="button"
-                    onClick={() => setIsWishlisted(v => !v)}
-                    className={`w-full inline-flex items-center justify-center gap-2 font-body text-xs tracking-[0.25em] uppercase py-4 border transition-colors duration-300 ${
-                      isWishlisted
-                        ? "border-[#C9A96E] text-[#C9A96E]"
-                        : "border-[#1C1C1E]/30 text-[#1C1C1E] hover:border-[#C9A96E] hover:text-[#C9A96E]"
-                    }`}
-                  >
-                    <Heart size={14} fill={isWishlisted ? "currentColor" : "none"} strokeWidth={1.5} />
-                    {isWishlisted ? tx.inWishlist : tx.addToWishlist}
-                  </button>
-                )}
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 py-5 border-t border-b border-[#C9A96E]/20 mb-8">
-                {[
-                  { icon: Truck, label: tx.free },
-                  { icon: RefreshCcw, label: tx.returns },
-                  { icon: Lock, label: tx.secure },
-                ].map((item, i) => (
-                  <div key={i} className="flex flex-col items-center text-center gap-2">
-                    <item.icon size={16} className="text-[#C9A96E]" strokeWidth={1.5} />
-                    <p className="font-body text-[10px] text-[#1C1C1E]/60 leading-snug">{item.label}</p>
-                  </div>
-                ))}
-              </div>
-
-              {product?.description && !combination && (
-                <p className="font-body text-sm text-[#1C1C1E]/70 leading-relaxed">{product.description}</p>
-              )}
-              {combination?.description && (
-                <p className="font-body text-sm text-[#1C1C1E]/70 leading-relaxed">{combination.description}</p>
-              )}
-            </div>
+            ))}
           </div>
 
-          {product && !combination && <ProductTabs product={product} tx={tx} />}
+          <div className="px-5 py-7">
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <h1 className="font-display text-xl text-[#1C1C1E] leading-tight">
+                {displayName}
+              </h1>
+              <div className="text-right shrink-0">
+                {hasDiscount && compareAt && (
+                  <p className="font-body text-xs text-[#1C1C1E]/40 line-through">
+                    {formatTRY(compareAt)}
+                  </p>
+                )}
+                <p className="font-body text-sm text-[#1C1C1E]">{formatTRY(linePrice)}</p>
+              </div>
+            </div>
+
+            {(product?.description || combination?.description) && (
+              <p className="font-body text-sm text-[#1C1C1E]/70 leading-relaxed mb-6">
+                {product?.description ?? combination?.description}
+              </p>
+            )}
+
+            <CombinationItems />
+
+            {!combination && hasVariants && (
+              <VariantSelector
+                variants={variants}
+                selectedVariantId={selectedVariantId}
+                onSelect={setSelectedVariantId}
+                label={tx.color}
+              />
+            )}
+
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={outOfStock}
+              className={`w-full py-[18px] font-body text-[11px] tracking-[0.2em] uppercase mb-3 transition-colors duration-300 focus-visible:outline-none ${
+                outOfStock
+                  ? "bg-primary/20 text-foreground/40 cursor-not-allowed"
+                  : justAdded
+                    ? "bg-accent text-accent-foreground"
+                    : "bg-primary text-primary-foreground"
+              }`}
+            >
+              {outOfStock ? tx.outOfStock : justAdded ? `✓ ${tx.added}` : `${tx.addToCart} — ${formatTRY(linePrice)}`}
+            </button>
+
+            {product && !combination && <ProductAccordion product={product} tx={tx} />}
+          </div>
         </div>
 
+        {/* ════════════════════════════════════════════════════════════════════
+            MASAÜSTÜ LAYOUT (lg ve üzeri)
+            Flex kullanıyoruz — arbitrary grid değerleri Tailwind'de compile
+            edilmeyebilir. Flex ile sol kolon esnek, sağ kolon sabit 420px.
+        ════════════════════════════════════════════════════════════════════ */}
+        <div className="hidden min-[901px]:flex items-start max-w-[1440px] mx-auto px-[5vw] overflow-visible h-[calc(100vh-120px)]">
+          {/* Sol: Görseller dikey akıyor */}
+          <div
+            className="custom-gallery-scroll min-w-0 basis-1/2 h-full overflow-y-auto overscroll-y-auto overflow-x-hidden scrollbar-hide flex flex-col px-[5%]"
+          >
+            {images.map((img, idx) => (
+              <div key={idx} className="relative bg-secondary overflow-hidden shrink-0 mb-1 last:mb-0 flex justify-center">
+                <img
+                  src={img}
+                  alt={`${displayName} - ${idx + 1}`}
+                  className="w-full h-[calc(100vh-120px)] block shrink-0 object-cover object-top"
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Sağ: Sticky wrapper — overflow OLMADAN */}
+          <div
+            className="basis-1/2 bg-transparent pl-10 h-full overflow-y-auto self-start"
+          >
+              <div className="px-[40px] py-[60px]">
+                <Link
+                  href={sitePaths.silhouettes[lang]}
+                  className="inline-block font-body text-[10px] tracking-[0.2em] uppercase text-accent mb-3 hover:text-foreground transition-colors duration-200"
+                >
+                  {tx.collections}
+                </Link>
+                <h1 className="font-display text-3xl text-foreground mb-4 leading-tight">
+                  {displayName}
+                </h1>
+
+                <div className="flex items-baseline gap-3 mb-8">
+                  {hasDiscount && compareAt && (
+                    <span className="font-body text-sm text-foreground/40 line-through">
+                      {formatTRY(compareAt)}
+                    </span>
+                  )}
+                  <span className="font-display text-2xl text-foreground">
+                    {formatTRY(linePrice)}
+                  </span>
+                </div>
+
+                <CombinationItems />
+
+                {!combination && hasVariants && (
+                  <VariantSelector
+                    variants={variants}
+                    selectedVariantId={selectedVariantId}
+                    onSelect={setSelectedVariantId}
+                    label={tx.color}
+                  />
+                )}
+
+                <div className="space-y-3 mb-8">
+                  <button
+                    type="button"
+                    onClick={handleAddToCart}
+                    disabled={outOfStock}
+                    className={`w-full py-[18px] font-body text-xs tracking-[0.25em] uppercase transition-colors duration-300 focus-visible:outline-none ${
+                      outOfStock
+                        ? "bg-primary/20 text-foreground/40 cursor-not-allowed"
+                        : justAdded
+                          ? "bg-accent text-accent-foreground"
+                          : "bg-primary text-primary-foreground hover:bg-accent hover:text-accent-foreground"
+                    }`}
+                  >
+                    {outOfStock
+                      ? tx.outOfStock
+                      : justAdded
+                        ? `✓ ${tx.added}`
+                        : `${tx.addToCart} — ${formatTRY(linePrice * quantity)}`}
+                  </button>
+
+                  {!combination && (
+                    <button
+                      type="button"
+                      onClick={() => setIsWishlisted(v => !v)}
+                      className={`w-full inline-flex items-center justify-center gap-2 font-body text-xs tracking-[0.25em] uppercase py-[18px] border border-border transition-colors duration-300 focus-visible:outline-none ${
+                        isWishlisted
+                          ? "text-accent"
+                          : "text-foreground hover:border-accent hover:text-accent"
+                      }`}
+                    >
+                      <Heart size={14} fill={isWishlisted ? "currentColor" : "none"} strokeWidth={1.5} />
+                      {isWishlisted ? tx.inWishlist : tx.addToWishlist}
+                    </button>
+                  )}
+                </div>
+
+                {product && !combination && <ProductAccordion product={product} tx={tx} />}
+
+                {combination?.description && (
+                  <p className="font-body text-sm text-foreground/70 leading-relaxed mt-6">
+                    {combination.description}
+                  </p>
+                )}
+              </div>
+          </div>
+        </div>
+
+        {/* ── İlgili ürünler ────────────────────────────────────────────────── */}
         {related.length > 0 && !combination && (
-          <section className="bg-[#F7F3EC] border-t border-[#C9A96E]/15">
+          <section className="bg-[#F7F3EC] mt-24 lg:mt-28">
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
-              <h2 className="font-display text-2xl lg:text-3xl text-[#1C1C1E] text-center mb-10">{tx.relatedTitle}</h2>
+              <h2 className="font-display text-2xl lg:text-3xl text-[#1C1C1E] text-center mb-10">
+                {tx.relatedTitle}
+              </h2>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                 {related.map(p => {
                   const img = p.imageUrls?.[0];
@@ -584,9 +683,11 @@ export default function ProductDetail() {
         )}
 
         {relatedCombo.length > 0 && combination && (
-          <section className="bg-[#F7F3EC] border-t border-[#C9A96E]/15">
+          <section className="bg-[#F7F3EC] mt-24 lg:mt-28">
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
-              <h2 className="font-display text-2xl lg:text-3xl text-[#1C1C1E] text-center mb-10">{tx.relatedTitle}</h2>
+              <h2 className="font-display text-2xl lg:text-3xl text-[#1C1C1E] text-center mb-10">
+                {tx.relatedTitle}
+              </h2>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                 {relatedCombo.map(c => {
                   const img = c.imageUrl ?? undefined;
@@ -595,13 +696,13 @@ export default function ProductDetail() {
                   return (
                     <Link key={c.id} href={productPath(lang, c.slug)} className="group block">
                       <div className="aspect-[3/4] bg-[#E8E0D5] overflow-hidden mb-3 relative">
-                        {img ? (
+                        {img && (
                           <img
                             src={img}
                             alt={cn}
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                           />
-                        ) : null}
+                        )}
                         {!c.inStock && (
                           <span className="absolute top-2 left-2 bg-[#1C1C1E] text-[#F7F3EC] font-body text-[9px] tracking-wider uppercase px-2 py-0.5">
                             {tx.outOfStock}
@@ -617,48 +718,10 @@ export default function ProductDetail() {
             </div>
           </section>
         )}
+
       </main>
 
       <Footer />
-    </div>
-  );
-}
-
-function ProductTabs({ product, tx }: { product: Product; tx: typeof t.TR }) {
-  const [active, setActive] = useState<keyof typeof tx.tabs>("details");
-  const meta = (product.metadata ?? {}) as Record<string, unknown>;
-
-  const content: Record<keyof typeof tx.tabs, string> = {
-    details: product.description ?? "—",
-    fabric:
-      typeof meta.fabric === "string"
-        ? meta.fabric
-        : `${tx.fabricDefault}\n\n${tx.careDefault}`,
-    size: typeof meta.size === "string" ? meta.size : tx.sizeDefault,
-    shipping: tx.shippingDefault,
-  };
-
-  return (
-    <div className="mt-20 lg:mt-28 max-w-3xl mx-auto">
-      <div className="flex items-center justify-center gap-2 lg:gap-8 border-b border-[#C9A96E]/20 mb-8 overflow-x-auto">
-        {(Object.keys(tx.tabs) as (keyof typeof tx.tabs)[]).map(key => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setActive(key)}
-            className={`relative font-body text-[11px] lg:text-xs tracking-[0.2em] uppercase py-4 px-1 lg:px-3 whitespace-nowrap transition-colors ${
-              active === key ? "text-[#1C1C1E]" : "text-[#1C1C1E]/40 hover:text-[#1C1C1E]/70"
-            }`}
-          >
-            {tx.tabs[key]}
-            {active === key && <span className="absolute bottom-0 left-0 right-0 h-px bg-[#C9A96E]" />}
-          </button>
-        ))}
-      </div>
-
-      <div className="font-body text-sm text-[#1C1C1E]/70 leading-relaxed text-center max-w-2xl mx-auto whitespace-pre-line min-h-[100px]">
-        {content[active]}
-      </div>
     </div>
   );
 }

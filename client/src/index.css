@@ -322,3 +322,18 @@
 .animate-slide-right {
   animation: slideInRight 0.8s ease forwards;
 }
+
+/* Mobil carousel scrollbar gizleme */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* iPhone safe area for fixed bottom bars */
+.safe-area-bottom {
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}

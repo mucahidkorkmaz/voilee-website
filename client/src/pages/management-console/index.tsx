@@ -81,9 +81,9 @@ const menuSections: MenuSection[] = [
     title: "KATALOG",
     items: [
       { icon: Package, label: "Ürünler", path: `${MC_BASE}/products` },
-      { icon: Shapes, label: "Silüetler", path: `${MC_BASE}/silhouettes` },
+      { icon: Shapes, label: "Alt Markalar", path: `${MC_BASE}/silhouettes` },
       { icon: FolderOpen, label: "Kategoriler", path: `${MC_BASE}/categories` },
-      { icon: Combine, label: "Kombinler", path: `${MC_BASE}/combinations` },
+      { icon: Combine, label: "Silüetler", path: `${MC_BASE}/combinations` },
       { icon: BookImage, label: "Lookbook Görselleri", path: `${MC_BASE}/collections` },
       { icon: GalleryHorizontal, label: "Hero Slaytlar", path: `${MC_BASE}/hero-slides` },
       { icon: Image, label: "Medya", path: `${MC_BASE}/media` },

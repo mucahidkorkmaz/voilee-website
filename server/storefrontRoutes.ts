@@ -379,7 +379,15 @@ export function registerStorefrontRoutes(app: Express) {
           galleryUrls,
           stock,
           inStock: stock > 0,
-          items: combo.items,
+          items: combo.items.map(item => ({
+            ...item,
+            productFabric:
+              lang === "EN"
+                ? (item.productFabricEN ?? item.productFabricTR ?? null)
+                : lang === "AR"
+                  ? (item.productFabricAR ?? item.productFabricTR ?? null)
+                  : (item.productFabricTR ?? null),
+          })),
         },
       });
     } catch (error) {

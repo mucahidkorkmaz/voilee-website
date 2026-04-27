@@ -1,0 +1,3 @@
+ALTER TABLE products ADD COLUMN IF NOT EXISTS "fabricTR" text;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS "fabricEN" text;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS "fabricAR" text;

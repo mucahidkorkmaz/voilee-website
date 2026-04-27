@@ -22,8 +22,8 @@ const t = {
     quantity: "Adet",
     addToCart: "Sepete Ekle",
     added: "Sepete Eklendi",
-    addToWishlist: "Favorilere Ekle",
-    inWishlist: "Favorilerde",
+    addToWishlist: "Listeme Ekle",
+    inWishlist: "Listeme Eklendi",
     outOfStock: "Stokta Yok",
     free: "Türkiye'ye ücretsiz kargo",
     returns: "14 gün içinde ücretsiz iade",
@@ -46,8 +46,8 @@ const t = {
     quantity: "Quantity",
     addToCart: "Add to Cart",
     added: "Added to Cart",
-    addToWishlist: "Add to Wishlist",
-    inWishlist: "In Wishlist",
+    addToWishlist: "Save to List",
+    inWishlist: "Saved to List",
     outOfStock: "Out of Stock",
     free: "Free shipping in Türkiye",
     returns: "Free returns within 14 days",
@@ -70,8 +70,8 @@ const t = {
     quantity: "الكمية",
     addToCart: "أضف إلى السلة",
     added: "تمت الإضافة",
-    addToWishlist: "أضف إلى المفضلة",
-    inWishlist: "في المفضلة",
+    addToWishlist: "أضف إلى قائمتي",
+    inWishlist: "في قائمتي",
     outOfStock: "غير متوفر",
     free: "شحن مجاني داخل تركيا",
     returns: "إرجاع مجاني خلال 14 يومًا",
@@ -97,35 +97,74 @@ function comboItemLabel(lang: "TR" | "EN" | "AR", it: CombinationDetail["items"]
 }
 
 // ─── Accordion ─────────────────────────────────────────────────────────────────
-function ProductAccordion({ product, tx }: { product: Product; tx: typeof t.TR }) {
-  const [openSection, setOpenSection] = useState<string | null>("details");
-  const meta = (product.metadata ?? {}) as Record<string, unknown>;
+function ProductAccordion({
+  product,
+  combination,
+  tx,
+  isCombination = false,
+  combinationDescription,
+}: {
+  product?: Product | null;
+  combination?: CombinationDetail | null;
+  tx: typeof t.TR;
+  isCombination?: boolean;
+  combinationDescription?: string;
+}) {
+  const [openSection, setOpenSection] = useState<string | null>(isCombination ? "shipping" : "details");
+  const meta = (product?.metadata ?? {}) as Record<string, unknown>;
+  const fabricContent = combination?.items
+    .filter(item => item.productFabric)
+    .map(item => `${item.categoryName ?? "—"}: ${item.productFabric}`)
+    .join("\n") || tx.fabricDefault;
 
-  const sections = [
-    {
-      key: "details",
-      label: tx.tabs.details,
-      content: product.description ?? "—",
-    },
-    {
-      key: "fabric",
-      label: tx.tabs.fabric,
-      content:
-        typeof meta.fabric === "string"
-          ? meta.fabric
-          : `${tx.fabricDefault}\n\n${tx.careDefault}`,
-    },
-    {
-      key: "size",
-      label: tx.tabs.size,
-      content: typeof meta.size === "string" ? meta.size : tx.sizeDefault,
-    },
-    {
-      key: "shipping",
-      label: tx.tabs.shipping,
-      content: tx.shippingDefault,
-    },
-  ];
+  const sections = isCombination
+    ? [
+        {
+          key: "details",
+          label: tx.tabs.details,
+          content: combinationDescription ?? "—",
+        },
+        {
+          key: "fabric",
+          label: tx.tabs.fabric,
+          content: fabricContent,
+        },
+        {
+          key: "size",
+          label: tx.tabs.size,
+          content: tx.sizeDefault,
+        },
+        {
+          key: "shipping",
+          label: tx.tabs.shipping,
+          content: tx.shippingDefault,
+        },
+      ]
+    : [
+        {
+          key: "details",
+          label: tx.tabs.details,
+          content: product?.description ?? "—",
+        },
+        {
+          key: "fabric",
+          label: tx.tabs.fabric,
+          content:
+            typeof meta.fabric === "string"
+              ? meta.fabric
+              : `${tx.fabricDefault}\n\n${tx.careDefault}`,
+        },
+        {
+          key: "size",
+          label: tx.tabs.size,
+          content: typeof meta.size === "string" ? meta.size : tx.sizeDefault,
+        },
+        {
+          key: "shipping",
+          label: tx.tabs.shipping,
+          content: tx.shippingDefault,
+        },
+      ];
 
   return (
     <div className="mt-6">
@@ -280,61 +319,6 @@ export default function ProductDetail() {
     return () => { cancelled = true; };
   }, [slug, lang]);
 
-  useEffect(() => {
-    // Select the actual DOM element for the left column
-    const gallery = document.querySelector<HTMLElement>(".custom-gallery-scroll");
-    if (!gallery) return;
-
-    // Helper function to find the actual element that controls the page scroll
-    const getScrollParent = (node: Node | null): Element | null => {
-      if (node == null) return null;
-      if (node instanceof Element) {
-        const style = getComputedStyle(node);
-        if (
-          node.scrollHeight > node.clientHeight &&
-          (style.overflowY === "auto" || style.overflowY === "scroll")
-        ) {
-          return node;
-        }
-      }
-      return getScrollParent(node.parentNode) || document.documentElement;
-    };
-
-    const handleWheel = (e: WheelEvent) => {
-      const isScrollingUp = e.deltaY < 0;
-
-      // Find what is actually scrolling the main page layout
-      const mainScrollContainer = getScrollParent(gallery.parentNode);
-      if (!mainScrollContainer) return;
-
-      // Determine how far down the main page actually is
-      const pageScrollTop =
-        mainScrollContainer === document.documentElement
-          ? window.scrollY || document.documentElement.scrollTop
-          : (mainScrollContainer as HTMLElement).scrollTop;
-
-      // STRICT CONDITION: Scrolling UP while the main page is NOT at the top
-      if (isScrollingUp && pageScrollTop > 0) {
-        e.preventDefault(); // FORCE block the gallery from scrolling
-        e.stopPropagation(); // Stop event bubbling
-
-        // Manually scroll the correct main container up
-        if (mainScrollContainer === document.documentElement) {
-          window.scrollBy({ top: e.deltaY, behavior: "auto" });
-        } else {
-          (mainScrollContainer as HTMLElement).scrollTop += e.deltaY;
-        }
-      }
-    };
-
-    // { passive: false } is absolutely mandatory to make preventDefault work
-    gallery.addEventListener("wheel", handleWheel as EventListener, { passive: false });
-
-    return () => {
-      gallery.removeEventListener("wheel", handleWheel as EventListener);
-    };
-  }, []);
-
   const variants: ProductVariant[] = product?.variants ?? [];
   const hasVariants = variants.length > 0;
   const activeVariant = variants.find(v => v.id === selectedVariantId) ?? null;
@@ -354,6 +338,29 @@ export default function ProductDetail() {
     }
     return base;
   }, [product, combination, activeVariant]);
+
+  useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>;
+
+    const handleWheel = (e: WheelEvent) => {
+      const gallery = document.querySelector('.custom-gallery-scroll') as HTMLElement;
+      if (!gallery || !gallery.contains(e.target as Node)) return;
+
+      if (e.deltaY < 0 && window.scrollY > 0) {
+        gallery.style.overflowY = 'hidden';
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          gallery.style.overflowY = 'auto';
+        }, 200);
+      }
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: true });
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      clearTimeout(timeout);
+    };
+  }, []);
 
   const price = product ? parseFloat(product.price) : 0;
   const effectivePrice =
@@ -450,6 +457,7 @@ export default function ProductDetail() {
   const displayName = combination ? combination.name : product!.name;
   const outOfStock = combination ? outOfStockCombo : outOfStockProduct;
   const linePrice = combination ? comboPrice : effectivePrice;
+  const productSku = (product as (Product & { sku?: string | null }) | null)?.sku ?? null;
 
   // ─── Combination items ────────────────────────────────────────────────────────
   const CombinationItems = () =>
@@ -581,6 +589,12 @@ export default function ProductDetail() {
                   {displayName}
                 </h1>
 
+                {productSku && (
+                  <p className="font-body text-[10px] tracking-[0.08em] text-foreground/30 mb-4">
+                    {productSku}
+                  </p>
+                )}
+
                 <div className="flex items-baseline gap-3 mb-8">
                   {hasDiscount && compareAt && (
                     <span className="font-body text-sm text-foreground/40 line-through">
@@ -591,6 +605,18 @@ export default function ProductDetail() {
                     {formatTRY(linePrice)}
                   </span>
                 </div>
+
+                {product?.description && (
+                  <p className="font-body text-[13px] text-foreground/65 leading-relaxed mb-7">
+                    {product.description}
+                  </p>
+                )}
+
+                {combination?.description && (
+                  <p className="font-body text-[13px] text-foreground/65 leading-relaxed mb-7">
+                    {combination.description}
+                  </p>
+                )}
 
                 <CombinationItems />
 
@@ -640,11 +666,13 @@ export default function ProductDetail() {
                 </div>
 
                 {product && !combination && <ProductAccordion product={product} tx={tx} />}
-
-                {combination?.description && (
-                  <p className="font-body text-sm text-foreground/70 leading-relaxed mt-6">
-                    {combination.description}
-                  </p>
+                {combination && (
+                  <ProductAccordion
+                    tx={tx}
+                    combination={combination}
+                    isCombination
+                    combinationDescription={combination.description ?? undefined}
+                  />
                 )}
               </div>
           </div>

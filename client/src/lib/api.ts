@@ -67,6 +67,7 @@ export interface Product {
   id: number;
   name: string;
   slug: string;
+  sku?: string | null;
   description?: string | null;
   price: string;
   compareAtPrice?: string | null;
@@ -122,6 +123,7 @@ export interface CombinationItem {
   variantPrice: string | null;
   variantImage: string | null;
   variantColorHex: string | null;
+  productFabric?: string | null;
 }
 
 export interface Combination {

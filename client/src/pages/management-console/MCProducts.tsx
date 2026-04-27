@@ -33,6 +33,9 @@ type ProductFormData = {
   descriptionTR: string;
   descriptionEN: string;
   descriptionAR: string;
+  fabricTR: string;
+  fabricEN: string;
+  fabricAR: string;
   price: string;
   silhouetteId: number | null;
   categoryId: number | null;
@@ -75,6 +78,9 @@ const emptyForm: ProductFormData = {
   descriptionTR: "",
   descriptionEN: "",
   descriptionAR: "",
+  fabricTR: "",
+  fabricEN: "",
+  fabricAR: "",
   price: "",
   silhouetteId: null,
   categoryId: null,
@@ -254,6 +260,9 @@ export default function MCProducts() {
       descriptionTR: product.descriptionTR ?? "",
       descriptionEN: product.descriptionEN ?? "",
       descriptionAR: product.descriptionAR ?? "",
+      fabricTR: product.fabricTR ?? "",
+      fabricEN: product.fabricEN ?? "",
+      fabricAR: product.fabricAR ?? "",
       price: product.price,
       silhouetteId: product.silhouetteId ?? null,
       categoryId: product.categoryId ?? null,
@@ -631,6 +640,31 @@ export default function MCProducts() {
                   value={form[`description${lang}` as keyof ProductFormData] as string}
                   onChange={e => setForm(f => ({ ...f, [`description${lang}`]: e.target.value }))}
                   placeholder={`Açıklama (${lang})`}
+                  rows={2}
+                  className="flex w-full rounded border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
+                />
+              </div>
+            ))}
+
+            {(["TR", "EN", "AR"] as const).map(lang => (
+              <div key={`fabric-${lang}`} className="space-y-1.5 md:col-span-2">
+                <Label className="text-xs tracking-wider uppercase text-muted-foreground font-normal">
+                  {lang === "EN"
+                    ? "Fabric & Care (EN)"
+                    : lang === "AR"
+                      ? "Kumaş & Bakım (AR)"
+                      : "Kumaş & Bakım (TR)"}
+                </Label>
+                <textarea
+                  value={form[`fabric${lang}` as keyof ProductFormData] as string}
+                  onChange={e => setForm(f => ({ ...f, [`fabric${lang}`]: e.target.value }))}
+                  placeholder={
+                    lang === "EN"
+                      ? "Fabric & care information (EN)"
+                      : lang === "AR"
+                        ? "Kumaş & bakım bilgisi (AR)"
+                        : "Kumaş & bakım bilgisi (TR)"
+                  }
                   rows={2}
                   className="flex w-full rounded border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
                 />

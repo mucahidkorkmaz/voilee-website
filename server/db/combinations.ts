@@ -48,6 +48,9 @@ export type CombinationListItem = Awaited<ReturnType<typeof getCombinationsBysil
     variantPrice: string | null;
     variantImage: string | null;
     variantColorHex: string | null;
+    productFabricTR: string | null;
+    productFabricEN: string | null;
+    productFabricAR: string | null;
   }[];
   stock: number;
 };
@@ -117,6 +120,9 @@ export async function listCombinationsWithItemsForAdmin(silhouetteId?: number): 
       variantPrice: productVariants.price,
       variantImage: productVariants.imageUrl,
       variantColorHex: productVariants.colorHex,
+      productFabricTR: products.fabricTR,
+      productFabricEN: products.fabricEN,
+      productFabricAR: products.fabricAR,
     })
     .from(combinationItems)
     .leftJoin(products, eq(combinationItems.productId, products.id))
@@ -141,6 +147,9 @@ export async function listCombinationsWithItemsForAdmin(silhouetteId?: number): 
       variantPrice: row.variantPrice,
       variantImage: row.variantImage,
       variantColorHex: row.variantColorHex,
+      productFabricTR: row.productFabricTR,
+      productFabricEN: row.productFabricEN,
+      productFabricAR: row.productFabricAR,
     });
     byCombo.set(row.combinationId, list);
   }
@@ -180,6 +189,9 @@ export async function getCombinationWithItems(combinationId: number) {
       variantPrice: productVariants.price,
       variantImage: productVariants.imageUrl,
       variantColorHex: productVariants.colorHex,
+      productFabricTR: products.fabricTR,
+      productFabricEN: products.fabricEN,
+      productFabricAR: products.fabricAR,
     })
     .from(combinationItems)
     .leftJoin(products, eq(combinationItems.productId, products.id))

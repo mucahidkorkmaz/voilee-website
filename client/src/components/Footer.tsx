@@ -2,6 +2,7 @@ import { Instagram, Twitter, Linkedin, Youtube, ArrowRight, ArrowLeft, MessageCi
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { sitePaths } from "@/lib/sitePaths";
+import { api, type Silhouette } from "@/lib/api";
 
 type SocialSettings = {
   siteLogoUrl?: string | null;
@@ -55,6 +56,14 @@ export default function Footer() {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
   const [social, setSocial] = useState<SocialSettings>({});
+  const [footerSilhouettes, setFooterSilhouettes] = useState<Silhouette[]>([]);
+
+  useEffect(() => {
+    api
+      .getSilhouettes()
+      .then(res => setFooterSilhouettes(res.data))
+      .catch(() => setFooterSilhouettes([]));
+  }, []);
 
   useEffect(() => {
     fetch("/api/v1/store-settings")
@@ -83,18 +92,9 @@ export default function Footer() {
           company: "Company",
           support: "Support",
           legal: "Legal",
-          silhouetteLinks: [
-            { label: "ORIGINE", href: sitePaths.silhouettes.EN },
-            { label: "MOUVEMENT", href: sitePaths.silhouettes.EN },
-            { label: "ÉPURE", href: sitePaths.silhouettes.EN },
-            { label: "NOIR", href: sitePaths.silhouettes.EN },
-            { label: "HÉRITAGE", href: sitePaths.silhouettes.EN },
-            { label: "ATELIER", href: sitePaths.silhouettes.EN },
-          ],
           companyLinks: [
             { label: "About", href: sitePaths.about.EN },
             { label: "Our Story", href: sitePaths.story.EN },
-            { label: "Sustainability", href: sitePaths.sustainability.EN },
             { label: "Journal", href: sitePaths.journal.EN },
           ],
           supportLinks: [
@@ -122,18 +122,9 @@ export default function Footer() {
           company: "الشركة",
           support: "الدعم",
           legal: "القانونية",
-          silhouetteLinks: [
-            { label: "ORIGINE", href: sitePaths.silhouettes.AR },
-            { label: "MOUVEMENT", href: sitePaths.silhouettes.AR },
-            { label: "ÉPURE", href: sitePaths.silhouettes.AR },
-            { label: "NOIR", href: sitePaths.silhouettes.AR },
-            { label: "HÉRITAGE", href: sitePaths.silhouettes.AR },
-            { label: "ATELIER", href: sitePaths.silhouettes.AR },
-          ],
           companyLinks: [
             { label: "من نحن", href: sitePaths.about.AR },
             { label: "قصتنا", href: sitePaths.story.AR },
-            { label: "الاستدامة", href: sitePaths.sustainability.AR },
             { label: "مجلة", href: sitePaths.journal.AR },
           ],
           supportLinks: [
@@ -161,18 +152,9 @@ export default function Footer() {
           company: "Şirket",
           support: "Destek",
           legal: "Yasal",
-          silhouetteLinks: [
-            { label: "ORIGINE", href: sitePaths.silhouettes.TR },
-            { label: "MOUVEMENT", href: sitePaths.silhouettes.TR },
-            { label: "ÉPURE", href: sitePaths.silhouettes.TR },
-            { label: "NOIR", href: sitePaths.silhouettes.TR },
-            { label: "HÉRITAGE", href: sitePaths.silhouettes.TR },
-            { label: "ATELIER", href: sitePaths.silhouettes.TR },
-          ],
           companyLinks: [
             { label: "Hakkımızda", href: sitePaths.about.TR },
             { label: "Hikayemiz", href: sitePaths.story.TR },
-            { label: "Sürdürülebilirlik", href: sitePaths.sustainability.TR },
             { label: "Journal", href: sitePaths.journal.TR },
           ],
           supportLinks: [
@@ -194,6 +176,17 @@ export default function Footer() {
   };
 
   const content = getFooterContent();
+
+  const silhouetteDisplayName = (s: Silhouette) => {
+    if (lang === "EN") return s.nameEN;
+    if (lang === "AR") return s.nameAR;
+    return s.nameTR;
+  };
+
+  const silhouetteFooterHref = (s: Silhouette) => {
+    const base = sitePaths.silhouettes[lang];
+    return `${base}#${encodeURIComponent(s.nameEN)}`;
+  };
 
   const socialLinks = [
     { url: social.instagramUrl, icon: <Instagram size={16} />, label: "Instagram" },
@@ -220,10 +213,13 @@ export default function Footer() {
                 {content.silhouettes}
               </h4>
               <ul className={`space-y-2 ${isRTL ? "text-right" : ""}`}>
-                {content.silhouetteLinks.map((link) => (
-                  <li key={link.label}>
-                    <a href={link.href} className="font-body text-sm text-[#F7F3EC]/60 hover:text-[#C9A96E] transition-colors">
-                      {link.label}
+                {footerSilhouettes.map(s => (
+                  <li key={s.id}>
+                    <a
+                      href={silhouetteFooterHref(s)}
+                      className="font-body text-sm text-[#F7F3EC]/60 hover:text-[#C9A96E] transition-colors"
+                    >
+                      {silhouetteDisplayName(s)}
                     </a>
                   </li>
                 ))}

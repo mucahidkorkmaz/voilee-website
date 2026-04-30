@@ -18,7 +18,6 @@ import Home from "./pages/Home";
 import Collections from "./pages/Collections";
 import SilhouetteBuilder from "./pages/SilhouetteBuilder";
 import About from "./pages/About";
-import Sustainability from "./pages/Sustainability";
 import Contact from "./pages/Contact";
 import Journal from "./pages/Journal";
 import ShippingReturns from "./pages/ShippingReturns";
@@ -81,7 +80,6 @@ function Router() {
         <Route path="/tr/story" component={Story} />
         <Route path="/tr/lookbook" component={Lookbook} />
         <Route path="/tr/lookbook/:slug" component={LookbookDetail} />
-        <Route path="/tr/sustainability" component={Sustainability} />
         <Route path="/tr/contact" component={Contact} />
         <Route path="/tr/journal" component={Journal} />
         <Route path="/tr/shipping-returns" component={ShippingReturns} />
@@ -111,7 +109,6 @@ function Router() {
         <Route path="/en/story" component={Story} />
         <Route path="/en/lookbook" component={Lookbook} />
         <Route path="/en/lookbook/:slug" component={LookbookDetail} />
-        <Route path="/en/sustainability" component={Sustainability} />
         <Route path="/en/contact" component={Contact} />
         <Route path="/en/journal" component={Journal} />
         <Route path="/en/shipping-returns" component={ShippingReturns} />
@@ -141,7 +138,6 @@ function Router() {
         <Route path="/ar/story" component={Story} />
         <Route path="/ar/lookbook" component={Lookbook} />
         <Route path="/ar/lookbook/:slug" component={LookbookDetail} />
-        <Route path="/ar/sustainability" component={Sustainability} />
         <Route path="/ar/contact" component={Contact} />
         <Route path="/ar/journal" component={Journal} />
         <Route path="/ar/shipping-returns" component={ShippingReturns} />

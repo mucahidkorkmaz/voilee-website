@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { getStoreSettings, upsertStoreSettings } from "../db";
 import { adminProcedure, router } from "../_core/trpc";
+import { resetTransporter } from "../_core/email";
 
 export const settingsRouter = router({
   get: adminProcedure.query(async () => {
@@ -48,7 +49,10 @@ export const settingsRouter = router({
       }),
     )
     .mutation(async ({ input }) => {
-      return await upsertStoreSettings(input);
+      const updated = await upsertStoreSettings(input);
+      resetTransporter();
+      console.log("[Settings] SMTP transporter reset edildi.");
+      return updated;
     }),
   testParasut: adminProcedure.mutation(async () => {
     const settings = await getStoreSettings();

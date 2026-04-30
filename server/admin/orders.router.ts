@@ -60,7 +60,7 @@ export const ordersRouter = router({
         if (!to) return result;
 
         const settings = await getStoreSettings();
-        const siteName = settings?.storeName ?? "";
+        const siteName = settings?.storeName?.trim() || "VOILÉE";
         const customerName = (after.customerName ?? after.billingName ?? to).trim() || to;
         const customerEmail = to;
         const orderNumber = after.orderNumber;

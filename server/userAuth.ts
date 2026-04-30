@@ -113,20 +113,23 @@ export function registerUserAuthRoutes(app: Express) {
 
       try {
         const settings = await getStoreSettings();
-        const siteName = settings?.storeName ?? "";
+        const siteName = settings?.storeName?.trim() || "VOILÉE";
         const { ENV } = await import("./_core/env");
         const origin = ENV.corsOrigin?.split(",")[0]?.trim() ?? "";
-        const siteDomain = origin.replace(/^https?:\/\//i, "").split("/")[0] ?? "";
+        const siteDomain = origin.replace(/^https?:\/\//i, "").split("/")[0] || "voilee.com.tr";
 
         await sendCustomerWelcome({
           to: cleanEmail,
-          customerName: created.name ?? cleanEmail,
+          customerName: created.name || cleanEmail,
           customerEmail: cleanEmail,
           siteName,
           siteDomain,
         });
       } catch (emailErr) {
         console.error("[UserAuth] Welcome email failed:", emailErr);
+        if (emailErr instanceof Error) {
+          console.error("[UserAuth] Detail:", emailErr.message, emailErr.stack);
+        }
       }
 
       return res.status(201).json({ user: publicUser(created) });
@@ -310,13 +313,14 @@ export function registerPasswordResetRoutes(app: Express) {
       const resetUrl = `${baseUrl}/tr/reset-password?token=${token}`;
 
       const settings = await getStoreSettings();
+      const siteName = settings?.storeName?.trim() || "VOILÉE";
 
       await sendPasswordReset({
         to: cleanEmail,
-        customerName: user.name || user.email || "Müşteri",
+        customerName: user.name || user.email || "Müşterimiz",
         customerEmail: cleanEmail,
         resetUrl,
-        siteName: settings?.storeName ?? "",
+        siteName,
       });
 
       return res.json({ ok: true });

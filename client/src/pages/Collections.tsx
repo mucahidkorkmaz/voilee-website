@@ -10,6 +10,41 @@ import { productPath, sitePaths } from "@/lib/sitePaths";
 
 const heroMain = "https://d2xsxph8kpxj0f.cloudfront.net/310519663539077798/3fydJdkTrUbQF5VyRYKBGS/voilee_hero_main-Z5A8u2f2u9H3JoSTeyVYih.webp";
 
+function parseHashFragment(): string {
+  const raw = window.location.hash.replace(/#/g, "").trim();
+  if (!raw) return "";
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
+
+function findSilhouetteByHashFragment(data: Silhouette[], fragment: string): Silhouette | null {
+  const n = fragment.trim().toLowerCase();
+  if (!n) return null;
+  return (
+    data.find(s =>
+      [s.slug, s.nameTR, s.nameEN, s.nameAR].some(field => field.toLowerCase() === n),
+    ) ?? null
+  );
+}
+
+function resolveActiveSilhouetteId(data: Silhouette[], search: string): number {
+  const hashFrag = parseHashFragment();
+  if (hashFrag) {
+    const byHash = findSilhouetteByHashFragment(data, hashFrag);
+    if (byHash) return byHash.id;
+  }
+  const params = new URLSearchParams(search);
+  const slugParam = params.get("silhouette");
+  if (slugParam) {
+    const match = data.find(s => s.slug === slugParam);
+    return match ? match.id : data[0].id;
+  }
+  return data[0].id;
+}
+
 export default function Collections() {
   const { lang } = useLanguage();
   const { addToCart } = useCart();
@@ -28,21 +63,22 @@ export default function Collections() {
     api
       .getSilhouettes()
       .then(res => {
-        setSilhouettes(res.data);
-        if (res.data.length === 0) return;
-
-        const params = new URLSearchParams(search);
-        const slugParam = params.get("silhouette");
-
-        if (slugParam) {
-          const match = res.data.find(s => s.slug === slugParam);
-          setActiveSilhouetteId(match ? match.id : res.data[0].id);
-        } else {
-          setActiveSilhouetteId(res.data[0].id);
-        }
+        const data = res.data;
+        setSilhouettes(data);
+        if (data.length === 0) return;
+        setActiveSilhouetteId(resolveActiveSilhouetteId(data, search));
       })
       .catch(console.error);
   }, [search]);
+
+  useEffect(() => {
+    if (silhouettes.length === 0) return;
+    const onHashChange = () => {
+      setActiveSilhouetteId(resolveActiveSilhouetteId(silhouettes, search));
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, [silhouettes, search]);
 
   useEffect(() => {
     if (activeSilhouetteId === null) return;

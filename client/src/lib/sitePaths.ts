@@ -12,7 +12,6 @@ export const sitePaths = {
   about: { TR: "/tr/about", EN: "/en/about", AR: "/ar/about" },
   story: { TR: "/tr/story", EN: "/en/story", AR: "/ar/story" },
   lookbook: { TR: "/tr/lookbook", EN: "/en/lookbook", AR: "/ar/lookbook" },
-  sustainability: { TR: "/tr/sustainability", EN: "/en/sustainability", AR: "/ar/sustainability" },
   contact: { TR: "/tr/contact", EN: "/en/contact", AR: "/ar/contact" },
   journal: { TR: "/tr/journal", EN: "/en/journal", AR: "/ar/journal" },
   shippingReturns: { TR: "/tr/shipping-returns", EN: "/en/shipping-returns", AR: "/ar/shipping-returns" },

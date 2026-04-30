@@ -38,7 +38,11 @@ export async function getTransporter(): Promise<Transporter> {
 
 export async function sendEmail(options: SendEmailOptions): Promise<SendEmailResult> {
   const settings = await getStoreSettings();
-  const from = settings?.smtpFrom ?? "";
+  const from = settings?.smtpFrom?.trim() ?? "";
+  if (!from) {
+    console.error("[Email] smtpFrom ayarlanmamış. Admin panelinden SMTP From adresini girin.");
+    return { success: false, error: "smtpFrom not configured" };
+  }
   const to = Array.isArray(options.to) ? options.to.join(", ") : options.to;
   try {
     const transporter = await getTransporter();
@@ -114,23 +118,24 @@ export async function buildLayout({
                   Tutar: <strong>${esc(orderInfo.orderTotal)}</strong>
                 </td>
               </tr>
-              <tr>
-                <td style="padding-top:16px;text-align:center">
-                  <a href="${orderInfo.orderUrl}"
-                     style="display:inline-block;
-                            background-color:transparent;
-                            color:#1a1a1a;
-                            text-decoration:none;
-                            font-size:10px;
-                            letter-spacing:4px;
-                            text-transform:uppercase;
-                            padding:14px 40px;
-                            font-family:Georgia,'Times New Roman',serif;
-                            border:1px solid #1a1a1a;">
-                    SİPARİŞİMİ GÖRÜNTÜLE
-                  </a>
-                </td>
-              </tr>
+              ${orderInfo.orderUrl
+                ? `<tr>
+                  <td style="padding-top:20px;text-align:center">
+                    <a href="${orderInfo.orderUrl}"
+                       style="display:inline-block;
+                              color:#1a1a1a;
+                              text-decoration:none;
+                              font-size:11px;
+                              letter-spacing:2px;
+                              text-transform:uppercase;
+                              font-family:Georgia,'Times New Roman',serif;
+                              padding-bottom:5px;
+                              border-bottom:1px solid #C9A96E;">
+                      Siparişimi Görüntüle
+                    </a>
+                  </td>
+                </tr>`
+                : ""}
             </table>
           </td>
         </tr>
@@ -791,13 +796,38 @@ export interface CustomerWelcomePayload {
   siteDomain: string;
 }
 export async function sendCustomerWelcome(payload: CustomerWelcomePayload): Promise<SendEmailResult> {
+  const settings = await getStoreSettings().catch(() => null);
+  const storeName = settings?.storeName || DEFAULT_STORE_NAME;
+
   const r = await resolveTemplate("customerWelcome", {
     customer_name: payload.customerName,
     customer_email: payload.customerEmail,
-    site_name: payload.siteName,
+    site_name: payload.siteName || storeName,
     site_domain: payload.siteDomain,
   });
-  return sendEmail({ to: payload.to, subject: r.subject, html: await buildLayout({ bodyHtml: r.bodyHtml }) });
+
+  const meta = EMAIL_TEMPLATE_META["customerWelcome"];
+  const subject = r?.subject || interpolate(meta.defaultSubject, {
+    customer_name: payload.customerName,
+    site_name: payload.siteName || storeName,
+  });
+
+  const bodyText = r?.bodyHtml
+    ? undefined
+    : interpolate(meta.defaultBody, {
+        customer_name: payload.customerName,
+        customer_email: payload.customerEmail,
+        site_name: payload.siteName || storeName,
+        site_domain: payload.siteDomain,
+      });
+
+  const bodyHtml = r?.bodyHtml || textToHtml(bodyText!);
+
+  return sendEmail({
+    to: payload.to,
+    subject,
+    html: await buildLayout({ bodyHtml }),
+  });
 }
 
 export async function sendCustomerPasswordReset(payload: PasswordResetPayload): Promise<SendEmailResult> {
@@ -941,8 +971,8 @@ export function textToHtmlInline(text: string): string {
     .map(l => l.trim())
     .map(l =>
       l
-        ? `<p style="margin:0 0 14px;font-family:'DM Sans','Helvetica Neue',Arial,sans-serif;font-size:14px;line-height:1.85;color:#1C1C1E;font-weight:300">${esc(l)}</p>`
-        : `<p style="margin:0 0 8px">&nbsp;</p>`
+        ? `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.85;color:#374151">${esc(l)}</p>`
+        : `<p style="margin:0 0 10px">&nbsp;</p>`
     )
     .join("\n");
 }

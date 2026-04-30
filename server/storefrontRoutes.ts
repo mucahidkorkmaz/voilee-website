@@ -24,6 +24,12 @@ import {
 
 const STOREFRONT_API_KEY = process.env.VITE_STOREFRONT_API_KEY ?? "";
 
+function accountOrderUrl(orderNumber: string): string {
+  const baseUrl = ENV.corsOrigin?.split(",")[0]?.trim() ?? "";
+  if (!baseUrl) return "";
+  return `${baseUrl.replace(/\/$/, "")}/tr/account/orders/${encodeURIComponent(orderNumber)}`;
+}
+
 function authenticateApiKey(req: Request, res: Response): boolean {
   if (!STOREFRONT_API_KEY) return true;
   const auth = req.headers.authorization;
@@ -500,11 +506,8 @@ export function registerStorefrontRoutes(app: Express) {
       if (emailStr) {
         try {
           const settings = await getStoreSettings();
-          const siteName = settings?.storeName ?? "";
-          const baseUrl = ENV.corsOrigin?.split(",")[0]?.trim() ?? "";
-          const orderUrl = baseUrl
-            ? `${baseUrl.replace(/\/$/, "")}/tr/account/orders/${encodeURIComponent(order.orderNumber)}`
-            : "";
+          const siteName = settings?.storeName?.trim() || "VOILÉE";
+          const orderUrl = accountOrderUrl(order.orderNumber);
           const orderDate = new Date(order.createdAt).toLocaleDateString("tr-TR");
           const orderTotal = `₺${Number(order.totalPrice).toFixed(2)}`;
           const displayName = nameStr || emailStr;
